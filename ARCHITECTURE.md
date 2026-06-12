@@ -25,7 +25,7 @@ validate it and progress.
 
 These are invariants. See §3.
 
-## 2. The golden rule: separation of concerns
+## 2. Separation of concerns
 
 Five concerns must never bleed into each other. Each owns one question:
 
