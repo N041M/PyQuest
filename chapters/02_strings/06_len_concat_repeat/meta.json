@@ -1,0 +1,8 @@
+{
+  "id": "2.6",
+  "title": "Length, joining, repeating",
+  "chapter": "Strings",
+  "concept": "len() counts characters; + concatenates; * repeats",
+  "mode": "script",
+  "why": "len returns a count you can compute with, while + and * build new strings by joining and repeating."
+}

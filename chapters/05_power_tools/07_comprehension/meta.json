@@ -1,0 +1,8 @@
+{
+  "id": "5.7",
+  "title": "List comprehensions",
+  "chapter": "Power Tools",
+  "concept": "[expression for x in items] builds a new list in one line -- the build-by-loop-and-append pattern compressed",
+  "mode": "script",
+  "why": "A comprehension is the for-and-append loop as a single expression: what each item becomes, then where the items come from."
+}

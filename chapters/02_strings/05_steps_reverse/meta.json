@@ -1,0 +1,8 @@
+{
+  "id": "2.5",
+  "title": "Steps and reversing",
+  "chapter": "Strings",
+  "concept": "The slice step s[::step]; s[::-1] reverses a string",
+  "mode": "script",
+  "why": "The third slice value is a step. A step of -1 walks the string backwards, so s[::-1] reverses it."
+}

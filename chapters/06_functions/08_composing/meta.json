@@ -1,0 +1,8 @@
+{
+  "id": "6.8",
+  "title": "Functions calling functions",
+  "chapter": "Functions",
+  "concept": "Functions build on each other: solve a small problem once (clean), then delegate to it (same_word) instead of repeating the recipe",
+  "mode": "import",
+  "why": "Delegation keeps one source of truth -- improve clean() and everything built on it improves too, with no second copy to forget."
+}

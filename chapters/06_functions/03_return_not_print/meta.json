@@ -1,0 +1,8 @@
+{
+  "id": "6.3",
+  "title": "return, not print",
+  "chapter": "Functions",
+  "concept": "print() shows a value; return hands it back to the caller -- a printing function returns None",
+  "mode": "import",
+  "why": "Only return gives the caller a value to store or pass on; printing is a side effect, and the function still returns None."
+}

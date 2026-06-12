@@ -1,0 +1,8 @@
+{
+  "id": "1.9",
+  "title": "Three kinds of division",
+  "chapter": "Basics",
+  "concept": "/ (float division), // (floor division), and % (remainder)",
+  "mode": "script",
+  "why": "/ always yields a float, // discards the fraction to give a whole number, and % gives the remainder. They answer three different questions about the same division."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "5.8",
+  "title": "Filtering with comprehensions",
+  "chapter": "Power Tools",
+  "concept": "[x for x in items if test] keeps only the items that pass the test",
+  "mode": "script",
+  "why": "The if clause at the end of a comprehension filters: items failing the test are left out of the new list entirely."
+}

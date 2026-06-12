@@ -1,0 +1,8 @@
+{
+  "id": "3.2",
+  "title": "if",
+  "chapter": "Decisions & Loops",
+  "concept": "Running an indented block only when an if condition is True",
+  "mode": "script",
+  "why": "An if runs its indented block only when the condition is True; the indentation defines which lines belong to the if."
+}

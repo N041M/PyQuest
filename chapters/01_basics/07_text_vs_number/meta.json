@@ -1,0 +1,8 @@
+{
+  "id": "1.7",
+  "title": "Text vs number",
+  "chapter": "Basics",
+  "concept": "Strings (quoted) and numbers (unquoted) are different types; + joins vs adds",
+  "mode": "script",
+  "why": "Quotes make a value a string. + concatenates strings but adds numbers, so \"5\"+\"5\" is \"55\" while 5+5 is 10."
+}

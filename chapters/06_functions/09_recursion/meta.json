@@ -1,0 +1,8 @@
+{
+  "id": "6.9",
+  "title": "Recursion: a function calling itself",
+  "chapter": "Functions",
+  "concept": "A recursive function solves a problem via a smaller copy of itself, with a base case that stops the calls",
+  "mode": "import",
+  "why": "fact(n) is n * fact(n-1) by definition; the n == 0 base case answers directly, so the chain of self-calls always bottoms out."
+}

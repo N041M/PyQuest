@@ -1,0 +1,8 @@
+{
+  "id": "4.10",
+  "title": "Missing keys and .get()",
+  "chapter": "Collections",
+  "concept": "d[key] raises on a missing key; d.get(key, default) is the safe lookup",
+  "mode": "script",
+  "why": "Indexing a missing key crashes with KeyError, while .get returns None (or a default you pass) instead -- safe lookups."
+}

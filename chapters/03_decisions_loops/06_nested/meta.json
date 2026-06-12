@@ -1,0 +1,8 @@
+{
+  "id": "3.6",
+  "title": "Nested conditions",
+  "chapter": "Decisions & Loops",
+  "concept": "An if inside another if; the inner check runs only when the outer is true",
+  "mode": "script",
+  "why": "Nesting lets a decision depend on an earlier one -- the inner condition is only reached when the outer block runs."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "1.2",
+  "title": "Printing more",
+  "chapter": "Basics",
+  "concept": "Multiple print statements, and one print with several comma-separated values",
+  "mode": "script",
+  "why": "Prints run top to bottom, each on its own line. Passing several values to one print, separated by commas, shows them on a single line with a space between each."
+}

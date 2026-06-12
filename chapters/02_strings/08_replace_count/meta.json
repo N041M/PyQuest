@@ -1,0 +1,8 @@
+{
+  "id": "2.8",
+  "title": "Replacing and counting",
+  "chapter": "Strings",
+  "concept": "s.replace(old, new) swaps every match; s.count(sub) tallies matches",
+  "mode": "script",
+  "why": "replace returns a new string with every occurrence swapped, and count returns how many times a substring appears (0 if none)."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "4.2",
+  "title": "Changing a list",
+  "chapter": "Collections",
+  "concept": "Lists are mutable: replace by index, and .pop() the last item",
+  "mode": "script",
+  "why": "Lists can be changed in place -- assigning to nums[i] replaces an item and .pop() removes the last -- without making a new list."
+}

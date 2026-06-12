@@ -1,0 +1,8 @@
+{
+  "id": "2.2",
+  "title": "Negative indexing",
+  "chapter": "Strings",
+  "concept": "Indexing from the end with negative numbers; s[-1] is the last character",
+  "mode": "script",
+  "why": "Negative indexes count backwards from the end, so s[-1] is always the last character regardless of length."
+}

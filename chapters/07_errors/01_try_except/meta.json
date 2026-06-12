@@ -1,0 +1,8 @@
+{
+  "id": "7.1",
+  "title": "try / except",
+  "chapter": "Errors & Robustness",
+  "concept": "try runs code that might raise; except catches the error and chooses what failure means -- no crash",
+  "mode": "script",
+  "why": "When a line in the try block raises, the rest of the block is abandoned and the except block runs instead, so the program recovers on its own terms."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "2.3",
+  "title": "Slicing",
+  "chapter": "Strings",
+  "concept": "Taking a half-open range of characters with s[start:stop]",
+  "mode": "script",
+  "why": "A slice includes start but stops just before stop, so s[:3] returns exactly the first three characters."
+}

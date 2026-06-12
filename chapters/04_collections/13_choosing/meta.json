@@ -1,0 +1,8 @@
+{
+  "id": "4.13",
+  "title": "Choosing the right collection",
+  "chapter": "Collections",
+  "concept": "Pick the fitting collection: list for all values, set for distinct, dict for lookup",
+  "mode": "script",
+  "why": "Each collection fits a job: a list keeps every value, a set keeps only distinct ones -- choosing well makes counting, deduping, and lookups simple."
+}

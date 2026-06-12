@@ -1,0 +1,8 @@
+{
+  "id": "3.8",
+  "title": "Looping until a sentinel",
+  "chapter": "Decisions & Loops",
+  "concept": "Reading input in a while loop until a sentinel value stops it",
+  "mode": "script",
+  "why": "Reading once before the loop and again at the end of each pass lets the loop run until a special stop value arrives."
+}

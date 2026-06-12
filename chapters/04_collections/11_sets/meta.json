@@ -1,0 +1,8 @@
+{
+  "id": "4.11",
+  "title": "Sets",
+  "chapter": "Collections",
+  "concept": "Sets hold unique, unordered items; set() drops duplicates; in tests membership",
+  "mode": "script",
+  "why": "A set keeps only distinct values, so set(list) removes duplicates and len(set(...)) counts how many different items there are."
+}

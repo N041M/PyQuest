@@ -1,0 +1,8 @@
+{
+  "id": "1.1",
+  "title": "Hello, output",
+  "chapter": "Basics",
+  "concept": "print() displays a line of text on the screen",
+  "mode": "script",
+  "why": "print() takes the text in its parentheses and writes it to the screen, then adds a newline so the next output starts on a fresh line."
+}

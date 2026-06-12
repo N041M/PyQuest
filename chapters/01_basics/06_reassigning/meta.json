@@ -1,0 +1,8 @@
+{
+  "id": "1.6",
+  "title": "Reassigning a variable",
+  "chapter": "Basics",
+  "concept": "A variable can be reassigned; it holds its most recent value",
+  "mode": "script",
+  "why": "Assigning to an existing name replaces its value. Because code runs top to bottom, each print reflects whatever was stored at that moment."
+}

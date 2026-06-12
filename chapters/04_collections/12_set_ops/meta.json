@@ -1,0 +1,8 @@
+{
+  "id": "4.12",
+  "title": "Combining sets",
+  "chapter": "Collections",
+  "concept": "Set operations: intersection (&), union (|), difference (-)",
+  "mode": "script",
+  "why": "Set operators answer 'shared', 'either', and 'only in one' directly -- a & b is the items in both, with no loop needed."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "5.2",
+  "title": "sum()",
+  "chapter": "Power Tools",
+  "concept": "sum(nums) totals a list of numbers -- the accumulator pattern from 3.12 as one built-in call",
+  "mode": "script",
+  "why": "sum() is the accumulator pattern packaged as a function: it starts at 0 and adds every item, returning 0 for an empty list."
+}

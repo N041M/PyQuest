@@ -1,0 +1,8 @@
+{
+  "id": "3.7",
+  "title": "while",
+  "chapter": "Decisions & Loops",
+  "concept": "Repeating a block while a condition holds; updating the counter to end the loop",
+  "mode": "script",
+  "why": "A while loop re-checks its condition before each pass. The body must move toward making it False, or the loop never ends."
+}

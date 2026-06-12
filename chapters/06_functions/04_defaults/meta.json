@@ -1,0 +1,8 @@
+{
+  "id": "6.4",
+  "title": "Default values",
+  "chapter": "Functions",
+  "concept": "A parameter written as name=value in the def line gets that default when the caller omits it",
+  "mode": "import",
+  "why": "Defaults make the common call short and the unusual call possible -- greet('Ada') and greet('Ada', 'Hi') both work from one definition."
+}

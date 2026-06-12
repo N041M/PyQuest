@@ -1,0 +1,8 @@
+{
+  "id": "4.8",
+  "title": "Dictionaries",
+  "chapter": "Collections",
+  "concept": "Dicts map keys to values; look up, add, and update by key",
+  "mode": "script",
+  "why": "A dict stores values under keys and looks them up by key rather than position -- ideal for 'given X, what is its Y?'."
+}

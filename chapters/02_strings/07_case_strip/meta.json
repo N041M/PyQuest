@@ -1,0 +1,8 @@
+{
+  "id": "2.7",
+  "title": "Cleaning up text",
+  "chapter": "Strings",
+  "concept": "String methods .strip(), .upper(), .lower(), and chaining them",
+  "mode": "script",
+  "why": "Methods return new strings without changing the original, and chaining applies each to the previous result -- so s.strip().upper() trims then capitalises."
+}

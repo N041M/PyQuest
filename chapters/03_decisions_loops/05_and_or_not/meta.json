@@ -1,0 +1,8 @@
+{
+  "id": "3.5",
+  "title": "and / or / not",
+  "chapter": "Decisions & Loops",
+  "concept": "Combining conditions with and, or, not",
+  "mode": "script",
+  "why": "and is True only when both sides are; or when either is; not flips a boolean. They let one test check several things."
+}

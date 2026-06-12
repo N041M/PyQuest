@@ -1,0 +1,8 @@
+{
+  "id": "4.4",
+  "title": "split: text into a list",
+  "chapter": "Collections",
+  "concept": "s.split() turns a string into a list of pieces (words by default)",
+  "mode": "script",
+  "why": "split() returns a real list, so a line of text becomes a list of words you can count, index, and loop over."
+}

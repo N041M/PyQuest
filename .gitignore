@@ -1,0 +1,11 @@
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# PyQuest runtime state (regenerated on first run)
+settings.json
+users/
+*.corrupt

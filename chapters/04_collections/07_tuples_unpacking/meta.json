@@ -1,0 +1,8 @@
+{
+  "id": "4.7",
+  "title": "Tuples and unpacking",
+  "chapter": "Collections",
+  "concept": "Immutable tuples and unpacking several variables at once (a, b = b, a)",
+  "mode": "script",
+  "why": "A tuple groups values immutably; unpacking assigns them to several names at once, which makes swapping a one-liner (a, b = b, a)."
+}

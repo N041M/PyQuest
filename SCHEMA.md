@@ -1,0 +1,204 @@
+# Authoring schema
+
+The file formats for adding or editing puzzles. For the design rules behind
+them, see [ARCHITECTURE.md](ARCHITECTURE.md). A puzzle is one folder under
+`chapters/NN_title/MM_title/` containing six files: `brief.md`, `starter.py`,
+`tests.py`, `hints.md`, `solution.py`, and `meta.json`. The engine discovers
+new puzzle folders automatically — no code changes needed.
+
+## The workspace model
+
+The learner never edits files inside a puzzle folder. Instead each user has a
+single `users/<name>/work.py` that the engine owns. When a puzzle becomes
+current, the engine seeds `work.py` from that puzzle's `starter.py` (or from the
+learner's previously saved code). `check` validates `work.py`. Every check
+archives the workspace into that user's `answers.json` (see below). This is what
+lets `reset` restore a truly clean slate — it deletes the profile's
+`answers.json` and regenerates `work.py`.
+
+So when authoring, the file you write as the starting point is `starter.py`; the
+learner sees its contents in `work.py`.
+
+## meta.json
+
+```json
+{
+  "id": "1.1",
+  "title": "Hello, output",
+  "chapter": "Basics",
+  "concept": "print() displays a line of text",
+  "mode": "script",
+  "why": "print() sends its arguments to the screen, then a newline."
+}
+```
+
+- `mode` is `"script"` or `"import"`.
+  - `script`: run the workspace `work.py` as a subprocess, compare stdout.
+  - `import`: import the workspace `work.py` and call its functions, assert on returns.
+- `id` must match the folder numbers: chapter `01_` + puzzle `01_` → `"1.1"`.
+- `why` is printed by `play.py solution` under "Why it works".
+
+## tests.py
+
+Each `tests.py` defines exactly one required function:
+
+```python
+def check(T):
+    ...
+```
+
+`T` is a toolkit provided by the engine. It both runs the learner's code and
+raises *translated* failures, so a missing function, a syntax error, a wrong
+return, and a crash each produce a different plain-language message.
+
+### Script-mode helpers
+
+```python
+def check(T):
+    out = T.run()                 # run work.py, return normalized stdout
+    T.eq(out, "Hello, output",
+         because="It should print exactly: Hello, output")
+
+    out2 = T.run(stdin="Ada\n")   # feed predetermined stdin
+    T.eq(out2, "Hello, Ada")
+```
+
+### Import-mode helpers
+
+```python
+def check(T):
+    T.eq(T.call("double", 21), 42)
+    T.eq(T.call("double", 0), 0, because="Zero is an easy case to forget.")
+    T.eq(T.call("double", -5), -10)   # edge case
+    obj = T.get("CONSTANT")           # fetch a non-callable symbol
+    T.raises(ValueError, "parse", "abc")   # assert it raises
+```
+
+Every execution of the learner's code runs under the engine's guard: stdin is
+blanked (a stray `input()` fails with a friendly message instead of hanging),
+stdout is captured into `T.printed`, infinite loops hit the wall-clock timeout,
+`exit()`/`sys.exit()` is translated, and the working directory is a throwaway
+sandbox — so learner file I/O can never touch the project.
+
+Available on `T`:
+
+- `T.run(stdin="", files=None)` → normalized stdout (script mode). `files`
+  seeds fixture files into the sandbox, e.g. `T.run(files={"in.txt": "abc"})`.
+- `T.put_file(name, content)` / `T.file(name)` → create a fixture / read a
+  file the learner's code wrote (missing file = translated failure).
+- `T.printed` → stdout captured from the last import-mode load/call.
+- `T.load()` → the imported module (fresh each check).
+- `T.func(name)` → the callable, or a translated "missing piece" failure.
+- `T.get(name)` → any module-level symbol.
+- `T.call(name, *args, **kwargs)` → call it; crashes are translated.
+- `T.make("ClassName", *args)` / `T.method(obj, "name", *args)` /
+  `T.attr(obj, "name")` → instantiate and exercise the learner's classes.
+- `T.does_not_mutate(name, *args)` → call and require the arguments back
+  unchanged (for "return a NEW value" lessons); returns the result.
+- `T.eq(actual, expected, because="")` → assert equal. String outputs are
+  whitespace-normalized and compared **case-insensitively**; pass
+  `match_case=True` when capitalisation is the lesson (e.g. an `.upper()` task).
+- `T.true(cond, because="")`, `T.is_a(value, type, because="")`.
+- `T.raises(ExcType, name, *args, **kwargs)`.
+
+### Many valid answers (nuanced puzzles)
+
+The engine checks behavior, so any implementation that produces the right result
+already passes. When the *answer itself* is not unique, assert a **property**
+instead of one canonical value:
+
+- `T.approx(actual, expected, tol=1e-9)` → floats within a tolerance, also
+  recursively inside lists/tuples/dicts.
+- `T.any_of(actual, [a, b, c])` → accept any of several valid outputs.
+- `T.unordered(actual, expected)` → equal ignoring order (lists/tuples).
+- `T.true(cond, because=...)` → any custom invariant, e.g.
+  `T.true(all(12 % f == 0 for f in result), "every item divides 12")`.
+
+### Performance check (optional, advisory)
+
+A puzzle's `tests.py` may also define `bonus(T)`. It runs **only after** the
+answer is already accepted and **never blocks** progress — it prints a separate
+`⚡` line (LeetCode-style "correct, and also fast?"). Use it for an efficiency or
+elegance target:
+
+```python
+def bonus(T):
+    # wall-clock budget (generous -- timings are machine-dependent)
+    T.true(T.time_call("dedupe", list(range(5000))) < 0.05,
+           because="aim for O(n) -- try a set instead of repeated `in` on a list")
+
+    # or a doubling experiment: confirm it scales ~linearly, not O(n^2)
+    T.scales("dedupe", lambda n: list(range(n)), 2000, 16000,
+             because="O(n^2) blows up as the input grows")
+```
+
+Timing is best-effort: keep budgets loose, prefer `T.scales` (relative growth)
+over absolute time, and never gate correctness on it. There is no way to *prove*
+big-O automatically — this catches gross inefficiency (accidental O(n^2)/O(2^n)),
+which is what LeetCode-style timing does in practice too.
+
+Rules to follow when authoring tests:
+
+- Never inspect the learner's source text; only check behavior.
+- Include at least one edge case per puzzle.
+- Prefer `because=` to name the concept being tested; it shows up on failure.
+- For non-unique answers, assert properties (`any_of`/`unordered`/`true`), not
+  one fixed value.
+
+## progress.json
+
+Created on first run; you normally never edit it.
+
+```json
+{
+  "version": 1,
+  "mode": "normal",
+  "current": "1.1",
+  "completed": ["1.1", "1.2"],
+  "highest": 2,
+  "stats": { "1.3": { "attempts": 2, "hints_used": 1 } },
+  "created_at": "2026-01-01T00:00:00"
+}
+```
+
+- `current`: id of the active puzzle.
+- `completed`: ids that have passed `check`.
+- `highest`: furthest puzzle index unlocked (gates forward `goto`).
+- `stats[id]`: per-puzzle attempts and hints used.
+
+## answers.json
+
+The learner's saved code, one entry per puzzle. Created/updated automatically;
+deleted by `reset`. You never edit this by hand.
+
+```json
+{
+  "1.1": { "solved": true,  "code": "print(\"Hello, output\")\n" },
+  "1.2": { "solved": false, "code": "print(\"Counting:\")\n" }
+}
+```
+
+- `code`: the contents of `work.py` last time this puzzle was the active one.
+- `solved`: whether a `check` has ever passed for it.
+
+## hints.md
+
+Three hints, escalating from gentle nudge to near-answer, separated by a line
+containing only `---`:
+
+```
+Think about which function puts text on the screen.
+
+---
+
+You want print(), and the text goes inside the parentheses in quotes.
+
+---
+
+print("Hello, output")
+```
+
+## brief.md
+
+Free-form markdown the learner reads. The house style is:
+concept from scratch → a tiny worked example → the task → what "done" looks like.

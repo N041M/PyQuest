@@ -1,0 +1,98 @@
+"""The structured question: discovery of chapters/puzzles and file loaders.
+
+Owns "what is this puzzle?" -- it never touches progress or visuals.
+"""
+
+import os
+import sys
+import json
+import importlib.util
+
+from .config import CHAPTERS_DIR
+
+
+def discover():
+    """Scan chapters/ and return an ordered list of puzzle dicts."""
+    puzzles = []
+    if not os.path.isdir(CHAPTERS_DIR):
+        return puzzles
+    for ch_name in sorted(os.listdir(CHAPTERS_DIR)):
+        ch_path = os.path.join(CHAPTERS_DIR, ch_name)
+        if not os.path.isdir(ch_path):
+            continue
+        try:
+            ch_num = int(ch_name.split("_")[0])
+        except ValueError:
+            continue
+        ch_title = " ".join(ch_name.split("_")[1:]).title() or ch_name
+        for pz_name in sorted(os.listdir(ch_path)):
+            pz_path = os.path.join(ch_path, pz_name)
+            meta_path = os.path.join(pz_path, "meta.json")
+            if not os.path.isfile(meta_path):
+                continue
+            try:
+                pz_num = int(pz_name.split("_")[0])
+            except ValueError:
+                continue
+            try:
+                with open(meta_path) as f:
+                    meta = json.load(f)
+                if not isinstance(meta, dict):
+                    raise ValueError("meta.json is not an object")
+            except (OSError, ValueError) as e:
+                # one broken puzzle must not brick every command
+                sys.stderr.write("note: skipping %s (%s)\n" % (meta_path, e))
+                continue
+            puzzles.append({
+                "id": "%d.%d" % (ch_num, pz_num),
+                "ch_num": ch_num, "pz_num": pz_num,
+                "ch_title": meta.get("chapter", ch_title),
+                "dir": pz_path, "meta": meta,
+            })
+    for i, p in enumerate(puzzles):
+        p["index"] = i
+    return puzzles
+
+
+def by_id_lookup(puzzles, pid):
+    for p in puzzles:
+        if p["id"] == pid:
+            return p
+    return None
+
+
+# ---- file locations -------------------------------------------------------
+# (The editable workspace, work.py, lives per-user; see state.work_path.)
+def starter_path(puzzle):
+    return os.path.join(puzzle["dir"], "starter.py")
+
+
+def read_starter(puzzle):
+    path = starter_path(puzzle)
+    if os.path.isfile(path):
+        with open(path) as f:
+            return f.read()
+    return "# %s -- %s\n# TODO: your code here\n" % (
+        puzzle["id"], puzzle["meta"].get("title", ""))
+
+
+# ---- brief / hints / tests ------------------------------------------------
+def load_hints(dirpath):
+    path = os.path.join(dirpath, "hints.md")
+    if not os.path.isfile(path):
+        return []
+    with open(path) as f:
+        text = f.read()
+    text = text.replace("\r\n", "\n")       # Windows-edited hints still split
+    parts = [p.strip() for p in text.split("\n---\n")]
+    return [p for p in parts if p]
+
+
+def load_tests(dirpath):
+    path = os.path.join(dirpath, "tests.py")
+    name = "pyquest_tests_" + os.path.basename(dirpath)
+    sys.modules.pop(name, None)
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod

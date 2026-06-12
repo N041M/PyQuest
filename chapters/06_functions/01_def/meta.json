@@ -1,0 +1,8 @@
+{
+  "id": "6.1",
+  "title": "def: your first function",
+  "chapter": "Functions",
+  "concept": "def name(parameter): defines a reusable function; return hands a value back to the caller",
+  "mode": "import",
+  "why": "A function packages code behind a name; the parameter receives the caller's value and return sends the result back, so double(3) IS 6 wherever it's written."
+}

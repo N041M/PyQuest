@@ -1,0 +1,8 @@
+{
+  "id": "6.10",
+  "title": "Capstone: a tiny library",
+  "chapter": "Functions",
+  "concept": "Combine the chapter: small single-job functions, the later ones delegating to the earlier ones",
+  "mode": "import",
+  "why": "count_vowels owns the counting and describe owns the wording; describe(word) just asks count_vowels and formats -- one job each, wired by a call."
+}
