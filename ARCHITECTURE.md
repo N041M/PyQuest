@@ -53,7 +53,7 @@ Visuals are a separate layer end to end: no module outside `theme.py`/`render.py
 contains a colour code, a box character, or layout math. A restyle touches only
 those two files.
 
-## 3. Invariants (do not break these)
+## 3. Invariants
 
 1. **Behavioral validation.** Check what the code *does*, not how it reads. The
    only exception is a puzzle whose concept is a source construct; it must use
@@ -148,7 +148,7 @@ A puzzle is a folder `chapters/NN_chapter/MM_title/` with six files:
 The engine discovers it automatically. See [SCHEMA.md](SCHEMA.md) for exact
 formats.
 
-## 7. How validation works (the tester contract)
+## 7. How validation works
 
 `tests.py` defines `def check(T)`. `T` (from `toolkit.py`) both runs the learner's
 code and raises *translated* failures, so messages stay friendly.
