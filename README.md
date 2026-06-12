@@ -56,21 +56,32 @@ Move on whenever you're ready with `next`. That is the whole loop:
 New to the project? [GETTING_STARTED.md](GETTING_STARTED.md) walks through the
 first session step by step.
 
-## Shell shortcuts (optional)
+## Terminal setup
 
-Typing `python3 play.py` every time gets old. PyQuest ships shortcuts so you
-can type `check`, `hint`, `map`, and so on from any directory:
+PyQuest needs nothing beyond Python 3 — `python3 play.py <command>` always
+works, in any shell, on any platform. The setup below is optional comfort.
+
+### Short commands
+
+Typing `python3 play.py` every time gets old. PyQuest ships shell shortcuts so
+you can type `check`, `hint`, `map`, and so on from any directory:
 
 ```
 python3 play.py setup
 ```
 
-`setup` checks for Python 3 and offers two ways in: a `source` line for **this
-terminal only**, or `python3 play.py setup persist`, which adds one line to
-your `~/.zshrc` (then `source ~/.zshrc` or open a new terminal). Persist is
-safe to run more than once — it never duplicates anything and never touches
-your code or progress. To uninstall, delete that line from `~/.zshrc`. (The
-old `./setup.sh` still works; it forwards to `python3 play.py setup`.)
+`setup` checks for Python 3 and offers two ways in:
+
+- **local** — it prints a `source` line you run once; the shortcuts work in
+  **this terminal only** and nothing on your system is changed.
+- **persistent** — `python3 play.py setup persist` adds one line to your
+  `~/.zshrc`, so every new terminal has the shortcuts. It is safe to run more
+  than once: it never duplicates the line and never touches your code or
+  progress (it edits `~/.zshrc` and nothing else).
+
+After persisting, open a new terminal or run `source ~/.zshrc` once. The same
+setup is also reachable from the `begin` menu (option **5 → shortcuts**), and
+the old `./setup.sh` still works — it forwards to `python3 play.py setup`.
 
 If you would rather do it by hand, add this line to the end of `~/.zshrc`,
 replacing the path with wherever the folder actually lives:
@@ -79,11 +90,36 @@ replacing the path with wherever the folder actually lives:
 [ -f "/path/to/pyquest/shell/pyquest.zsh" ] && source "/path/to/pyquest/shell/pyquest.zsh"
 ```
 
-One quirk: `reset` is **context-aware**, because `reset` is also the terminal
-command that reinitializes your session. Inside the PyQuest folder, `reset`
-clears PyQuest progress (after a y/N prompt); anywhere else it does the normal
-terminal reset. You can always be explicit — `start reset` for PyQuest,
-`command reset` for the terminal.
+The shortcuts file resolves its own location, so once that line points at it
+you can move or rename the PyQuest folder without editing anything inside it.
+
+### Uninstalling
+
+Run `uninstall` (or `python3 play.py uninstall`). It removes the line from
+`~/.zshrc` **and** clears the shortcut functions from the current terminal —
+or just delete the `# PyQuest shell shortcuts` line from `~/.zshrc` yourself.
+
+### The context-aware `reset`
+
+`reset` is also a real terminal command that reinitializes your session, and
+the shortcuts deliberately don't steal it. Inside the PyQuest folder, `reset`
+clears PyQuest progress (after a y/N prompt); anywhere else it falls through
+to the normal terminal reset. You can always be explicit — `start reset` for
+PyQuest, `command reset` for the terminal.
+
+### How PyQuest treats your terminal
+
+- **Colour degrades gracefully.** Output is plain text whenever it is piped or
+  redirected (not a TTY), and the [`NO_COLOR`](https://no-color.org/)
+  convention is respected.
+- **Frames fit your window.** Boxes and banners size themselves to the live
+  terminal width (capped for readability) instead of assuming 80 columns.
+- **Nothing blocks a pipe.** The two interactive moments (`begin` and bare
+  `goto`) degrade to a plain print when stdin is not a terminal, so scripts
+  and tests never hang.
+- **Shell support.** The shortcut functions are written for zsh, the macOS
+  default. On other shells, use the `python3 play.py` long form for now — bash
+  support is on the roadmap below.
 
 ## Commands
 
@@ -104,12 +140,13 @@ installed, drop the `python3 play.py` prefix.
 | `python3 play.py goto 2.4` | jump to a puzzle by id (restores your saved code) |
 | `python3 play.py load 2.4` | same as `goto` — reload a puzzle's saved code |
 | `python3 play.py skip` | move on without solving (not in hard mode) |
-| `python3 play.py retry` | blank the workspace to practice again (stays solved) |
+| `python3 play.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
 | `python3 play.py revert` | fully reset this puzzle: blank code + clear its progress |
 | `python3 play.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |
 | `python3 play.py theme amber` | switch colour theme (or add your own in `themes/`) |
 | `python3 play.py user alice` | switch or create a profile |
 | `python3 play.py setup` | enable the short commands (local or persistent) |
+| `python3 play.py uninstall` | remove the persistent shortcuts again |
 | `python3 play.py reset` | wipe progress, saved answers, and workspaces |
 
 ## Difficulty modes
@@ -166,6 +203,30 @@ pyquest/
 | [ARCHITECTURE.md](ARCHITECTURE.md) | module map, design invariants, how validation works |
 | [SCHEMA.md](SCHEMA.md) | file formats for authoring your own puzzles |
 | [themes/README.md](themes/README.md) | creating custom colour themes |
+
+## Roadmap
+
+The course currently ends at Chapter 7 (errors). The engine was built ahead of
+the content, so the groundwork for what comes next is already in place:
+
+- **Chapter 8: files & I/O.** The test toolkit already sandboxes all file
+  access and ships fixture helpers (`T.run(files=...)`, `T.put_file`,
+  `T.file`) plus a staged `with`-statement construct check — the chapter's
+  puzzles are the remaining work.
+- **Chapter 9+: classes & OOP.** Object helpers (`T.make`, `T.method`,
+  `T.attr`) and a `class` construct check are already in the toolkit.
+- **Generators, lambdas, and the standard library.** Construct checks for
+  `yield`, `lambda`, and per-module `import` are staged for these chapters.
+- **Randomized inputs everywhere.** The structured `Case` provider flow
+  (see [ARCHITECTURE.md §8](ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
+  remaining fixed-input puzzles will migrate to it where it strengthens the
+  lesson.
+- **bash support for the shortcuts.** `setup` already detects `~/.bashrc`;
+  a bash-compatible version of the shortcut functions is planned so the short
+  commands work beyond zsh.
+
+Adding a chapter is content-only — puzzle folders on disk, zero engine
+changes — which is exactly what the architecture was shaped for.
 
 ## Requirements
 
