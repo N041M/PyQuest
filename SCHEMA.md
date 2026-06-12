@@ -101,7 +101,7 @@ Available on `T`:
 - `T.true(cond, because="")`, `T.is_a(value, type, because="")`.
 - `T.raises(ExcType, name, *args, **kwargs)`.
 
-### Many valid answers (nuanced puzzles)
+### Many valid answers
 
 The engine checks behavior, so any implementation that produces the right result
 already passes. When the *answer itself* is not unique, assert a **property**
