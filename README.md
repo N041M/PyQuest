@@ -1,17 +1,21 @@
 # PyQuest
 
-A Python course you run from the terminal. You **read** a short brief, **write**
-code in your own editor, then run one command to **check** it and unlock the
-next puzzle. Seven chapters and 74 puzzles take you from `print("hello")` to
-functions and error handling — using only the Python standard library, so it
-runs anywhere Python 3 does.
+**A Python course you run from the terminal: read a short brief, write code in your own editor, then run one command to check it and unlock the next puzzle.**
+
+Seven chapters and 74 puzzles take you from `print("hello")` to functions and
+error handling — using only the Python standard library, so it runs anywhere
+Python 3 does.
 
 There is no TUI to learn. The only interactive screen is the optional `begin`
 menu (pick a level, theme, or profile); everything else is a short, one-shot
 command. The terminal is just a command runner — the learning happens in files
 you open in your editor.
 
-## Highlights
+> Python 3.8+ · standard library only · zero dependencies · MIT licensed
+
+---
+
+## Features
 
 - **74 puzzles in 7 chapters** — basics, strings, decisions & loops,
   collections, power tools, functions, errors. One new idea per puzzle.
@@ -236,4 +240,4 @@ prefixing commands with `python3 play.py` on any platform.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — © 2026 Ronald Karel Grant
