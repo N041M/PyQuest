@@ -1,18 +1,33 @@
-"""Project audit: solution conformance plus an anti-sidestep replay attack.
+"""Project audit: solution conformance plus an anti-sidestep attack suite.
 
     python3 audit.py             every solution.py must pass its own tests.py
-    python3 audit.py --sidestep  ALSO attack every puzzle with a replay dodge
+    python3 audit.py --sidestep  ALSO attack every puzzle with the adversaries
     python3 audit.py --engine    self-test the execution guard & toolkit APIs
 
-The replay attack is a generic adversary: it records every (stdin -> stdout)
-or (function call -> return value) the tests exercise against the reference
-solution, writes an impostor program that just replays that table, and runs
-the tests again on the impostor -- twice. A puzzle is SIDESTEPPABLE if the
-impostor ever passes: its answers can be hardcoded without using the lesson.
+The sidestep audit is mutation testing aimed at the GRADER: intentionally
+wrong programs must fail. Four generic adversaries attack every puzzle:
 
-Randomized inputs defeat the replay (fresh inputs miss the table); construct
-checks defeat it too (the impostor contains no loops, operators, try blocks,
-comprehensions...). A puzzle should be saved by at least one of the two.
+  replay        record every (stdin -> stdout) / (call -> return) the tests
+                exercise against the reference solution; answer from that
+                lookup table, computing nothing.
+  chaff-replay  the same table, plus a never-called function stuffed with
+                every construct the toolkit can require (ops, loops, try,
+                dict, sep=, 3-arg print...). Defeats any construct check that
+                merely scans the file; only LIVENESS (engine/toolkit/liveness.py)
+                stops it.
+  synth         for fixed-output scripts: print each constant line via live
+                arithmetic the brief never asked for (`print(7*2)` general-
+                ized). Only expression-scoped checks (line_*) stop it.
+  named-synth   the same constants parked in a variable and reused, to crack
+                store-and-reuse lessons unless they pin the stored value.
+
+plus per-puzzle regression dodges: an optional `dodges.py` in a puzzle folder
+lists known sidesteps as (label, source) pairs in DODGES; every one of them
+must fail that puzzle's tests, forever.
+
+Randomized inputs defeat the replays (fresh inputs miss the table); liveness-
+checked constructs defeat chaff; prescribed-expression checks defeat synth.
+A puzzle should be saved by at least one defense per adversary.
 
 Not part of the engine; safe to delete.
 """
@@ -22,6 +37,7 @@ import os
 import json
 import sys
 import tempfile
+import importlib.util
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,25 +45,80 @@ from engine.content import discover, load_tests, load_hints
 from engine.toolkit import (Toolkit, PuzzleSyntaxError, MissingSymbolError,
                             WrongResultError, PuzzleCrashError)
 
-# Puzzles where a passing replay is the accepted ceiling: the lesson IS
-# producing a fixed output with a construct the impostor must also use --
-# so "the dodge" and a legitimate answer are the same program.
+# Puzzles where a passing impostor is the accepted ceiling: the cheapest
+# program that passes IS a legitimate answer to the lesson.
 ALLOWED = {
     "1.1": "the lesson is printing one fixed literal; any print of it is legit",
 }
 
+# Dead code containing every construct the toolkit can require. Prepended to
+# impostors: a file-scanning construct check is satisfied by it, a liveness
+# check is not (nothing here ever runs -- __decoy__ is never called).
+CHAFF = '''\
+import io as __io
+__buf = __io.StringIO()
+
+
+def __decoy__():
+    q = 0
+    q += 1
+    q = (1 + 2) * (3 // 4) - 5 % 6 + 7 / 8
+    s = "abc"[0] + "abc"[-1] + "abc"[0:2] + "abc"[::-1] + f"{q}"
+    d = {"k": 1}
+    z = {1, 2}
+    a, b = 1, 2
+    lst = [i for i in [1] if i]
+    if q:
+        pass
+    while q == 99:
+        break
+    for i in []:
+        continue
+    try:
+        raise ValueError(s)
+    except ValueError as e:
+        pass
+    with __io.StringIO() as f:
+        pass
+    import json as __json
+    class __C:
+        pass
+    def __g():
+        yield 1
+    fn = lambda x: x
+    lst.append(d.get("k"))
+    lst.pop()
+    sorted(z)
+    sum([])
+    min([0])
+    max([0])
+    len(s)
+    list(enumerate([]))
+    list(zip([], []))
+    s.split()
+    "-".join([])
+    s.count("a")
+    s.replace("a", "b")
+    s.find("a")
+    s.upper()
+    s.strip()
+    int("1")
+    ("a" in s)
+    print(a, b, q, sep="-", end="", file=__buf)
+'''
+
 
 # ---- recording -------------------------------------------------------------
 class Recorder(Toolkit):
-    """A Toolkit that remembers everything the tests fed the solution."""
+    """A Toolkit that also keeps results, for building the replay tables."""
 
     def __init__(self, path, mode):
         Toolkit.__init__(self, path, mode)
         self.stdin_runs = []        # (stdin, normalized stdout)
         self.fn_calls = []          # (name, args, kwargs, result)
 
-    def run(self, stdin=""):
-        out = Toolkit.run(self, stdin)
+    def run(self, stdin="", files=None):
+        out = Toolkit.run(self, stdin, files=files)
         self.stdin_runs.append((stdin, out))
         return out
 
@@ -57,6 +128,7 @@ class Recorder(Toolkit):
         return result
 
 
+# ---- the adversaries -------------------------------------------------------
 def build_impostor(rec):
     """The replay dodge: answer from a lookup table, never compute anything.
 
@@ -87,41 +159,96 @@ def build_impostor(rec):
     return "\n".join(lines) + "\n"
 
 
-def replay_attack(p, attempts=2):
-    """Record the solution's run, then attack with the impostor.
+def _synth_expr(line):
+    """An expression computing the constant `line` with LIVE arithmetic the
+    brief never asked for -- the `print(7*2)` dodge, generalized."""
+    try:
+        n = int(line)
+        return "int((0 + 1) * %d / 1) // 1 - 0 %% 7" % n
+    except ValueError:
+        pass
+    try:
+        f = float(line)
+        return "(0.0 + %r) * 1" % f
+    except ValueError:
+        pass
+    return '"" + %r * 1' % line
 
-    Returns (verdict, detail): verdict is 'robust', 'SIDESTEPPABLE', or
-    'allowed' (a known, accepted ceiling -- see ALLOWED)."""
-    sol = os.path.join(p["dir"], "solution.py")
-    rec = Recorder(sol, p["meta"].get("mode"))
-    load_tests(p["dir"]).check(rec)          # conformance already verified
-    if not rec.stdin_runs and not rec.fn_calls:
-        return "robust", "tests use neither run() nor call()"
-    src = build_impostor(rec)
+
+def build_synth(rec, named=False):
+    """The compute-it-differently dodge for fixed-output scripts, or None
+    when the recorded output varies with the input (then it can't apply)."""
+    outs = set(out for _, out in rec.stdin_runs)
+    if len(outs) != 1:
+        return None
+    body = []
+    if named:
+        seen = {}
+        for line in outs.pop().split("\n"):
+            if line not in seen:
+                seen[line] = "__v%d" % len(seen)
+                body.append("%s = %r" % (seen[line], line))
+            body.append("print(%s)" % seen[line])
+    else:
+        for line in outs.pop().split("\n"):
+            body.append("print(%s)" % _synth_expr(line))
+    return "\n".join(body) + "\n"
+
+
+def load_dodges(pdir):
+    """Optional per-puzzle dodges.py: DODGES = [(label, source), ...] --
+    known sidesteps that must fail this puzzle's tests, forever."""
+    path = os.path.join(pdir, "dodges.py")
+    if not os.path.exists(path):
+        return []
+    spec = importlib.util.spec_from_file_location("pyquest_dodges", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return list(getattr(mod, "DODGES", []))
+
+
+def impostor_passes(p, src, attempts=2):
+    """Does this wrong program pass the puzzle's tests on any attempt?"""
     fd, path = tempfile.mkstemp(suffix=".py", prefix="pyquest_impostor_")
     os.close(fd)
     with open(path, "w") as f:
         f.write(src)
-    passes = 0
     try:
         for _ in range(attempts):
             tests = load_tests(p["dir"])     # fresh randomness each attempt
             try:
                 tests.check(Toolkit(path, p["meta"].get("mode")))
-            except (PuzzleSyntaxError, MissingSymbolError, WrongResultError,
-                    PuzzleCrashError):
-                continue
             except Exception:
                 continue
-            passes += 1
+            return True
     finally:
         os.unlink(path)
-    if passes == 0:
-        return "robust", ""
-    if p["id"] in ALLOWED:
-        return "allowed", ALLOWED[p["id"]]
-    return "SIDESTEPPABLE", ("impostor passed %d/%d attempts"
-                             % (passes, attempts))
+    return False
+
+
+def sidestep_report(p):
+    """Attack one puzzle with every adversary.
+
+    Returns (breaches, dodge_passes): generic impostors that passed, and
+    pinned dodges that passed (the latter are never acceptable)."""
+    sol = os.path.join(p["dir"], "solution.py")
+    rec = Recorder(sol, p["meta"].get("mode"))
+    load_tests(p["dir"]).check(rec)          # conformance already verified
+    impostors = []
+    if rec.stdin_runs or rec.fn_calls:
+        table = build_impostor(rec)
+        impostors.append(("replay", table))
+        impostors.append(("chaff-replay", CHAFF + table))
+        if p["meta"].get("mode") == "script" and rec.stdin_runs:
+            synth = build_synth(rec)
+            if synth is not None:
+                impostors.append(("synth", CHAFF + synth))
+                impostors.append(("named-synth",
+                                  CHAFF + build_synth(rec, named=True)))
+    breaches = [label for label, src in impostors if impostor_passes(p, src)]
+    dodge_passes = [label for label, src in load_dodges(p["dir"])
+                    if impostor_passes(p, src, attempts=1)]
+    return breaches, dodge_passes
 
 
 # ---- conformance (every solution passes its own tests) ---------------------
@@ -167,7 +294,7 @@ def conformance_issues(p):
 # ---- engine self-test: the guard's guarantees, pinned ----------------------
 def _engine_selftest():
     """Every protection the execution guard promises, verified directly.
-    Run after any change to toolkit.py."""
+    Run after any change to the toolkit package."""
     results = []
 
     def case(label, fn):
@@ -304,6 +431,75 @@ def _engine_selftest():
         assert T.call("f", 3) == 3
         os.unlink(path)
 
+    def t_liveness_dead_chaff():
+        """Decorative code can't satisfy a construct check anymore."""
+        path, T = learner("print(14)\nprint(20)\nq = 1 * 1\n"
+                          "if False:\n    pass\n", mode="script")
+        T.timeout = 5
+        T.run()
+        for check, arg in ((T.uses_op, "*"), (T.uses_if, None)):
+            try:
+                check(arg) if arg else check()
+            except WrongResultError as e:
+                assert "decorative" in str(e.actual), e.actual
+                continue
+            raise AssertionError("dead chaff satisfied %s" % check.__name__)
+        os.unlink(path)
+
+    def t_liveness_real_constructs():
+        """...but genuinely used constructs still pass."""
+        path, T = learner("print(2 + 3 * 4)\nprint((2 + 3) * 4)\n",
+                          mode="script")
+        T.timeout = 5
+        T.run()
+        T.uses_op("*")
+        T.uses_op("+", min_count=2)
+        T.uses_print()
+        os.unlink(path)
+
+    def t_line_checks():
+        """The prescribed-expression checks accept the lesson's shape and
+        reject the same constants computed another way."""
+        path, T = learner("print(2 + 3 * 4)\nprint((2 + 3) * 4)\n",
+                          mode="script")
+        T.timeout = 5
+        T.run()
+        T.line_shape(0, "+", "*")
+        T.line_shape(1, "*", "+")
+        T.line_only_literals(0, {2, 3, 4})
+        T.line_uses_op(0, "*")
+        try:
+            T.line_shape(0, "*", "+")        # line 1 has no parenthesized +
+        except WrongResultError:
+            os.unlink(path)
+            return
+        raise AssertionError("line_shape accepted the wrong grouping")
+
+    def t_liveness_import_mode():
+        """A dead self-call can't fake recursion; a real one passes."""
+        path, T = learner(
+            "def fact(n):\n"
+            "    out = 1\n"
+            "    for i in range(2, n + 1):\n"
+            "        out *= i\n"
+            "    if False:\n"
+            "        fact(0)\n"
+            "    return out\n")
+        assert T.call("fact", 5) == 120
+        try:
+            T.uses_call("fact")
+        except WrongResultError as e:
+            assert "decorative" in str(e.actual), e.actual
+        else:
+            raise AssertionError("dead self-call faked recursion")
+        os.unlink(path)
+        path, T = learner(
+            "def fact(n):\n"
+            "    return 1 if n <= 1 else n * fact(n - 1)\n")
+        assert T.call("fact", 5) == 120
+        T.uses_call("fact")
+        os.unlink(path)
+
     def t_atomic_write_json():
         from engine.config import write_json
         d = tempfile.mkdtemp(prefix="pyquest_selftest_")
@@ -360,7 +556,9 @@ def _engine_selftest():
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_does_not_mutate, t_deep_approx, t_new_constructs,
-               t_raises_still_works, t_atomic_write_json, t_corrupt_backup,
+               t_raises_still_works, t_liveness_dead_chaff,
+               t_liveness_real_constructs, t_line_checks,
+               t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
                t_username_validation, t_discover_tolerates_bad_meta):
         case(fn.__name__[2:], fn)
 
@@ -379,18 +577,22 @@ def main():
     sidestep = "--sidestep" in sys.argv
     puzzles = discover()
     print("discovered %d puzzles%s"
-          % (len(puzzles), " (with replay attack)" if sidestep else ""))
+          % (len(puzzles), " (with sidestep attack suite)" if sidestep else ""))
     bad = weak = 0
     for p in puzzles:
         issues = conformance_issues(p)
         verdict = ""
         if not issues and sidestep:
-            v, detail = replay_attack(p)
-            if v == "SIDESTEPPABLE":
+            breaches, dodge_passes = sidestep_report(p)
+            if dodge_passes:
                 weak += 1
-                verdict = "  !! SIDESTEPPABLE: %s" % detail
-            elif v == "allowed":
-                verdict = "  (replay ok by design: %s)" % detail
+                verdict = "  !! DODGE PASSES: %s" % ", ".join(dodge_passes)
+            elif breaches and p["id"] in ALLOWED:
+                verdict = ("  (%s ok by design: %s)"
+                           % ("/".join(breaches), ALLOWED[p["id"]]))
+            elif breaches:
+                weak += 1
+                verdict = "  !! SIDESTEPPABLE by: %s" % ", ".join(breaches)
         if issues:
             bad += 1
             print("FAIL %-5s %s" % (p["id"], p["dir"]))
@@ -401,7 +603,7 @@ def main():
                                       verdict))
     print("\n%d/%d puzzles pass conformance" % (len(puzzles) - bad, len(puzzles)))
     if sidestep:
-        print("%d/%d puzzles sidesteppable by replay" % (weak, len(puzzles)))
+        print("%d/%d puzzles sidesteppable" % (weak, len(puzzles)))
     return 1 if (bad or weak) else 0
 
 

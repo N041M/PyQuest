@@ -3,8 +3,9 @@
 The file formats for adding or editing puzzles. For the design rules behind
 them, see [ARCHITECTURE.md](ARCHITECTURE.md). A puzzle is one folder under
 `chapters/NN_title/MM_title/` containing six files: `brief.md`, `starter.py`,
-`tests.py`, `hints.md`, `solution.py`, and `meta.json`. The engine discovers
-new puzzle folders automatically — no code changes needed.
+`tests.py`, `hints.md`, `solution.py`, and `meta.json` — plus an optional
+`dodges.py` of pinned sidesteps (see below). The engine discovers new puzzle
+folders automatically — no code changes needed.
 
 ## The workspace model
 
@@ -101,6 +102,56 @@ Available on `T`:
 - `T.true(cond, because="")`, `T.is_a(value, type, because="")`.
 - `T.raises(ExcType, name, *args, **kwargs)`.
 
+### Construct checks (integrity)
+
+`T.uses_op("+")`, `T.uses_if/for/while/loop/break/continue`, `T.uses_try`,
+`T.uses_raise`, `T.uses_in`, `T.uses_call(name)`, `T.uses_dict/set`,
+`T.uses_index/negative_index/slice(step=)`, `T.uses_fstring`,
+`T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_print`,
+`T.print_uses_keyword(kw)`, `T.print_has_min_args(n)`,
+`T.prints_computed(min_calls=)`, `T.prints_name(min_calls=, same=)`,
+`T.assigns_a_variable(value=)`, `T.reassigns_a_variable(values=)`.
+
+All of these are **liveness-checked**: a construct only counts if mutating it
+away changes the program's behavior on the inputs the tests already ran. Dead
+decorations (`q = 1 * 1`, `if False: pass`, a print routed into a StringIO)
+don't satisfy anything, so call the behavior assertions (`T.run`/`T.call`)
+**before** the construct checks — liveness replays those recorded inputs.
+
+For fixed-output puzzles (no input to randomize) where the lesson IS one
+specific expression, pin the printed expression itself:
+
+- `T.line_uses_op(i, op)` → print #i computes with `op` *inside its own
+  argument* (defeats `print(7*2)` + `print(10+10)` answering an
+  order-of-operations task).
+- `T.line_shape(i, outer, inner)` → print #i contains `inner` evaluated
+  before `outer` (`(2 + 3) * 4` is a Mult with an Add operand — a shape only
+  parentheses can write).
+- `T.line_only_literals(i, {2, 3, 4})` → print #i is built only from the
+  task's own literals (type-strict; no variables, calls, or other numbers).
+
+For a complex puzzle that needs a structural check none of the above covers,
+compose one from audited parts instead of hand-rolling AST logic:
+`T.tree()` for the AST, then `T.require_live(want, missing, node_indices,
+kind, because=)` to demand the found nodes be live (`kind`: `"stmt"`,
+`"expr"`, `"bool"`, `"container"`, `"trim"`, `"kw:<name>"`). Any bespoke
+check must ship with a `dodges.py` entry proving it bites.
+
+### dodges.py (optional)
+
+Known sidesteps, pinned forever. A puzzle folder may include a `dodges.py`:
+
+```python
+DODGES = [
+    ("right constants via the wrong arithmetic",
+     'print(7*2)\nprint(10+10)\n'),
+]
+```
+
+`python3 audit.py --sidestep` runs every entry against the puzzle's tests and
+fails the audit if any of them ever passes. Add an entry whenever a real
+sidestep is discovered, together with the check that now blocks it.
+
 ### Many valid answers
 
 The engine checks behavior, so any implementation that produces the right result
@@ -139,11 +190,17 @@ which is what LeetCode-style timing does in practice too.
 
 Rules to follow when authoring tests:
 
-- Never inspect the learner's source text; only check behavior.
+- Never inspect the learner's source text; only check behavior. (The
+  construct checks are the sanctioned exception — and liveness makes even
+  them behavioral.)
 - Include at least one edge case per puzzle.
 - Prefer `because=` to name the concept being tested; it shows up on failure.
 - For non-unique answers, assert properties (`any_of`/`unordered`/`true`), not
   one fixed value.
+- Run behavior assertions before construct checks (liveness replays the
+  recorded runs/calls).
+- After adding or changing a puzzle, run `python3 audit.py --sidestep` — the
+  attack suite must report it robust (see ARCHITECTURE §8).
 
 ## progress.json
 

@@ -33,7 +33,7 @@ Five concerns must never bleed into each other. Each owns one question:
 |---|---|---|
 | **Content** | "What is this puzzle?" | `content.py` |
 | **Input** | "What do we feed the solution?" | `inputs.py` |
-| **Checker/Tester** | "Is the solution correct (and good)?" | `toolkit.py`, `checker.py` |
+| **Checker/Tester** | "Is the solution correct (and good)?" | `toolkit/`, `checker.py` |
 | **State** | "Where is the learner up to?" | `state.py` |
 | **Visuals** | "How does it look on screen?" | `theme.py`, `render.py` |
 
@@ -101,8 +101,22 @@ inputs.py     input providers: random_word/int + the Case seam. Hands the same
               data to the runner and the checker. "The input automizer."
 state.py      per-user progress + answers (users/<name>/...) + workspace
               (work.py) lifecycle: seed, archive, switch, reset, users.
-toolkit.py    the T object handed to each tests.py: run/import, behavior
-              assertions, construct checks, performance helpers. "The tester."
+toolkit/      the T object handed to each tests.py. "The tester." A package
+              composed by concern; internal dependencies point down:
+                errors.py      the four translated failure categories
+                textutil.py    normalize / short_tb / fmt_args
+                guard.py       ExecutionGuard -- the ONE place in-process
+                               learner code runs (sandbox, alarm, capture)
+                runners.py     script/import execution + the tape of every
+                               recorded run/call
+                asserts.py     behavior assertions (eq, approx, raises, ...)
+                liveness.py    ablation engine -- judges constructs against
+                               the tape
+                constructs.py  uses_* / print_* / assigns_* checks
+                lines.py       prescribed-expression checks (line_*)
+                perf.py        bonus(T) timing helpers
+              `__init__.py` assembles Toolkit as a facade over these mixins;
+              the import path `engine.toolkit` and the flat T API are frozen.
 checker.py    orchestrates one check: load tests, build T, run check()/bonus(),
               translate failures into the four categories, render pass/fail.
 commands.py   the verbs (status, map, goto, next, skip, retry, hint, solution,
@@ -115,7 +129,9 @@ Rules for the map:
 - A new **command** → `commands.py` (+ one dispatch line in `app.py`, + a shell
   shortcut). Nowhere else.
 - A new **screen/visual** or restyle → `theme.py` / `render.py` only.
-- A new **validation helper** → `toolkit.py`.
+- A new **validation helper** → the matching `toolkit/` module
+  (assertion → `asserts.py`, construct check → `constructs.py`, …); the
+  facade in `toolkit/__init__.py` only changes if a new mixin is added.
 - A new **input strategy** (e.g. randomized) → `inputs.py`; nothing else changes.
 - A new **puzzle** → files on disk only (see §6); zero code changes.
 
@@ -144,17 +160,18 @@ A puzzle is a folder `chapters/NN_chapter/MM_title/` with six files:
 - `hints.md` — three hints, escalating, separated by `---`.
 - `solution.py` — reference answer (+ `why` lives in `meta.json`).
 - `meta.json` — `id`, `title`, `chapter`, `concept`, `mode`, `why`.
+- `dodges.py` *(optional)* — known sidesteps pinned as regressions (§8).
 
 The engine discovers it automatically. See [SCHEMA.md](SCHEMA.md) for exact
 formats.
 
 ## 7. How validation works
 
-`tests.py` defines `def check(T)`. `T` (from `toolkit.py`) both runs the learner's
+`tests.py` defines `def check(T)`. `T` (from `engine/toolkit/`) both runs the learner's
 code and raises *translated* failures, so messages stay friendly.
 
 - **The execution guard.** Every execution of learner code — importing the
-  file, calling a function, timing it — goes through one guard in `toolkit.py`
+  file, calling a function, timing it — goes through one guard in `toolkit/guard.py`
   that blanks stdin (a stray `input()` fails fast instead of hanging), captures
   stdout into `T.printed`, enforces the wall-clock timeout (infinite loops fail,
   even inside the learner's own `except Exception`), translates `exit()` /
@@ -177,8 +194,9 @@ code and raises *translated* failures, so messages stay friendly.
   inside lists/tuples/dicts), `T.any_of`, `T.unordered`, or `T.true(<invariant>)`.
 - **Integrity:** when output alone could be typed in — or the topic construct
   dodged with another tool — require the real thing. `T.prints_computed(min_calls=)`,
-  `T.uses_op("+"/"*"/...)`, `T.uses_print`, `T.print_uses_keyword`,
-  `T.print_has_min_args`, `T.assigns_a_variable`, `T.reassigns_a_variable`,
+  `T.prints_name(min_calls=, same=)`, `T.uses_op("+"/"*"/...)`, `T.uses_print`,
+  `T.print_uses_keyword`, `T.print_has_min_args`,
+  `T.assigns_a_variable(value=)`, `T.reassigns_a_variable(values=)`,
   `T.uses_if/uses_while/uses_for/uses_loop/uses_break/uses_continue`,
   `T.uses_fstring`, `T.uses_index/uses_negative_index/uses_slice(step=)`,
   `T.uses_in`, `T.uses_comprehension(with_if=)`, `T.uses_call(name)`,
@@ -187,6 +205,29 @@ code and raises *translated* failures, so messages stay friendly.
   `T.uses_lambda` (staged for Ch8+),
   `T.source()`. Require the *kind* of construct, not one exact spelling, so
   legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s).
+- **Liveness (how construct checks judge).** A construct check is itself
+  behavioral: a candidate node only counts if ablating it — removing the
+  statement, substituting the expression with a sentinel value, dropping the
+  keyword, trimming the extra print arguments — *changes the program's
+  behavior* when re-run against the inputs the tests already exercised. Dead
+  decorations (`q = 1 * 1`, `if False: pass`, a print routed into a StringIO)
+  no longer satisfy anything. Judgment is deliberately learner-protective:
+  statement removal counts a crash as live; expression substitution needs a
+  clean run with different output (so crash-engineered chaff stays dead), and
+  falls back to a reachability tripwire when every sentinel crashes
+  (accumulator dicts/sets, `sorted()` feeding lookups); if the baseline can't
+  be reproduced in-process, the check degrades to the plain AST scan rather
+  than ever blocking honest code. The implementation lives in `toolkit/liveness.py`
+  (`_require_live`, `_is_live`, `_ablate`), and `T.require_live(...)` is the
+  public seam for a capstone's bespoke structural check — pair any use of
+  it with a `dodges.py` entry.
+- **Prescribed expressions (fixed-output puzzles):** a puzzle with no input
+  can never randomize, and liveness can't tell `print(7*2)` from
+  `print(2+3*4)` — both compute. Where the lesson IS a specific expression,
+  pin it with `T.line_uses_op(i, op)`, `T.line_shape(i, outer, inner)` (the
+  parentheses-grouping shape: a BinOp(outer) with a BinOp(inner) operand),
+  and `T.line_only_literals(i, {...})` (built only from the task's own
+  values, type-strict). These three made 1.7–1.9 airtight.
 - **Performance (optional, advisory):** a `def bonus(T)` runs only after the answer
   is accepted and never blocks progress — a `⚡` line. Use `T.time_call` or, better,
   `T.scales` (a doubling experiment). Timing is best-effort; keep budgets loose.
@@ -222,25 +263,42 @@ plus randomized ones), feed `case.args` to `T.call`, and validate against
 `case.expect` — one source for both the input and the expectation.
 
 **Anti-sidestep policy.** Every puzzle must make its *lesson* unavoidable, not
-just its output: randomized inputs defeat hardcoding; construct checks (§7)
-defeat solving with a different tool (e.g. `.find()` instead of `in`, an
-`if b == 0` instead of `except ZeroDivisionError`, a loop instead of
-recursion); and behavioral traps catch over-broad code (e.g. 7.2 calls
-`safe_int([1, 2])` expecting `TypeError` to escape, so a bare `except` fails).
+just its output. The defenses stack, one per attack class:
+
+| attack | example | defense |
+|---|---|---|
+| hardcode / replay the answers | `print("Hello, World")`, a lookup table | randomized inputs (this section) |
+| park the construct in dead code | `q = 1 * 1`, `if False: pass`, a silenced print | liveness-checked construct checks (§7) |
+| compute the constants another way | `print(7*2)` for the 2 + 3 * 4 puzzle | prescribed-expression checks `line_*` (§7) |
+| solve with a different tool | `.find()` instead of `in`, a loop instead of recursion, an `if b == 0` instead of `except` | construct checks + behavioral traps (e.g. 7.2 calls `safe_int([1, 2])` expecting `TypeError` to escape, so a bare `except` fails) |
+
 When adding a puzzle, ask: "could I pass this without using the concept?" —
 and close the hole with the narrowest matching check.
 
 This is verified **mechanically**, not by inspection: `python3 audit.py
---sidestep` runs a *replay attack* on every puzzle. It records each
-(stdin → stdout) or (call → return) the tests exercise against the reference
-solution, generates an impostor program that answers from that lookup table
-(computing nothing), and runs the tests against the impostor twice. A puzzle
-the impostor can pass is flagged SIDESTEPPABLE: either its inputs need
-randomizing or its construct check is too weak. The handful of puzzles where
-the replay is *equivalent to a legitimate answer* (e.g. 1.1, whose entire
-lesson is printing one fixed literal) are whitelisted in `audit.py` with a
-written reason. Run the sidestep audit whenever a puzzle or toolkit check
-changes; plain `python3 audit.py` (conformance only) is the quick pass.
+--sidestep` is mutation testing aimed at the grader — intentionally wrong
+programs must fail. It attacks every puzzle with four generic adversaries
+(`replay`: answer from a recorded lookup table; `chaff-replay`: the table
+plus a never-called function stuffed with every construct the toolkit can
+require; `synth`: each constant output line recomputed via live arithmetic
+the brief never asked for; `named-synth`: the constants parked in a reused
+variable), and additionally runs every pinned dodge from a puzzle's optional
+`dodges.py` — a regression list of known sidesteps (each must fail forever;
+1.8's `print(7*2)` lives there). A puzzle any impostor passes is flagged
+SIDESTEPPABLE unless whitelisted in `ALLOWED` with a written reason, which
+is reserved for puzzles where the cheapest passing program *is* a legitimate
+answer (1.1: the lesson is printing one fixed literal). Run the sidestep
+audit whenever a puzzle or toolkit check changes; plain `python3 audit.py`
+(conformance only) is the quick pass.
+
+**Known residual risks** (accepted, documented): liveness proves a construct
+*matters*, not that it's idiomatic — an `if True:` wrapped around a trick
+expression, or an executed-but-pointless decoy dict (containers are judged
+by reachability, see §7), still passes the generic checks. These require a
+learner to deliberately out-engineer the grader rather than stumble past it;
+pin any that show up in the wild as `dodges.py` entries backed by a narrower
+test, and remember the audit is fail-open by design — if liveness ever
+degrades, impostors start passing and the audit flags it.
 
 ## 9. Coding conventions
 

@@ -1,0 +1,384 @@
+"""Construct checks: confirm the LESSON was used, not just the answer.
+
+Behavior checks (asserts.py) are the default; reach for these only where a
+puzzle can be trivially gamed by typing the answer instead of computing it.
+Each check finds its candidate AST nodes, then requires at least one of them
+to be LIVE (liveness.py): decorative code that never affects the output
+cannot satisfy a construct check. Require the *kind* of construct, not one
+exact spelling, so legitimate variations still pass.
+
+Mixin contract -- needs LivenessMixin (_find/_node/_require_live/
+_live_filter/DECORATIVE/tree) which in turn needs the RunnersMixin tape.
+"""
+
+import ast
+
+from .errors import WrongResultError
+
+
+# Arithmetic operator spellings -> AST classes (shared with lines.py).
+OPS = {"+": ast.Add, "-": ast.Sub, "*": ast.Mult,
+       "/": ast.Div, "//": ast.FloorDiv, "%": ast.Mod}
+
+
+class ConstructsMixin:
+
+    _OPS = OPS
+
+    # ---- print-shaped helpers ------------------------------------------------
+    def _print_call_idxs(self):
+        return self._find(lambda n: isinstance(n, ast.Call)
+                          and isinstance(n.func, ast.Name)
+                          and n.func.id == "print")
+
+    def _print_calls(self):
+        return [self._node(i) for i in self._print_call_idxs()]
+
+    def prints_computed(self, min_calls=1, because=""):
+        """Every print() must show a computed value, not a typed-in literal --
+        and there must be a print() at all (no sys.stdout.write end-runs).
+        min_calls requires that many separate LIVE print() statements, for
+        puzzles whose lesson is reuse (one print of a multi-line string, or a
+        silenced decoy print, dodges it)."""
+        idxs = self._print_call_idxs()
+        if not idxs:
+            raise WrongResultError("a print() that shows a computed value",
+                                   "print() wasn't used", because)
+        for c in self._print_calls():
+            if not c.args or all(isinstance(a, ast.Constant) for a in c.args):
+                raise WrongResultError(
+                    "a computed value in print(...)",
+                    "the answer typed in as a literal", because)
+        self._require_live("%d separate print() calls" % min_calls,
+                           "only %d print() call(s)" % len(idxs),
+                           idxs, "expr", because, min_count=min_calls)
+
+    def prints_name(self, min_calls=2, same=True, because=""):
+        """At least `min_calls` live print() calls that show a VARIABLE.
+        With same=True they must all show the same one -- the store-once,
+        reuse-many-times pattern."""
+        idxs, names = [], {}
+        for i in self._print_call_idxs():
+            c = self._node(i)
+            got = set(n.id for a in c.args for n in ast.walk(a)
+                      if isinstance(n, ast.Name))
+            if got:
+                idxs.append(i)
+                names[i] = got
+        want = "%d separate print() calls showing a variable" % min_calls
+        if len(idxs) < min_calls:
+            raise WrongResultError(want, "only %d found" % len(idxs), because)
+        live = self._live_filter(idxs, "expr", min_count=len(idxs))
+        if len(live) < min_calls:
+            raise WrongResultError(want, self.DECORATIVE, because)
+        if same:
+            counts = {}
+            for i in live:
+                for n in names[i]:
+                    counts[n] = counts.get(n, 0) + 1
+            if not any(v >= min_calls for v in counts.values()):
+                raise WrongResultError(
+                    "the SAME variable printed %d times" % min_calls,
+                    "different variables were printed", because)
+
+    def print_uses_keyword(self, kw, because=""):
+        """A print() whose `kw=` keyword actually shapes the output --
+        dropping the keyword must change what gets printed."""
+        found = self._find(lambda n: isinstance(n, ast.Call)
+                           and isinstance(n.func, ast.Name)
+                           and n.func.id == "print"
+                           and any(k.arg == kw for k in n.keywords))
+        self._require_live("print(..., %s=...)" % kw, "no %s= used" % kw,
+                           found, "kw:" + kw, because)
+
+    def print_has_min_args(self, n, because=""):
+        """One print() given n+ separate values that all matter -- trimming
+        the extras must change the output (no silent padding values)."""
+        found = self._find(lambda c: isinstance(c, ast.Call)
+                           and isinstance(c.func, ast.Name)
+                           and c.func.id == "print" and len(c.args) >= n)
+        self._require_live("one print with %d+ separate values" % n,
+                           "too few values passed to a single print",
+                           found, "trim", because)
+
+    # ---- "did you use the construct this puzzle teaches?" --------------------
+    def _has(self, *types):
+        return any(isinstance(n, types) for n in ast.walk(self.tree()))
+
+    def uses_print(self, because=""):
+        self._require_live("a print() call", "print() wasn't used",
+                           self._print_call_idxs(), "expr", because)
+
+    def uses_if(self, because=""):
+        self._require_live("an if statement",
+                           "no if was used (a trick avoided it)",
+                           self._find(lambda n: isinstance(n, ast.If)),
+                           "stmt", because)
+
+    def uses_while(self, because=""):
+        self._require_live("a while loop", "no while loop was used",
+                           self._find(lambda n: isinstance(n, ast.While)),
+                           "stmt", because)
+
+    def uses_for(self, because=""):
+        self._require_live("a for loop", "no for loop was used",
+                           self._find(lambda n: isinstance(n, ast.For)),
+                           "stmt", because)
+
+    def uses_loop(self, because=""):
+        self._require_live("a loop (for or while)", "no loop was used",
+                           self._find(lambda n: isinstance(n, (ast.For,
+                                                               ast.While))),
+                           "stmt", because)
+
+    def uses_break(self, because=""):
+        self._require_live("break", "break wasn't used",
+                           self._find(lambda n: isinstance(n, ast.Break)),
+                           "stmt", because)
+
+    def uses_continue(self, because=""):
+        self._require_live("continue", "continue wasn't used",
+                           self._find(lambda n: isinstance(n, ast.Continue)),
+                           "stmt", because)
+
+    def uses_fstring(self, because=""):
+        self._require_live("an f-string", "no f-string was used",
+                           self._find(lambda n: isinstance(n, ast.JoinedStr)),
+                           "expr", because)
+
+    @staticmethod
+    def _index_of(sub):
+        idx = sub.slice
+        if hasattr(ast, "Index") and isinstance(idx, ast.Index):  # py<3.9
+            idx = idx.value
+        return idx
+
+    def _sub_idxs(self, want_slice):
+        """Subscripts being READ (Store-targets can't be ablated)."""
+        return self._find(lambda n: isinstance(n, ast.Subscript)
+                          and isinstance(n.slice, ast.Slice) == want_slice
+                          and isinstance(getattr(n, "ctx", None), ast.Load))
+
+    def uses_index(self, because=""):
+        """A plain index s[i] (not a slice)."""
+        self._require_live("indexing like s[0]", "no indexing was used",
+                           self._sub_idxs(want_slice=False), "expr", because)
+
+    def uses_negative_index(self, because=""):
+        """A negative index s[-1] (UnaryOp '-' or a negative literal)."""
+        def neg(n):
+            if not isinstance(n, ast.Subscript) \
+                    or isinstance(n.slice, ast.Slice) \
+                    or not isinstance(getattr(n, "ctx", None), ast.Load):
+                return False
+            idx = self._index_of(n)
+            if isinstance(idx, ast.UnaryOp) and isinstance(idx.op, ast.USub):
+                return True
+            return (isinstance(idx, ast.Constant)
+                    and isinstance(idx.value, int) and idx.value < 0)
+        self._require_live("a negative index like s[-1]",
+                           "no negative index was used",
+                           self._find(neg), "expr", because)
+
+    def uses_slice(self, step=False, because=""):
+        def ok(n):
+            return (isinstance(n, ast.Subscript)
+                    and isinstance(n.slice, ast.Slice)
+                    and isinstance(getattr(n, "ctx", None), ast.Load)
+                    and (not step or n.slice.step is not None))
+        what = "a slice with a step (s[::-1])" if step else "a slice (s[a:b])"
+        self._require_live(what, "no such slice was used",
+                           self._find(ok), "expr", because)
+
+    def uses_call(self, name, because=""):
+        """A call to a function or method `name` (e.g. append, split, items)."""
+        def ok(n):
+            if not isinstance(n, ast.Call):
+                return False
+            f = n.func
+            return ((isinstance(f, ast.Attribute) and f.attr == name)
+                    or (isinstance(f, ast.Name) and f.id == name))
+        self._require_live("a call to %s()" % name,
+                           "%s() wasn't used" % name,
+                           self._find(ok), "expr", because)
+
+    def uses_dict(self, because=""):
+        """A dict literal {...} or dict()."""
+        def ok(n):
+            return isinstance(n, ast.Dict) or (
+                isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                and n.func.id == "dict")
+        self._require_live("a dict ({} or dict())", "no dict was used",
+                           self._find(ok), "container", because)
+
+    def uses_set(self, because=""):
+        """A set literal {a, b} or set()."""
+        def ok(n):
+            return isinstance(n, ast.Set) or (
+                isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                and n.func.id == "set")
+        self._require_live("a set ({...} or set())", "no set was used",
+                           self._find(ok), "container", because)
+
+    def uses_try(self, because=""):
+        """A try/except statement -- for puzzles whose lesson IS handling the
+        error (an if-guard would behave the same but dodge the concept)."""
+        self._require_live("a try/except block", "no try/except was used",
+                           self._find(lambda n: isinstance(n, ast.Try)),
+                           "stmt", because)
+
+    def uses_raise(self, because=""):
+        """A raise statement."""
+        self._require_live("a raise statement", "raise wasn't used",
+                           self._find(lambda n: isinstance(n, ast.Raise)),
+                           "stmt", because)
+
+    def uses_in(self, because=""):
+        """The membership operator: `x in s` or `x not in s` in a condition."""
+        def ok(n):
+            return isinstance(n, ast.Compare) and any(
+                isinstance(op, (ast.In, ast.NotIn)) for op in n.ops)
+        self._require_live("the `in` operator", "`in` wasn't used",
+                           self._find(ok), "bool", because)
+
+    def uses_comprehension(self, with_if=False, because=""):
+        """A comprehension (list/set/dict or generator expression). Pass
+        with_if=True to require a filtering `if` clause inside it."""
+        def ok(n):
+            if not isinstance(n, (ast.ListComp, ast.SetComp, ast.DictComp,
+                                  ast.GeneratorExp)):
+                return False
+            return not with_if or any(g.ifs for g in n.generators)
+        if with_if:
+            what = "a comprehension with an if  ([x for x in ... if ...])"
+        else:
+            what = "a comprehension like [x for x in ...]"
+        self._require_live(what, "no comprehension was used",
+                           self._find(ok), "expr", because)
+
+    # ---- construct checks staged for the upcoming chapters -------------------
+    def uses_with(self, because=""):
+        """A with statement (the files chapter: `with open(...) as f`)."""
+        self._require_live("a with statement (with open(...) as f:)",
+                           "no with statement was used",
+                           self._find(lambda n: isinstance(n, ast.With)),
+                           "stmt", because)
+
+    def uses_import(self, module=None, because=""):
+        """An import -- optionally of one specific module."""
+        def ok(n):
+            if isinstance(n, ast.Import):
+                return module is None or any(
+                    a.name == module or a.name.startswith(module + ".")
+                    for a in n.names)
+            if isinstance(n, ast.ImportFrom):
+                return module is None \
+                    or (n.module or "").split(".")[0] == module
+            return False
+        what = ("an import of %s" % module) if module else "an import statement"
+        self._require_live(what, "no such import was found",
+                           self._find(ok), "stmt", because)
+
+    def uses_class(self, because=""):
+        """A class definition."""
+        self._require_live("a class definition (class Name:)",
+                           "no class was defined",
+                           self._find(lambda n: isinstance(n, ast.ClassDef)),
+                           "stmt", because)
+
+    def uses_yield(self, because=""):
+        """yield / yield from (the generators chapter). AST-only: substituting
+        a yield flips the function's generator-ness, which crashes callers and
+        would make a LEGIT yield look dead under the clean-run rule."""
+        if not self._has(ast.Yield, ast.YieldFrom):
+            raise WrongResultError("a yield statement",
+                                   "yield wasn't used", because)
+
+    def uses_lambda(self, because=""):
+        """A lambda expression. AST-only: a lambda's sentinel stand-in is not
+        callable, so every ablation crashes and liveness can't judge it."""
+        if not self._has(ast.Lambda):
+            raise WrongResultError("a lambda expression",
+                                   "no lambda was used", because)
+
+    def uses_unpacking(self, because=""):
+        """Tuple/list unpacking, e.g. a, b = b, a  or  for a, b in pairs."""
+        def ok(n):
+            if isinstance(n, ast.Assign):
+                return any(isinstance(t, (ast.Tuple, ast.List))
+                           for t in n.targets)
+            return isinstance(n, ast.For) and isinstance(n.target,
+                                                         (ast.Tuple, ast.List))
+        self._require_live("unpacking (a, b = ...)", "no unpacking was used",
+                           self._find(ok), "stmt", because)
+
+    # ---- assignments ----------------------------------------------------------
+    def assigns_a_variable(self, value=None, because=""):
+        """A live variable assignment; with `value`, one that stores that
+        exact literal (type-strict: 42 is not \"42\")."""
+        def ok(n):
+            if not isinstance(n, (ast.Assign, ast.AugAssign, ast.AnnAssign)):
+                return False
+            if value is None:
+                return True
+            v = getattr(n, "value", None)
+            return (isinstance(n, ast.Assign) and isinstance(v, ast.Constant)
+                    and type(v.value) is type(value) and v.value == value)
+        what = ("a variable storing %r" % (value,) if value is not None
+                else "a variable assignment")
+        self._require_live(what, "no variable used",
+                           self._find(ok), "stmt", because)
+
+    def reassigns_a_variable(self, values=None, because=""):
+        """The same variable assigned twice, where the REASSIGNMENT is live
+        (removing it must change the output). With `values`, the first
+        assignments must store exactly those literals, in order."""
+        seq = {}
+        for i, n in enumerate(ast.walk(self.tree())):
+            if isinstance(n, ast.Assign):
+                for t in n.targets:
+                    if isinstance(t, ast.Name):
+                        seq.setdefault(t.id, []).append((n.lineno, i, n))
+            elif (isinstance(n, ast.AugAssign)
+                  and isinstance(n.target, ast.Name)):
+                seq.setdefault(n.target.id, []).append((n.lineno, i, n))
+        candidates = []
+        for name in seq:
+            assigns = sorted(seq[name], key=lambda t: t[:2])
+            if len(assigns) < 2:
+                continue
+            if values is not None:
+                if len(assigns) < len(values):
+                    continue
+                bad = False
+                for (_, _, node), want in zip(assigns, values):
+                    v = getattr(node, "value", None)
+                    if not (isinstance(node, ast.Assign)
+                            and isinstance(v, ast.Constant)
+                            and type(v.value) is type(want)
+                            and v.value == want):
+                        bad = True
+                        break
+                if bad:
+                    continue
+            candidates.append(assigns[1][1])     # the reassignment statement
+        what = "the same variable assigned twice"
+        if values is not None:
+            what += " (%s)" % " then ".join(repr(v) for v in values)
+        self._require_live(what, "no single variable was reassigned",
+                           candidates, "stmt", because)
+
+    def uses_op(self, op, min_count=1, because=""):
+        """Require the solution to actually compute with operator `op`.
+
+        Counts live uses of that arithmetic operator. Defeats typing the
+        answer (`print(14)`), stashing it in a variable first
+        (`x = 14; print(x)`), and parking the operator in code that never
+        affects the output (`q = 1 * 1`)."""
+        opcls = OPS[op]
+        found = self._find(lambda n: isinstance(n, ast.BinOp)
+                           and isinstance(n.op, opcls))
+        want = ("'%s' at least %d times" % (op, min_count)
+                if min_count > 1 else "the '%s' operation" % op)
+        self._require_live(want, "it wasn't used", found, "expr", because,
+                           min_count=min_count)
