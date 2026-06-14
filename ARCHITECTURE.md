@@ -121,15 +121,33 @@ toolkit/      the T object handed to each tests.py. "The tester." A package
 checker.py    orchestrates one check: load tests, build T, run check()/bonus(),
               translate failures into their categories (a missed construct
               check renders its own "so close" screen), render pass/fail.
-commands.py   the verbs (status, map, goto, next, skip, retry, hint, solution,
+commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
               mode, reset, help) — compose state + content + render + checker.
+              A package split by concern, like toolkit/; internal dependencies
+              point down and `__init__.py` re-exports every cmd_* as a facade so
+              the import path `engine.commands` and the dispatcher stay frozen:
+                cards.py      shared composition: the puzzle card, status
+                              marker, the goto/advance helpers (the layer the
+                              loop verbs and the menu both build on)
+                play.py       the loop verbs: status, map, hint, solution,
+                              goto, next, skip, retry, revert, mode
+                profiles.py   theme, user, reset
+                shortcuts.py  the ~/.zshrc shortcuts installer -- the only part
+                              that edits the user's environment (setup/persist/
+                              uninstall)
+                help.py       the help screen
+                menu.py       the interactive launcher (begin / menu), the one
+                              interactive surface (§3 invariant 8a); sits on top
+                              of cards + profiles + shortcuts
 app.py        argv dispatch + main().
 ```
 
 Rules for the map:
 
-- A new **command** → `commands.py` (+ one dispatch line in `app.py`, + a shell
-  shortcut). Nowhere else.
+- A new **command** → the matching `commands/` module (a loop verb → `play.py`,
+  a profile/theme verb → `profiles.py`, etc.; a new concern → a new module),
+  re-export it from `commands/__init__.py`, plus one dispatch line in `app.py`
+  and a shell shortcut. Nowhere else.
 - A new **screen/visual** or restyle → `theme.py` / `render.py` only.
 - A new **validation helper** → the matching `toolkit/` module
   (assertion → `asserts.py`, construct check → `constructs.py`, …); the
@@ -182,6 +200,13 @@ code and raises *translated* failures, so messages stay friendly.
   same isolation via its subprocess (timeout + sandbox cwd). Never invoke
   learner code outside this guard; `python3 audit.py --engine` pins these
   guarantees.
+  *Portability caveat:* the **in-process** timeout uses `signal.alarm`
+  (`guard.py`), so it only fires on the POSIX main thread — integer-second
+  granularity, and a silent no-op on Windows or off the main thread. There it
+  degrades open: an infinite-loop solution run via **import mode** would hang.
+  Script mode is unaffected (its subprocess timeout is cross-platform), and the
+  primary target is a POSIX terminal, so this is an accepted stdlib-only limit
+  rather than a bug — but import-mode timeouts are not a guarantee off POSIX.
 - **Behavior:** `T.run(stdin=..., files=...)` (script mode) or
   `T.call(name, ...)` (import mode), then `T.eq / T.true / T.is_a / T.raises`.
 - **Files (Ch8+):** seed fixtures with `T.run(files={...})` or `T.put_file`;
