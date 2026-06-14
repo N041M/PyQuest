@@ -164,7 +164,7 @@ flowchart LR
     app["app.py"] --> checker["checker.py"]
     checker -->|load_tests| content["content.py"]
     checker -->|workspace + progress| state["state.py"]
-    checker -->|runs check(T)| toolkit["toolkit/"]
+    checker -->|"runs check(T)"| toolkit["toolkit/"]
     checker -->|cards + feedback| render["render.py"]
     toolkit --> config["config.py «TIMEOUT»"]
     classDef base fill:#eef,stroke:#557;
