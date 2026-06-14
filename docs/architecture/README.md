@@ -119,23 +119,26 @@ flowchart TB
     play["play.py «launcher»"] --> app["app.py «argv dispatch»"]
     app --> verbs["commands/ «verbs»"]
     app --> checker["checker.py «one check»"]
-    app --> data["content + state «data access»"]
-    app --> vis["render + theme «visuals»"]
-    checker --> toolkit["toolkit/ «the T tester»"]
-    checker --> data
-    checker --> vis
-    verbs --> data
-    verbs --> vis
-    data --> config["config.py «foundation»"]
-    vis --> config
-    toolkit --> config
+
+    subgraph services["engine services"]
+        direction LR
+        data["content + state «data»"]
+        vis["render + theme «visuals»"]
+        toolkit["toolkit/ «T tester»"]
+    end
+
+    verbs --> services
+    checker --> services
+    services --> config["config.py «foundation»"]
+
     classDef base fill:#eef,stroke:#557;
     class config base;
 ```
 
-A clean DAG, no cycles: `app` on top fans out to the verbs, the checker, and the
-data/visual layers; everything bottoms out at `config`. The next three slices
-zoom into one region each.
+Four tiers, no cycles: the **launcher** starts **dispatch**, which routes each
+command to the **verbs** or the **checker**; both lean on the shared **services**
+(data, visuals, the tester), and everything bottoms out at **config**. The three
+slices below zoom in — including which services each branch imports.
 
 ### 4.2 Dispatch & verbs
 
