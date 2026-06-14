@@ -21,15 +21,6 @@ module‑level class diagrams and the relevant sequences:
 > classes. Dependencies point **downward**: a box only knows about the boxes
 > below it.
 
-> [!IMPORTANT]
-> **Keep these diagrams in sync with the code.** They are hand‑maintained, not
-> generated, so they drift the moment a module, dependency, command verb, or
-> `T.uses_*` check is added, removed, or rewired. When you change the
-> structure, update the affected diagram(s) in the same change — the dependency
-> edges in §4 mirror the real `import` graph (`grep -rE "^from \.\.?" engine`),
-> the dispatch list mirrors `app.main()`, and the toolkit/error diagrams mirror
-> `engine/toolkit/`. A diagram that lies is worse than none.
-
 ---
 
 ## 1. System context (C4 level 1)
