@@ -61,8 +61,9 @@ classDiagram
     class ConstructsMixin {
         +uses_op / uses_if / uses_for / uses_while ...
         +uses_with / uses_with_open / uses_call ...
+        +uses_class(name) / uses_default_param ...
         +print_* · prints_* · assigns_* checks
-        +30+ liveness-judged checks in all
+        +30+ checks (liveness-judged where it can)
     }
     class LinesMixin {
         +print_expr(i)
@@ -193,6 +194,14 @@ Liveness signatures capture **stdout only**. For file/side‑effect lessons that
 means a write‑only `with` looks dead — which is exactly why the files chapter
 uses `uses_with_open` anchored on a *read* whose removal crashes downstream (see
 [audit.md](audit.md)).
+
+A second gap: `make`/`method`/`attr` (the object helpers) are **not on the
+tape**, so the OOP chapters have no liveness at all. There, construct checks
+degrade to plain AST presence, which a decoy `class X: pass` could satisfy — so
+`uses_class(name)` takes the class name the tests instantiate, and the lessons
+lean on randomized `make`/`method` arguments plus hand‑pinned `dodges.py`.
+Recording the object tape (and replaying it in liveness) is the remaining work
+flagged in `runners.py`.
 
 ## Three layers of construct strength
 

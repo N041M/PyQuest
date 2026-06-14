@@ -86,6 +86,12 @@ hexagon is the defense that defeats it.
 defense per adversary. `ALLOWED` whitelists the rare puzzle where the cheapest
 passing program *is* a legitimate answer (e.g. 1.1 "print one literal").
 
+The tape only records `run`/`call`, **not** `make`/`method`/`attr`, so the four
+adversaries don't fire for object (OOP) puzzles. Those rely instead on
+randomized `make`/`method` arguments, `uses_class(name)`, and hand‑pinned
+`dodges.py` — which is why the OOP dodges are written out by hand rather than
+generated.
+
 ## Per‑puzzle pinned regressions — `dodges.py`
 
 ```mermaid
@@ -130,13 +136,14 @@ sequenceDiagram
 
 ## `--engine` — the guard's guarantees, pinned
 
-`_engine_selftest()` runs ~25 direct cases asserting each promise the
+`_engine_selftest()` runs ~26 direct cases asserting each promise the
 [ExecutionGuard](toolkit.md) and toolkit make: `exit()`/hang/stray‑`input()`
 translation, stdout capture, the file sandbox never leaking into the project,
 class/mutation/`approx`/case‑sensitive‑`eq` behavior, liveness killing dead
 chaff while honest constructs pass, the `line_*` checks, the structural checks
-(`uses_nested_if`, `uses_default_param`, `uses_with_open`), atomic JSON writes,
-corrupt‑file backup, username validation, and discovery tolerating bad meta.
+(`uses_nested_if`, `uses_default_param`, `uses_with_open`, `uses_class(name)`),
+atomic JSON writes, corrupt‑file backup, username validation, and discovery
+tolerating bad meta.
 
 ```mermaid
 flowchart LR
@@ -146,5 +153,5 @@ flowchart LR
 ```
 
 Run order in CI‑of‑one: `--engine` after touching `toolkit/`, `--sidestep`
-before any commit; both must be green (current bar: **82/82 conformance,
-0/82 sidesteppable, 25/25 engine self‑tests**).
+before any commit; both must be green (current bar: **90/90 conformance,
+0/90 sidesteppable, 26/26 engine self‑tests**).
