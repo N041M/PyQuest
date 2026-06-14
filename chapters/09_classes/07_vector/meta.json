@@ -1,0 +1,8 @@
+{
+  "id": "9.7",
+  "title": "Objects working together",
+  "chapter": "Classes & Objects",
+  "concept": "a method can take another object and return a NEW object, leaving both inputs unchanged",
+  "mode": "import",
+  "why": "add reads other.x/other.y and constructs a fresh Vector, so combining two vectors yields a third without mutating either -- the class uses itself."
+}

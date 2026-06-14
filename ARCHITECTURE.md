@@ -240,8 +240,9 @@ code and raises *translated* failures, so messages stay friendly.
   `T.uses_nested_if`, `T.uses_default_param(name)`, `T.uses_try`, `T.uses_raise`,
   `T.uses_with`/`T.uses_with_open` (the latter requires the FILE itself to be
   opened by the `with`, not merely some live `with` elsewhere),
-  `T.uses_import(module)`, `T.uses_class`, `T.uses_yield`,
-  `T.uses_lambda` (`uses_class`/`yield`/`lambda` staged for Ch9+),
+  `T.uses_import(module)`, `T.uses_class(name)` (name the class the tests
+  instantiate; AST-only for object puzzles, which have no tape — see runners.py),
+  `T.uses_yield`, `T.uses_lambda` (`yield`/`lambda` staged for later chapters),
   `T.source()`. Require the *kind* of construct, not one exact spelling, so
   legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s,
   and `uses_boolop()` accepts a De Morgan `not(a or b)` for an `and`). The

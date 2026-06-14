@@ -1,0 +1,8 @@
+{
+  "id": "9.3",
+  "title": "State that remembers",
+  "chapter": "Classes & Objects",
+  "concept": "a method mutates self and the next call sees it; instance data keeps objects independent",
+  "mode": "import",
+  "why": "self.count lives on the instance between calls, so tick() accumulates and two counters never share a tally -- a class attribute would make them collide."
+}

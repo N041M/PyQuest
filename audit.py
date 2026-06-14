@@ -380,6 +380,7 @@ def _engine_selftest():
         obj = T.make("Counter", 5)
         assert T.method(obj, "bump") == 6
         assert T.attr(obj, "n") == 6
+        T.uses_class("Counter")             # the named class is present
         try:
             T.attr(obj, "missing")
         except MissingSymbolError:
@@ -387,6 +388,23 @@ def _engine_selftest():
         else:
             raise AssertionError("missing attr should be translated")
         os.unlink(path)
+
+    def t_uses_class_named():
+        """uses_class(name) ties the check to the symbol under test, so a decoy
+        `class X: pass` beside a namedtuple can't satisfy it -- the AST-only
+        cover for object puzzles, which have no liveness."""
+        from engine.toolkit import LessonNotUsedError
+        dodge = ("class _Decoy:\n    pass\n"
+                 "from collections import namedtuple\n"
+                 "Dog = namedtuple('Dog', ['name', 'age'])\n")
+        path, T = learner(dodge)
+        T.uses_class()                      # *a* class exists -> generic passes
+        try:
+            T.uses_class("Dog")             # but no `class Dog:` -> fails
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        raise AssertionError("a decoy class satisfied uses_class('Dog')")
 
     def t_does_not_mutate():
         path, T = learner("def sort_copy(nums):\n    nums.sort()\n"
@@ -669,7 +687,8 @@ def _engine_selftest():
 
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
-               t_classes, t_does_not_mutate, t_does_not_mutate_uncopyable,
+               t_classes, t_uses_class_named,
+               t_does_not_mutate, t_does_not_mutate_uncopyable,
                t_eq_case_sensitive, t_deep_approx, t_new_constructs,
                t_with_open_construct,
                t_raises_still_works, t_liveness_dead_chaff,

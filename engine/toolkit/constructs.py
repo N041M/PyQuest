@@ -332,12 +332,21 @@ class ConstructsMixin:
         self._require_live(what, "no such import was found",
                            self._find(ok), "stmt", because)
 
-    def uses_class(self, because=""):
-        """A class definition."""
-        self._require_live("a class definition (class Name:)",
-                           "no class was defined",
-                           self._find(lambda n: isinstance(n, ast.ClassDef)),
-                           "stmt", because)
+    def uses_class(self, name=None, because=""):
+        """A class definition; with `name`, specifically `class <name>:`.
+
+        Object puzzles can't use liveness (make/method aren't on the tape), so
+        this degrades to an AST presence check -- which a decoy `class X: pass`
+        beside a namedtuple/type()/function would satisfy. Passing the name the
+        tests instantiate ties the check to that symbol, so the lesson's class
+        must really be written with `class`."""
+        def ok(n):
+            return isinstance(n, ast.ClassDef) and (name is None
+                                                    or n.name == name)
+        what = ("a class named %s (class %s:)" % (name, name) if name
+                else "a class definition (class Name:)")
+        self._require_live(what, "no such class was defined",
+                           self._find(ok), "stmt", because)
 
     def uses_yield(self, because=""):
         """yield / yield from (the generators chapter). AST-only: substituting

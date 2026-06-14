@@ -113,6 +113,10 @@ by a `with` — a generic `uses_with` is satisfied by any live `with`, even a
 lessons), `T.uses_dict/set`, `T.uses_nested_if`,
 `T.uses_index/negative_index/slice(step=)`, `T.uses_fstring`,
 `T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_default_param(name)`,
+`T.uses_class(name)` (the OOP chapters: pass the class name the tests
+instantiate — object puzzles run through `make`/`method`/`attr`, which aren't on
+the tape, so this is an AST presence check and the name stops a decoy
+`class X: pass` standing in for a namedtuple/`type()`),
 `T.uses_print`, `T.print_uses_keyword(kw)`, `T.print_has_min_args(n)`,
 `T.prints_computed(min_calls=)`, `T.prints_name(min_calls=, same=)`,
 `T.assigns_a_variable(value=)`, `T.reassigns_a_variable(values=)`.

@@ -1,0 +1,8 @@
+{
+  "id": "9.4",
+  "title": "More data, more methods",
+  "chapter": "Classes & Objects",
+  "concept": "one class can hold several attributes and offer several methods, all reading self",
+  "mode": "import",
+  "why": "area() and perimeter() both compute from the same stored width and height, so each Rectangle can answer either question about itself."
+}

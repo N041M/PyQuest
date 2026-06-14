@@ -2,9 +2,9 @@
 
 **A Python course you run from the terminal: read a short brief, write code in your own editor, then run one command to check it and unlock the next puzzle.**
 
-Eight chapters and 82 puzzles take you from `print("hello")` to functions,
-error handling, and reading & writing files — using only the Python standard
-library, so it runs anywhere Python 3 does.
+Nine chapters and 90 puzzles take you from `print("hello")` to functions,
+error handling, files, and classes — using only the Python standard library,
+so it runs anywhere Python 3 does.
 
 There is no TUI to learn. The only interactive screen is the optional `begin`
 menu (pick a level, theme, or profile); everything else is a short, one-shot
@@ -17,9 +17,9 @@ you open in your editor.
 
 ## Features
 
-- **82 puzzles in 8 chapters** — basics, strings, decisions & loops,
-  collections, power tools, functions, errors, files & I/O. One new idea per
-  puzzle.
+- **90 puzzles in 9 chapters** — basics, strings, decisions & loops,
+  collections, power tools, functions, errors, files & I/O, classes & objects.
+  One new idea per puzzle.
 - **Behavioral checking** — tests validate what your code *does*, with
   plain-language failure messages instead of raw tracebacks.
 - **Hard to cheat, easy to learn** — randomized inputs defeat hardcoded
@@ -212,12 +212,10 @@ pyquest/
 
 ## Roadmap
 
-The course currently ends at Chapter 8 (files & I/O). The engine was built
-ahead of the content, so the groundwork for what comes next is already in
+The course currently ends at Chapter 9 (classes & objects). The engine was
+built ahead of the content, so the groundwork for what comes next is already in
 place:
 
-- **Chapter 9+: classes & OOP.** Object helpers (`T.make`, `T.method`,
-  `T.attr`) and a `class` construct check are already in the toolkit.
 - **Generators, lambdas, and the standard library.** Construct checks for
   `yield`, `lambda`, and per-module `import` are staged for these chapters.
 - **Randomized inputs everywhere.** The structured `Case` provider flow
