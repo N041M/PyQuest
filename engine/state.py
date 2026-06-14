@@ -43,7 +43,12 @@ def valid_username(name):
 
 
 def current_user():
-    return load_settings().get("user", "default") or "default"
+    # Re-validate here, not only at the write site: settings.json can be
+    # hand-edited or corrupted, and this value is joined into a filesystem path
+    # (user_dir). A name like "../foo" must never become a path segment, so an
+    # invalid stored user falls back to "default" rather than escaping users/.
+    user = load_settings().get("user", "default") or "default"
+    return user if valid_username(user) else "default"
 
 
 def user_dir(user=None):

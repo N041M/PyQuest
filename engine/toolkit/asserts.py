@@ -14,9 +14,10 @@ from .textutil import normalize, fmt_args
 
 class AssertsMixin:
 
-    def eq(self, actual, expected, because="", match_case=False):
-        """Equal. String outputs are compared case-INSENSITIVELY by default;
-        pass match_case=True for puzzles where capitalisation is the point."""
+    def eq(self, actual, expected, because="", match_case=True):
+        """Equal. String outputs are compared case-SENSITIVELY by default --
+        this is a Python course and capitalisation is part of the answer.
+        Pass match_case=False for the rare puzzle where any casing is fine."""
         a, e = actual, expected
         if isinstance(a, str) and isinstance(e, str):
             na, ne = normalize(a), normalize(e)
@@ -78,9 +79,9 @@ class AssertsMixin:
             raise WrongResultError("%r (within %g)" % (expected, tol),
                                    actual, because)
 
-    def any_of(self, actual, options, because="", match_case=False):
-        """Accept any one of several valid answers (case-insensitive strings
-        by default)."""
+    def any_of(self, actual, options, because="", match_case=True):
+        """Accept any one of several valid answers (case-sensitive strings by
+        default, like eq; pass match_case=False to ignore capitalisation)."""
         def norm(v):
             if isinstance(v, str):
                 v = normalize(v)
@@ -109,7 +110,13 @@ class AssertsMixin:
         try:
             before = copy.deepcopy(args)
         except Exception:
-            return self.call(name, *args, **kwargs)    # uncopyable: skip check
+            # Never silently waive the lesson: if the args can't be snapshotted
+            # we cannot prove non-mutation, so this is an authoring error, not a
+            # pass. Use copyable inputs (lists/dicts/tuples of plain values).
+            raise RuntimeError(
+                "does_not_mutate needs deep-copyable arguments to verify "
+                "non-mutation, but %s(...) was given an uncopyable one. "
+                "Pass copyable inputs or assert the result directly." % name)
         result = self.call(name, *args, **kwargs)
         for arg, prior in zip(args, before):
             if arg != prior:

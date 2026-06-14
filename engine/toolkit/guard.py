@@ -6,14 +6,27 @@ liveness re-run -- goes through `ExecutionGuard.guarded`, which
   - feeds stdin (blank by default, so a stray input() fails fast instead of
     hanging; liveness passes recorded stdin via `_stdin=`),
   - captures stdout into `.printed` (assertable, and off the report screen),
-  - enforces a wall-clock timeout (an infinite loop fails, not hangs),
+  - enforces a wall-clock timeout (an infinite loop fails, not hangs) on the
+    POSIX main thread; off it (Windows, a worker thread) the in-process alarm
+    silently no-ops -- see the timeout note below,
   - translates exit()/sys.exit() (learner code cannot kill the checker),
-  - moves the working directory into a throwaway sandbox (learner file I/O
-    cannot touch the project; file puzzles get fixtures via put_file).
+  - moves the working directory into a throwaway sandbox so RELATIVE-path
+    file I/O lands there, not in the project; file puzzles get fixtures via
+    put_file.
 
-Script mode gets the same isolation from its subprocess (timeout + sandbox
-cwd) -- see runners.py. Never invoke learner code outside this guard;
-`python3 audit.py --engine` pins these guarantees.
+This is a convenience boundary, not a security one. The sandbox is a chdir:
+it contains honest mistakes (a stray open("out.txt", "w")), NOT a determined
+absolute-path write (open("/etc/...")), os.system, or shutil.rmtree. The
+threat model is a learner's accident on their own machine, not malice; do not
+rely on it to run untrusted code. The timeout likewise covers script mode
+cross-platform (subprocess) but in-process import/liveness runs only on the
+POSIX main thread. guarded() also mutates global process state (os.chdir,
+sys.stdin/stdout), so it is correct only single-threaded -- a threaded
+tests.py would corrupt it.
+
+Script mode gets stronger isolation from its subprocess (cross-platform
+timeout + sandbox cwd) -- see runners.py. Never invoke learner code outside
+this guard; `python3 audit.py --engine` pins these guarantees.
 """
 
 import io

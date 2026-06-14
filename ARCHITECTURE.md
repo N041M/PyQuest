@@ -196,10 +196,19 @@ code and raises *translated* failures, so messages stay friendly.
   stdout into `T.printed`, enforces the wall-clock timeout (infinite loops fail,
   even inside the learner's own `except Exception`), translates `exit()` /
   `sys.exit()` (learner code cannot kill the checker), and chdirs into a
-  throwaway sandbox (file I/O cannot touch the project). Script mode gets the
-  same isolation via its subprocess (timeout + sandbox cwd). Never invoke
-  learner code outside this guard; `python3 audit.py --engine` pins these
-  guarantees.
+  throwaway sandbox so **relative**-path file I/O lands there, not in the
+  project. Script mode gets stronger isolation via its subprocess (timeout +
+  sandbox cwd). Never invoke learner code outside this guard; `python3 audit.py
+  --engine` pins these guarantees.
+  *Isolation caveat:* the sandbox is a convenience boundary, not a security
+  one. A chdir contains an honest mistake (a stray `open("out.txt", "w")`); it
+  does **not** stop a determined absolute-path write (`open("/etc/…")`),
+  `os.system`, or `shutil.rmtree`. The threat model is a learner's accident on
+  their own machine, not malicious code — do not run untrusted submissions
+  through it. (`--engine`'s `t_sandbox_files` only exercises relative paths,
+  i.e. exactly the property the chdir provides.) The in-process guard also
+  mutates global state (`os.chdir`, `sys.stdin/stdout`), so it is correct only
+  single-threaded.
   *Portability caveat:* the **in-process** timeout uses `signal.alarm`
   (`guard.py`), so it only fires on the POSIX main thread — integer-second
   granularity, and a silent no-op on Windows or off the main thread. There it
@@ -254,6 +263,19 @@ code and raises *translated* failures, so messages stay friendly.
   (`_require_live`, `_is_live`, `_ablate`), and `T.require_live(...)` is the
   public seam for a capstone's bespoke structural check — pair any use of
   it with a `dodges.py` entry.
+  *Liveness exceptions (AST-only checks).* Three construct checks cannot be
+  ablated and so are **plain AST scans, not liveness-judged**:
+  `uses_yield` (substituting a yield flips the function's generator-ness and
+  crashes callers), `uses_lambda` (a sentinel stand-in isn't callable), and
+  `uses_default_param` (a default may legitimately go unexercised). For these,
+  "dead-code chaff defeats it" — a never-called function containing a lambda /
+  yield / default would satisfy the AST scan. The backstop is the sidestep
+  audit plus behavioral traps, but that can only catch a real hole once a
+  Ch8+ puzzle actually uses one of these. So when you write the first puzzle
+  on generators, lambdas, or default params, do **not** lean on the construct
+  check alone: pair it with behavior that forces the construct to run (call the
+  generator and assert it streams; call the default-using function both ways)
+  and pin a `dodges.py` chaff entry.
 - **Prescribed expressions (fixed-output puzzles):** a puzzle with no input
   can never randomize, and liveness can't tell `print(7*2)` from
   `print(2+3*4)` — both compute. Where the lesson IS a specific expression,

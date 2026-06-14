@@ -398,6 +398,29 @@ def _engine_selftest():
             return
         raise AssertionError("in-place sort should be caught")
 
+    def t_does_not_mutate_uncopyable():
+        # An uncopyable arg must raise loudly, never silently waive the lesson.
+        path, T = learner("def f(x):\n    return x\n")
+        try:
+            T.does_not_mutate("f", (i for i in range(3)))   # generators: no deepcopy
+        except RuntimeError as e:
+            assert "deep-copyable" in str(e), "wrong message: %s" % e
+            os.unlink(path)
+            return
+        raise AssertionError("uncopyable arg must raise, not skip the check")
+
+    def t_eq_case_sensitive():
+        # Capitalisation is part of the answer by default; leniency is opt-in.
+        path, T = learner("pass\n")
+        T.eq("Hello, World!", "Hello, World!")              # exact match -> ok
+        T.eq("hello", "HELLO", match_case=False)            # opt out -> ok
+        try:
+            T.eq("hello, world!", "Hello, World!")          # wrong case -> fail
+        except WrongResultError:
+            os.unlink(path)
+            return
+        raise AssertionError("eq must reject wrong casing by default")
+
     def t_deep_approx():
         path, T = learner("pass\n")
         T.approx([1.0000000001, (2.0, 3)], [1, (2, 3.0000000001)])
@@ -619,7 +642,8 @@ def _engine_selftest():
 
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
-               t_classes, t_does_not_mutate, t_deep_approx, t_new_constructs,
+               t_classes, t_does_not_mutate, t_does_not_mutate_uncopyable,
+               t_eq_case_sensitive, t_deep_approx, t_new_constructs,
                t_raises_still_works, t_liveness_dead_chaff,
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,
