@@ -12,3 +12,6 @@ def check(T):
         T.eq(T.run(stdin=name + "\n"), "Hello, " + name,
              because="With input %r, output should be %r."
                      % (name, "Hello, " + name))
+    T.uses_call("input",
+                because="The lesson is input() -- read the name with it, not "
+                        "by reaching into sys.stdin yourself.")

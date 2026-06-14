@@ -19,3 +19,7 @@ def check(T):
         T.eq(T.call("greet", *c.args), c.expect, match_case=True,
              because="greet%r should return %r -- called with %d argument(s)."
                      % (c.args, c.expect, len(c.args)))
+    T.uses_default_param("greet",
+                         because="The lesson is the default parameter "
+                                 'greeting="Hello" in the def line -- *args '
+                                 "with a manual fallback skips it.")

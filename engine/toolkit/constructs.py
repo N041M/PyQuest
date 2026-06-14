@@ -13,7 +13,7 @@ _live_filter/DECORATIVE/tree) which in turn needs the RunnersMixin tape.
 
 import ast
 
-from .errors import WrongResultError
+from .errors import LessonNotUsedError
 
 
 # Arithmetic operator spellings -> AST classes (shared with lines.py).
@@ -42,11 +42,11 @@ class ConstructsMixin:
         silenced decoy print, dodges it)."""
         idxs = self._print_call_idxs()
         if not idxs:
-            raise WrongResultError("a print() that shows a computed value",
+            raise LessonNotUsedError("a print() that shows a computed value",
                                    "print() wasn't used", because)
         for c in self._print_calls():
             if not c.args or all(isinstance(a, ast.Constant) for a in c.args):
-                raise WrongResultError(
+                raise LessonNotUsedError(
                     "a computed value in print(...)",
                     "the answer typed in as a literal", because)
         self._require_live("%d separate print() calls" % min_calls,
@@ -67,17 +67,17 @@ class ConstructsMixin:
                 names[i] = got
         want = "%d separate print() calls showing a variable" % min_calls
         if len(idxs) < min_calls:
-            raise WrongResultError(want, "only %d found" % len(idxs), because)
+            raise LessonNotUsedError(want, "only %d found" % len(idxs), because)
         live = self._live_filter(idxs, "expr", min_count=len(idxs))
         if len(live) < min_calls:
-            raise WrongResultError(want, self.DECORATIVE, because)
+            raise LessonNotUsedError(want, self.DECORATIVE, because)
         if same:
             counts = {}
             for i in live:
                 for n in names[i]:
                     counts[n] = counts.get(n, 0) + 1
             if not any(v >= min_calls for v in counts.values()):
-                raise WrongResultError(
+                raise LessonNotUsedError(
                     "the SAME variable printed %d times" % min_calls,
                     "different variables were printed", because)
 
@@ -114,6 +114,20 @@ class ConstructsMixin:
                            "no if was used (a trick avoided it)",
                            self._find(lambda n: isinstance(n, ast.If)),
                            "stmt", because)
+
+    def uses_nested_if(self, because=""):
+        """An if nested inside the BODY of another if -- the 'inner check runs
+        only when the outer is true' lesson. An elif chain doesn't count: an
+        `elif` is AST-identical to `else: if`, so its inner if lives in the
+        orelse, not the body. Requires the inner if to be live."""
+        def inner(n):
+            if not isinstance(n, ast.If):
+                return False
+            return any(isinstance(p, ast.If) and n in p.body
+                       for p in ast.walk(self.tree()))
+        self._require_live("an if nested inside another if's body",
+                           "no nested if (an elif chain isn't nesting)",
+                           self._find(inner), "stmt", because)
 
     def uses_while(self, because=""):
         self._require_live("a while loop", "no while loop was used",
@@ -241,6 +255,21 @@ class ConstructsMixin:
         self._require_live("the `in` operator", "`in` wasn't used",
                            self._find(ok), "bool", because)
 
+    def uses_boolop(self, op=None, because=""):
+        """A boolean operator: `and` / `or` -- for puzzles whose lesson is
+        COMBINING conditions, where a single arithmetic trick (n % 6 == 0 for
+        `divisible by 2 and 3`) would behave the same but dodge the concept.
+        `op` pins one operator; left None, either counts (so an `or`+`not`
+        De Morgan rewrite of an `and` still passes)."""
+        names = {"and": ast.And, "or": ast.Or}
+        def ok(n):
+            return isinstance(n, ast.BoolOp) and (
+                op is None or isinstance(n.op, names[op]))
+        what = ("the `%s` operator" % op if op
+                else "a boolean operator (and / or)")
+        self._require_live(what, "%s wasn't used" % (op or "and / or"),
+                           self._find(ok), "bool", because)
+
     def uses_comprehension(self, with_if=False, because=""):
         """A comprehension (list/set/dict or generator expression). Pass
         with_if=True to require a filtering `if` clause inside it."""
@@ -291,15 +320,32 @@ class ConstructsMixin:
         a yield flips the function's generator-ness, which crashes callers and
         would make a LEGIT yield look dead under the clean-run rule."""
         if not self._has(ast.Yield, ast.YieldFrom):
-            raise WrongResultError("a yield statement",
+            raise LessonNotUsedError("a yield statement",
                                    "yield wasn't used", because)
 
     def uses_lambda(self, because=""):
         """A lambda expression. AST-only: a lambda's sentinel stand-in is not
         callable, so every ablation crashes and liveness can't judge it."""
         if not self._has(ast.Lambda):
-            raise WrongResultError("a lambda expression",
+            raise LessonNotUsedError("a lambda expression",
                                    "no lambda was used", because)
+
+    def uses_default_param(self, name=None, because=""):
+        """A function defined with a default-valued parameter: def f(x, y=...).
+        AST-only (like uses_lambda): ablating a default is awkward, and a real
+        default may go unexercised on the calls that supply it. `name` pins one
+        function. Defeats reaching the same behavior with *args/**kwargs."""
+        def ok(n):
+            if not isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                return False
+            if name is not None and n.name != name:
+                return False
+            a = n.args
+            return bool(a.defaults) or any(d is not None for d in a.kw_defaults)
+        if not any(ok(n) for n in ast.walk(self.tree())):
+            raise LessonNotUsedError(
+                "a default parameter (def %s(..., x=value))" % (name or "f"),
+                "no default-valued parameter was defined", because)
 
     def uses_unpacking(self, because=""):
         """Tuple/list unpacking, e.g. a, b = b, a  or  for a, b in pairs."""

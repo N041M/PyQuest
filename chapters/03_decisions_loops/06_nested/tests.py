@@ -17,4 +17,7 @@ def check(T):
         n = random_int(-50, 300)
         T.eq(T.run(stdin="%d\n" % n), label(n),
              because="%d -> %s." % (n, label(n)))
-    T.uses_if(because="Use if statements (an outer and inner check).")
+    T.uses_nested_if(
+        because="The lesson is a NESTED if: an outer check for positive, the "
+                "size check inside it. A flat if/elif chain gets the same "
+                "answer but skips the nesting.")

@@ -10,7 +10,7 @@ Mixin contract -- needs ConstructsMixin (_print_calls).
 
 import ast
 
-from .errors import WrongResultError
+from .errors import LessonNotUsedError
 from .constructs import OPS
 
 
@@ -20,11 +20,11 @@ class LinesMixin:
         calls = sorted(self._print_calls(),
                        key=lambda c: (c.lineno, c.col_offset))
         if len(calls) <= i:
-            raise WrongResultError("at least %d separate print() calls"
+            raise LessonNotUsedError("at least %d separate print() calls"
                                    % (i + 1),
                                    "only %d found" % len(calls), because)
         if not calls[i].args:
-            raise WrongResultError("a value inside print() #%d" % (i + 1),
+            raise LessonNotUsedError("a value inside print() #%d" % (i + 1),
                                    "that print shows nothing", because)
         return calls[i].args[0]
 
@@ -35,7 +35,7 @@ class LinesMixin:
         opcls = OPS[op]
         if not any(isinstance(n, ast.BinOp) and isinstance(n.op, opcls)
                    for n in ast.walk(expr)):
-            raise WrongResultError(
+            raise LessonNotUsedError(
                 "print #%d computing with '%s'" % (i + 1, op),
                 "that print doesn't use '%s'" % op, because)
 
@@ -51,7 +51,7 @@ class LinesMixin:
                     if isinstance(side, ast.BinOp) \
                             and isinstance(side.op, i_cls):
                         return
-        raise WrongResultError(
+        raise LessonNotUsedError(
             "print #%d grouped so '%s' happens before '%s'"
             % (i + 1, inner, outer),
             "no such grouping in that print", because)
@@ -65,18 +65,18 @@ class LinesMixin:
         lits = []
         for n in ast.walk(expr):
             if not isinstance(n, permitted):
-                raise WrongResultError(
+                raise LessonNotUsedError(
                     "print #%d built only from the task's values" % (i + 1),
                     "it takes a detour (a variable, call, ...)", because)
             if isinstance(n, ast.Constant):
                 lits.append(n.value)
         shown = ", ".join(sorted(set(repr(a) for a in allowed)))
         if not lits:
-            raise WrongResultError(
+            raise LessonNotUsedError(
                 "print #%d computing from %s" % (i + 1, shown),
                 "no values found in it", because)
         for v in lits:
             if not any(type(v) is type(a) and v == a for a in allowed):
-                raise WrongResultError(
+                raise LessonNotUsedError(
                     "print #%d using only %s" % (i + 1, shown),
                     "it uses %r" % (v,), because)

@@ -24,7 +24,7 @@ The import path is unchanged: `from engine.toolkit import Toolkit, ...`.
 
 from ..config import TIMEOUT
 from .errors import (PuzzleSyntaxError, MissingSymbolError,
-                     WrongResultError, PuzzleCrashError)
+                     WrongResultError, LessonNotUsedError, PuzzleCrashError)
 from .textutil import normalize, short_tb, fmt_args
 from .guard import ExecutionGuard, NO_STDIN_MSG, EXIT_MSG
 from .runners import RunnersMixin
@@ -36,7 +36,7 @@ from .perf import PerfMixin
 
 __all__ = ["Toolkit", "load_module",
            "PuzzleSyntaxError", "MissingSymbolError",
-           "WrongResultError", "PuzzleCrashError",
+           "WrongResultError", "LessonNotUsedError", "PuzzleCrashError",
            "normalize", "short_tb", "fmt_args",
            "NO_STDIN_MSG", "EXIT_MSG"]
 

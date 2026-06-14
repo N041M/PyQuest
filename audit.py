@@ -475,6 +475,70 @@ def _engine_selftest():
             return
         raise AssertionError("line_shape accepted the wrong grouping")
 
+    def t_lesson_not_used():
+        """Construct checks raise LessonNotUsedError -- the 'right answer,
+        wrong lesson' category checker.py renders as its own screen -- and
+        uses_boolop pins a combined condition against the one-modulo dodge."""
+        from engine.toolkit import LessonNotUsedError
+        path, T = learner("n = int(input())\n"
+                          "print(n % 2 == 0 and n % 3 == 0)\n", mode="script")
+        T.timeout = 5
+        T.run(stdin="12\n"); T.run(stdin="5\n")     # a True case and a False
+        T.uses_boolop()                             # a real `and` passes
+        os.unlink(path)
+        path, T = learner("print(int(input()) % 6 == 0)\n", mode="script")
+        T.timeout = 5
+        T.run(stdin="12\n"); T.run(stdin="5\n")
+        try:
+            T.uses_boolop()                         # the dodge has no bool op
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        raise AssertionError("one-modulo dodge satisfied uses_boolop, or the "
+                             "failure wasn't a LessonNotUsedError")
+
+    def t_structural_checks():
+        """uses_nested_if tells a body-nested if from an elif chain (they
+        differ in the AST), and uses_default_param tells a default parameter
+        from an *args fallback -- both raise LessonNotUsedError when missed."""
+        from engine.toolkit import LessonNotUsedError
+        nested = ("n = int(input())\nif n > 0:\n    if n < 100:\n"
+                  "        print('s')\n    else:\n        print('b')\n"
+                  "else:\n    print('np')\n")
+        flat = ("n = int(input())\nif n <= 0:\n    print('np')\n"
+                "elif n < 100:\n    print('s')\nelse:\n    print('b')\n")
+        path, T = learner(nested, mode="script")
+        T.timeout = 5
+        T.run(stdin="50\n"); T.run(stdin="-1\n")
+        T.uses_nested_if()                          # real nesting passes
+        os.unlink(path)
+        path, T = learner(flat, mode="script")
+        T.timeout = 5
+        T.run(stdin="50\n"); T.run(stdin="-1\n")
+        try:
+            T.uses_nested_if()                      # an elif chain is not nesting
+        except LessonNotUsedError:
+            pass
+        else:
+            raise AssertionError("flat elif chain satisfied uses_nested_if")
+        os.unlink(path)
+        path, T = learner("def f(a, b='x'):\n    return a + b\n")
+        T.uses_default_param("f")                   # a real default passes
+        try:
+            T.uses_default_param("missing")
+        except LessonNotUsedError:
+            pass
+        else:
+            raise AssertionError("uses_default_param matched a missing function")
+        os.unlink(path)
+        path, T = learner("def f(a, *r):\n    return a\n")
+        try:
+            T.uses_default_param("f")               # *args is not a default
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        raise AssertionError("*args satisfied uses_default_param")
+
     def t_liveness_import_mode():
         """A dead self-call can't fake recursion; a real one passes."""
         path, T = learner(
@@ -557,7 +621,8 @@ def _engine_selftest():
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_does_not_mutate, t_deep_approx, t_new_constructs,
                t_raises_still_works, t_liveness_dead_chaff,
-               t_liveness_real_constructs, t_line_checks,
+               t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
+               t_structural_checks,
                t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
                t_username_validation, t_discover_tolerates_bad_meta):
         case(fn.__name__[2:], fn)

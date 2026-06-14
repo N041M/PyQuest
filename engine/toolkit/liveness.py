@@ -30,7 +30,8 @@ Mixin contract -- needs the tape and the guard:
 import ast
 import copy
 
-from .errors import PuzzleSyntaxError, PuzzleCrashError, WrongResultError
+from .errors import (PuzzleSyntaxError, PuzzleCrashError, WrongResultError,
+                     LessonNotUsedError)
 from .textutil import normalize
 
 
@@ -255,9 +256,9 @@ class LivenessMixin:
 
     def _require_live(self, want, missing, found, kind, because, min_count=1):
         if len(found) < min_count:
-            raise WrongResultError(want, missing, because)
+            raise LessonNotUsedError(want, missing, because)
         if len(self._live_filter(found, kind, min_count)) < min_count:
-            raise WrongResultError(want, self.DECORATIVE, because)
+            raise LessonNotUsedError(want, self.DECORATIVE, because)
 
     def require_live(self, want, missing, found, kind, because="",
                      min_count=1):

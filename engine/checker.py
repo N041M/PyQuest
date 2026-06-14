@@ -8,7 +8,8 @@ from .content import load_tests
 from .state import (stat, save_progress, load_answers, ensure_workspace,
                     archive_work, current_puzzle, work_path)
 from .toolkit import (Toolkit, PuzzleSyntaxError, MissingSymbolError,
-                      WrongResultError, PuzzleCrashError, short_tb)
+                      WrongResultError, LessonNotUsedError, PuzzleCrashError,
+                      short_tb)
 from .render import (paint, banner, bar, indent, quote_block, cli, PAD,
                      OK, NO, STAR, ARROW)
 
@@ -63,6 +64,19 @@ def cmd_check(puzzles, by_id, prog):
               "Check the spelling, or add it. For a function the brief asks for\n"
               "`%s`, define it with:  def %s(...):"
               % (e.name, e.name, e.name), prog, cur)
+    except LessonNotUsedError as e:
+        body = ("Your output is correct -- but this puzzle isn't really about "
+                "the answer.\nIt's teaching a specific tool, and your solution "
+                "reached the result\nanother way, so the lesson got skipped.\n\n"
+                "%s\n%s\n\n%s\n%s"
+                % (paint("This puzzle wants:", "green"),
+                   quote_block(e.expected),
+                   paint("Your code:", "yellow"), quote_block(e.actual)))
+        if e.because:
+            body = e.because + "\n\n" + body
+        body += "\n\nRework it to use what the puzzle teaches, then check again."
+        _almost("Correct answer -- but not this puzzle's lesson", body,
+                prog, cur)
     except WrongResultError as e:
         body = ("%s\n%s\n\n%s\n%s"
                 % (paint("Expected:", "green"), quote_block(e.expected),
@@ -118,6 +132,19 @@ def _fail(title, body, prog, cur):
     print(banner("%s  not yet" % NO, "red"))
     print("")
     print(PAD + paint(title, "bred", "bold"))
+    print("")
+    print(indent(body, PAD))
+    print("")
+    print(PAD + fail_nudge(prog, cur))
+
+
+def _almost(title, body, prog, cur):
+    """Right answer, wrong lesson: a distinct screen from a plain failure --
+    the output matched, only the approach missed the point. Still blocks
+    progress (the lesson wasn't practiced), but says so without crying 'wrong'."""
+    print(banner("%s  so close" % STAR, "yellow"))
+    print("")
+    print(PAD + paint(title, "byellow", "bold"))
     print("")
     print(indent(body, PAD))
     print("")

@@ -11,3 +11,7 @@ def check(T):
         expect = (n % 2 == 0) and (n % 3 == 0)
         T.eq(T.run(stdin="%d\n" % n), str(expect),
              because="%d divisible by both 2 and 3 -> %s." % (n, expect))
+    T.uses_boolop(
+        because="The lesson is COMBINING two checks with a boolean operator "
+                "(n % 2 == 0 and n % 3 == 0). Collapsing it to one modulo "
+                "(n % 6 == 0) gets the right answer but skips the concept.")

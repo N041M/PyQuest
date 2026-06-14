@@ -21,3 +21,9 @@ def check(T):
         s = sprinkle(random_word(2, 8))
         T.eq(T.run(stdin=s + "\n"), expected(s),
              because="For %r: replace every o with 0, then count the o's." % s)
+    T.uses_call("replace",
+                because="The lesson is s.replace('o', '0') -- let the method "
+                        "swap them, don't rebuild the string by hand.")
+    T.uses_call("count",
+                because="The lesson is s.count('o') -- let it tally the o's, "
+                        "not a hand-written loop.")

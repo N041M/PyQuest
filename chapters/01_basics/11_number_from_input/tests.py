@@ -11,3 +11,6 @@ def check(T):
         n = random_int(-1000, 1000)
         T.eq(T.run(stdin="%d\n" % n), str(n * 2),
              because="Double %d is %d." % (n, n * 2))
+    T.uses_call("int",
+                because="The lesson is converting the text with int() before "
+                        "the maths -- eval() and friends skip that idea.")

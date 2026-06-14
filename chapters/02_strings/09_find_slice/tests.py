@@ -12,3 +12,9 @@ def check(T):
         line = key + "=" + value
         T.eq(T.run(stdin=line + "\n"), value,
              because="In %r the value after '=' is %r." % (line, value))
+    T.uses_call("find",
+                because="The lesson is s.find('=') to locate the marker -- "
+                        "split() jumps straight to the answer and skips it.")
+    T.uses_slice(
+        because="Slice from one past the '=' to the end (s[i+1:]) -- finding "
+                "a position then slicing relative to it is the point.")
