@@ -1,0 +1,201 @@
+# Engine core
+
+The orchestration, content, input and state layers. Visuals are in
+[visuals.md](visuals.md); the tester in [toolkit.md](toolkit.md); the verbs in
+[commands.md](commands.md). ← [overview](README.md)
+
+```mermaid
+flowchart TB
+    play["play.py «launcher»"] --> app
+    app["app.py «dispatch»"] --> checker
+    app --> commands["commands/*"]
+    checker["checker.py"] --> toolkit["toolkit.Toolkit"]
+    checker --> content
+    checker --> state
+    checker --> render["render/theme"]
+    content["content.py"] --> config
+    state["state.py"] --> config["config.py"]
+    toolkit --> inputs["inputs.py"]
+    content --> inputs
+```
+
+---
+
+## play.py / app.py — entry & dispatch
+
+`play.py` is a 30‑line shim that calls `engine.app.main()`. `app.main()` is the
+**only** place argv becomes an action: it builds the puzzle list once, loads
+progress, guarantees `work.py` exists, then routes the verb to exactly one
+command function. Adding a verb = one `elif` here + one function in `commands/`.
+
+```mermaid
+classDiagram
+    class app {
+        <<module>>
+        +main()
+    }
+    note for app "dispatch table (verb → fn):\nstatus/current/progress → cmd_status\ncheck → cmd_check\nhint · solution · map\nnext/skip/retry/revert · goto/load · mode\ntheme · user/users · reset\nbegin · menu · setup[ persist] · uninstall · help"
+    app ..> content : discover()
+    app ..> state : load_progress / current_puzzle / ensure_workspace
+    app ..> checker : cmd_check
+    app ..> commands : cmd_*
+```
+
+## config.py — foundation
+
+Pure constants + the atomic‑write primitive everything else builds on. Knows
+no other engine module (the bottom of the dependency graph).
+
+```mermaid
+classDiagram
+    class config {
+        <<module>>
+        +ROOT, CHAPTERS_DIR, USERS_DIR, THEMES_DIR
+        +SETTINGS_PATH, WORK_FILENAME, PY, TIMEOUT
+        +MODES, DEFAULT_SETTINGS, WIDTH
+        +load_settings() dict
+        +save_settings(settings)
+        +set_setting(key, value)
+        +write_json(path, data)  "temp + os.replace"
+        +now() str
+        +rel(path) str
+    }
+```
+
+`write_json` is the single atomic JSON writer (write temp → `os.replace`), so a
+crash mid‑write can never corrupt `progress.json` / `answers.json` / settings.
+
+## content.py — the structured question
+
+Discovers puzzle folders and loads their files. **Stateless**: no learner data
+here. `discover()` returns the ordered `Puzzle` dicts the whole app keys on.
+
+```mermaid
+classDiagram
+    class content {
+        <<module>>
+        +discover() list~Puzzle~
+        +by_id_lookup(puzzles, pid) Puzzle
+        +starter_path(puzzle) str
+        +read_starter(puzzle) str
+        +load_hints(dirpath) list~str~  "split on '---'"
+        +load_tests(dirpath) module  "imports tests.py fresh"
+    }
+    note for content "discover() tolerates a broken meta.json:\nit logs to stderr and SKIPS that folder\nrather than failing the whole scan."
+    content ..> config : CHAPTERS_DIR
+```
+
+`load_tests` re‑imports each `tests.py` fresh per call — that is what gives the
+audit fresh randomness on every attempt.
+
+## inputs.py — the input seam ("input automizer")
+
+Where a single source decides **both** the value fed to the solution and the
+data needed to validate it, so answers can't be hardcoded.
+
+```mermaid
+classDiagram
+    class Case {
+        +str stdin
+        +tuple args
+        +dict kwargs
+        +any expect
+        +dict meta
+    }
+    class inputs {
+        <<module>>
+        +fixed(*cases) list~Case~
+        +random_ints(count, low, high, seed) list~int~
+        +random_word(min, max, rng) str
+        +random_int(low, high, rng) int
+    }
+    inputs ..> Case : builds
+    note for Case "Chapters 1-2, 6+ tests build fixed + randomized\nCases; script puzzles feed case.stdin, import\npuzzles feed case.args, both validate vs case.expect."
+```
+
+## state.py — per‑user progress & the work.py lifecycle
+
+Owns everything mutable and per‑user. All writes go through `config.write_json`;
+an unreadable file is moved aside as `<name>.corrupt`, never overwritten.
+
+```mermaid
+classDiagram
+    class state {
+        <<module>>
+        +USERNAME_RE, WELCOME_WORK
+        +valid_username(name) bool
+        +current_user() str
+        +user_dir/progress_path/answers_path(user) str
+        +list_users() list
+        +ensure_user(user)
+        +migrate_legacy()
+        +backup_corrupt(path) str
+        +default_progress(puzzles) dict
+        +load_progress(puzzles) (prog, fresh)
+        +save_progress(prog)
+        +stat(prog, pid) dict
+        +current_puzzle(prog, by_id, puzzles) Puzzle
+        +load_answers() dict
+        +save_answers(answers)
+        +work_path() str
+        +read_work() str
+        +write_work(code)
+        +archive_work(puzzle, answers, solved)
+        +ensure_workspace(puzzle, answers, active)
+        +activate(prog, puzzle, answers)
+        +switch_to(target, prog, by_id, puzzles, answers, unlock)
+    }
+    state ..> config : write_json / paths
+```
+
+### The `work.py` lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> Welcome : first run (no profile)
+    Welcome --> Seeded : begin/goto a puzzle\nensure_workspace seeds from starter.py\n(or saved answers.json code)
+    Seeded --> Edited : learner edits in their editor
+    Edited --> Archived : check / switch puzzle\narchive_work → answers.json
+    Archived --> Seeded : switch_to(next)
+    Archived --> Welcome : reset (delete answers.json,\nregenerate work.py)
+```
+
+## checker.py — one check, end to end
+
+Translates the toolkit's typed failures into learner‑facing screens. It is the
+bridge between the tester (`toolkit/`) and the presentation (`render`/`theme`).
+
+```mermaid
+classDiagram
+    class checker {
+        <<module>>
+        +SAVE_TIP
+        +cmd_check(puzzles, by_id, prog)
+        +fail_nudge(prog, cur)
+        -_run_bonus(tests, T)
+        -_fail(title, body, prog, cur)
+        -_almost(title, body, prog, cur)
+        -_solved(cur, prog, puzzles)
+    }
+    checker ..> content : load_tests
+    checker ..> state : ensure_workspace / archive_work / save_progress
+    checker ..> Toolkit : runs check(T)
+    checker ..> render : cards & feedback
+```
+
+### Failure → screen mapping
+
+```mermaid
+flowchart LR
+    chk["tests.check(T)"] -->|PuzzleSyntaxError| f1["_fail: syntax"]
+    chk -->|MissingSymbolError| f2["_fail: missing piece"]
+    chk -->|LessonNotUsedError| a1["_almost: right answer,<br/>wrong lesson"]
+    chk -->|WrongResultError| f3["_fail: wrong result"]
+    chk -->|PuzzleCrashError| f4["_fail: crash"]
+    chk -->|no error| ok["_solved + _run_bonus"]
+```
+
+`LessonNotUsedError` subclasses `WrongResultError`, so its **more specific**
+`except` must come first in `cmd_check` (and does) — this is the "so close"
+screen that distinguishes a wrong answer from a right answer that skipped the
+lesson.
