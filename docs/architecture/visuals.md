@@ -37,8 +37,10 @@ classDiagram
         +paint_code(text, code, bold)
     }
     theme ..> config : WIDTH
-    note for theme "_supports_color() gates every escape;\nwith COLOR False, paint() returns plain text,\nso output stays correct when piped/redirected."
 ```
+
+`_supports_color()` gates every escape: with `COLOR` false, `paint()` returns
+plain text, so output stays correct when piped or redirected.
 
 ## render.py — drawing primitives
 
@@ -69,16 +71,14 @@ classDiagram
 
 ```mermaid
 flowchart LR
-    subgraph allowed["allowed to emit ANSI / glyphs / box chars"]
-        theme2["theme.py"]
-        render2["render.py"]
-    end
-    subgraph forbidden["everything else — content/state/logic"]
-        x["app · commands · checker · toolkit · content · state · config"]
-    end
-    x -->|"calls paint()/box()/bar()"| allowed
-    forbidden -. "must NOT contain raw \\033[ or box chars" .-> allowed
+    logic["app · commands · checker · toolkit<br/>content · state · config<br/>«no raw escapes or box chars»"]
+    vis["theme.py · render.py<br/>«the only ANSI / glyph / box emitters»"]
+    logic -->|"paint() · box() · bar()"| vis
+    classDef emit fill:#eef,stroke:#557;
+    class vis emit;
 ```
 
-Because presentation is quarantined, a theme change is data (`themes/*.json` +
-`THEMES`) and a re‑style is local: the learning logic never moves.
+Everything else asks the visual layer to paint; only `theme`/`render` ever emit
+an escape or a box character. Because presentation is quarantined, a theme
+change is data (`themes/*.json` + `THEMES`) and a re‑style is local: the
+learning logic never moves.

@@ -10,23 +10,16 @@ keeps a flat `T.eq(...)` / `T.uses_op(...)` surface.
 
 ```mermaid
 flowchart TB
-    facade["__init__.Toolkit (facade)"]
-    facade --> runners
-    facade --> asserts
-    facade --> liveness
-    facade --> constructs
-    facade --> lines
-    facade --> perf
-    runners["runners.py"] --> guard
-    liveness["liveness.py"] --> guard["guard.ExecutionGuard"]
-    constructs["constructs.py"] --> liveness
-    lines["lines.py"] --> liveness
-    runners --> errors
-    asserts["asserts.py"] --> errors
-    guard --> errors["errors.py"]
-    runners --> textutil
-    liveness --> textutil["textutil.py"]
-    perf["perf.py"]
+    facade["Toolkit «facade»"]
+    facade --> ra["runners · asserts<br/>«run code · assert»"]
+    facade --> cl["constructs · lines<br/>«integrity checks»"]
+    facade --> perf["perf «timing»"]
+    cl --> liveness["liveness «ablation»"]
+    ra --> guard["ExecutionGuard «sandbox»"]
+    liveness --> guard
+    guard --> base["errors · textutil"]
+    classDef found fill:#eef,stroke:#557;
+    class base found;
 ```
 
 ---
@@ -37,14 +30,11 @@ flowchart TB
 classDiagram
     class Toolkit {
         +str path
-        +str mode  "script | import"
+        +str mode
         +ExecutionGuard guard
-        -module _module
-        -AST _tree
-        -list _runs   "tape: (stdin, files, stdout)"
-        -list _calls  "tape: (name, args, kwargs)"
-        -_live_base
-        -bool _live_base_done
+        -_module · _tree
+        -_runs · _calls «the tape»
+        -_live_base · _live_base_done
         +__init__(path, mode, timeout)
     }
     class RunnersMixin {
@@ -69,15 +59,10 @@ classDiagram
         -_signature/_ablate/_tripwire(...)
     }
     class ConstructsMixin {
-        +uses_op/if/for/while/loop/break/continue
-        +uses_try/raise/in/boolop/comprehension
-        +uses_index/negative_index/slice/fstring
-        +uses_call/dict/set/nested_if/unpacking
-        +uses_with / uses_with_open
-        +uses_import/class/yield/lambda/default_param
-        +uses_print / print_uses_keyword / print_has_min_args
-        +prints_computed/prints_name
-        +assigns_a_variable / reassigns_a_variable
+        +uses_op / uses_if / uses_for / uses_while ...
+        +uses_with / uses_with_open / uses_call ...
+        +print_* · prints_* · assigns_* checks
+        +30+ liveness-judged checks in all
     }
     class LinesMixin {
         +print_expr(i)
@@ -86,8 +71,8 @@ classDiagram
         +line_only_literals(i, allowed)
     }
     class PerfMixin {
-        +time_call(name, *a, runs) float
-        +scales(name, make_input, n_small, n_big, slack)
+        +time_call(name, ...) float
+        +scales(name, make_input, ...)
     }
     Toolkit --|> RunnersMixin
     Toolkit --|> AssertsMixin
@@ -110,14 +95,18 @@ construct checks**.
 classDiagram
     class ExecutionGuard {
         +int timeout
-        +str printed  "captured stdout"
+        +str printed
         -str _sandbox
         +sandbox() str
         +put_file(name, content)
-        +guarded(because, fn, *a, _stdin, **k)
+        +guarded(because, fn, ...)
     }
-    note for ExecutionGuard "guarded() turns on every protection:\n• stdin blanked (stray input() fails fast)\n• stdout captured into .printed\n• SIGALRM wall-clock timeout (POSIX main thread)\n• exit()/SystemExit translated\n• cwd → throwaway sandbox (file I/O is contained)"
 ```
+
+`guarded()` turns on every protection at once: stdin blanked (a stray `input()`
+fails fast), stdout captured into `.printed`, a SIGALRM wall‑clock timeout (on
+the POSIX main thread), `exit()`/`SystemExit` translated, and the cwd moved to a
+throwaway sandbox so file I/O is contained.
 
 Script mode gets stronger isolation via a real subprocess (cross‑platform
 timeout + sandbox cwd); import/liveness runs in‑process under the same guard.
@@ -135,7 +124,7 @@ classDiagram
         +because
     }
     class LessonNotUsedError {
-        "answer right, lesson skipped"
+        +answer right, lesson skipped
     }
     class PuzzleSyntaxError { +detail }
     class MissingSymbolError { +name }
@@ -156,19 +145,19 @@ the "decorative code doesn't count" note) as `actual`.
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Test as tests.check(T)
-    participant R as RunnersMixin.run
+    participant Test as tests.py
+    participant R as RunnersMixin
     participant G as ExecutionGuard
-    participant P as subprocess(work.py)
+    participant P as work.py subprocess
     Test->>R: run(stdin, files)
-    R->>G: put_file(...) seed fixtures
-    R->>P: subprocess in sandbox cwd, stdin piped
+    R->>G: put_file — seed fixtures
+    R->>P: run in sandbox cwd, stdin piped
     P-->>R: returncode, stdout, stderr
     alt non-zero exit
         R-->>Test: raise PuzzleSyntaxError / PuzzleCrashError
     else ok
-        R->>R: normalize(stdout)
-        R->>R: _runs.append((stdin, files, out))  %% the tape
+        R->>R: normalize stdout
+        R->>R: append to the tape (_runs)
         R-->>Test: normalized stdout
     end
 ```
@@ -178,24 +167,24 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     autonumber
-    participant C as ConstructsMixin.uses_*
+    participant C as uses_* check
     participant L as LivenessMixin
     participant G as ExecutionGuard
     C->>L: _require_live(found nodes, kind)
-    L->>L: _baseline() — replay the tape in-process → signature(stdout)
+    L->>L: _baseline — replay the tape, signature is stdout
     alt no tape / not reproducible
-        L-->>C: degrade to plain AST presence (never block on a harness quirk)
+        L-->>C: degrade to plain AST presence
     else have baseline
         loop each candidate node
-            L->>L: _ablate(node) — remove stmt / substitute expr with sentinel
+            L->>L: _ablate — remove stmt / sentinel-swap expr
             L->>G: re-run recorded inputs on the mutated AST
             G-->>L: ablated signature
-            L->>L: live? stmt: crash/any change · expr: clean run, changed output
+            L->>L: live? stmt = crash/any change · expr = clean+changed
         end
         alt at least one live node
             L-->>C: pass
         else all decorative
-            L-->>C: raise LessonNotUsedError("decorative code doesn't count")
+            L-->>C: raise LessonNotUsedError
         end
     end
 ```
@@ -203,7 +192,7 @@ sequenceDiagram
 Liveness signatures capture **stdout only**. For file/side‑effect lessons that
 means a write‑only `with` looks dead — which is exactly why the files chapter
 uses `uses_with_open` anchored on a *read* whose removal crashes downstream (see
-[audit.md](audit.md) and `SIDESTEP_PLAYBOOK.md`).
+[audit.md](audit.md)).
 
 ## Three layers of construct strength
 

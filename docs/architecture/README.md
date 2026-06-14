@@ -198,6 +198,32 @@ flowchart TB
 The bottom layers. `inputs` is intentionally an island — no engine module
 imports it; only a puzzle's `tests.py` does (the authoring seam, dashed).
 
+### 4.5 Inside the toolkit
+
+The `toolkit/` box is itself a small package: a thin `Toolkit` facade that
+composes method groups (mixins) over one shared sandbox. Coarse shape here; the
+class‑level composition and the run/liveness sequences are in
+[toolkit.md](toolkit.md).
+
+```mermaid
+flowchart TB
+    facade["Toolkit «facade»<br/>composes the mixins, owns the tape"]
+    facade --> behavior["runners + asserts<br/>«run code · assert behavior»"]
+    facade --> integrity["constructs + lines<br/>«was the lesson used?»"]
+    facade --> perf["perf «bonus timing»"]
+    integrity --> liveness["liveness<br/>«ablation engine»"]
+    behavior --> guard["ExecutionGuard<br/>«the one in-process sandbox»"]
+    liveness --> guard
+    guard --> base["errors + textutil<br/>«translated failures · helpers»"]
+    classDef found fill:#eef,stroke:#557;
+    class base found;
+```
+
+The dependency spine runs downward: the integrity checks lean on `liveness`
+(does ablating the construct change behavior?), and every run of learner code —
+behavior assertion or liveness re‑run — funnels through the single
+`ExecutionGuard`. `perf` is the optional, advisory `bonus(T)` branch.
+
 ## 5. Domain model (the data a check moves through)
 
 ```mermaid
@@ -246,6 +272,53 @@ classDiagram
     Answers "1" o-- "*" Entry : per puzzle id
     Puzzle ..> Case : tests build cases
 ```
+
+### How the system consumes a puzzle
+
+A puzzle is just seven files on disk; each has exactly one job and one reader.
+This is the whole interaction surface between the engine and the content.
+
+```mermaid
+flowchart LR
+    subgraph puzzle["a puzzle folder · chapters/NN/MM/"]
+        direction TB
+        meta["meta.json"]
+        starter["starter.py"]
+        tests["tests.py"]
+        hints["hints.md"]
+        solution["solution.py"]
+        brief["brief.md"]
+        dodges["dodges.py"]
+    end
+
+    subgraph loop["engine — the learner loop"]
+        direction TB
+        discover["content.discover()"]
+        ws["state → work.py"]
+        check["checker → Toolkit.check"]
+        hint["cmd_hint"]
+        sol["cmd_solution"]
+    end
+
+    editor["the learner's editor"]
+    audit["audit.py"]
+
+    meta -->|always| discover
+    starter -->|"seed work.py on start"| ws
+    tests -->|on check| check
+    hints -->|on hint| hint
+    solution -->|on solution| sol
+    brief -->|"path shown, never parsed"| editor
+    tests --> audit
+    solution --> audit
+    dodges -->|"--sidestep only"| audit
+```
+
+`meta.json` is the only file loaded for *every* puzzle (discovery reads id,
+mode, why); `brief.md` is never parsed — the engine just shows its path and the
+learner opens it; `tests.py`, `solution.py`, and `dodges.py` are also what
+`audit.py` grades against. Adding a puzzle is dropping these files on disk —
+zero code changes.
 
 ## 6. Key runtime sequence — `python3 play.py check`
 
@@ -304,8 +377,9 @@ flowchart LR
     rnd -.defeats.-> replay
     live -.defeats.-> chaff
     linex -.defeats.-> synth
-    dodges -.pins.-> attacks
 ```
 
-Detailed in [audit.md](audit.md). The manual counterpart lives in the
-(gitignored) `SIDESTEP_PLAYBOOK.md`.
+Each generic adversary has a structural defense (the dashed pairs).
+**Behavioral file checks** add cover for write puzzles — the impostors
+reproduce stdout, not files — and **per‑puzzle `dodges.py`** pins every
+hand‑found sidestep as a permanent regression. Detailed in [audit.md](audit.md).

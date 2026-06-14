@@ -6,18 +6,19 @@ The orchestration, content, input and state layers. Visuals are in
 
 ```mermaid
 flowchart TB
-    play["play.py «launcher»"] --> app
-    app["app.py «dispatch»"] --> checker
+    play["play.py"] --> app["app.py «dispatch»"]
+    app --> checker["checker.py"]
     app --> commands["commands/*"]
-    checker["checker.py"] --> toolkit["toolkit.Toolkit"]
-    checker --> content
-    checker --> state
-    checker --> render["render/theme"]
-    content["content.py"] --> config["config.py"]
-    state["state.py"] --> config
+    checker --> toolkit["toolkit/"]
+    checker --> content["content.py"]
+    checker --> state["state.py"]
+    checker --> render["render · theme"]
+    content --> config["config.py"]
+    state --> config
     toolkit --> config
-    tests["a puzzle's tests.py<br/>(content, not engine code)"] -. imports .-> inputs["inputs.py"]
-    tests -. uses .-> toolkit
+    tests["tests.py «authoring»"] -. imports .-> inputs["inputs.py"]
+    classDef seam fill:#efe,stroke:#575,stroke-dasharray:3 3;
+    class tests,inputs seam;
 ```
 
 > `inputs.py` is consumed by each puzzle's `tests.py` (loaded via
@@ -39,12 +40,21 @@ classDiagram
         <<module>>
         +main()
     }
-    note for app "dispatch table (verb → fn):\nstatus/current/progress → cmd_status\ncheck → cmd_check\nhint · solution · map\nnext/skip/retry/revert · goto/load · mode\ntheme · user/users · reset\nbegin · menu · setup[ persist] · uninstall · help"
     app ..> content : discover()
-    app ..> state : load_progress / current_puzzle / ensure_workspace
+    app ..> state : load · current · ensure_workspace
     app ..> checker : cmd_check
     app ..> commands : cmd_*
 ```
+
+`main()` maps each verb to one function:
+
+| verb(s) | → function |
+|---|---|
+| status · current · progress | `cmd_status` |
+| check · hint · solution · map | `cmd_check` · `cmd_hint` · `cmd_solution` · `cmd_map` |
+| next · skip · retry · revert · goto · mode | the navigation verbs |
+| theme · user · reset | `cmd_theme` · `cmd_user` · `cmd_reset` |
+| begin · menu · setup · uninstall · help | the rest |
 
 ## config.py — foundation
 
@@ -61,7 +71,7 @@ classDiagram
         +load_settings() dict
         +save_settings(settings)
         +set_setting(key, value)
-        +write_json(path, data)  "temp + os.replace"
+        +write_json(path, data)
         +now() str
         +rel(path) str
     }
@@ -83,15 +93,16 @@ classDiagram
         +by_id_lookup(puzzles, pid) Puzzle
         +starter_path(puzzle) str
         +read_starter(puzzle) str
-        +load_hints(dirpath) list~str~  "split on '---'"
-        +load_tests(dirpath) module  "imports tests.py fresh"
+        +load_hints(dirpath) list~str~
+        +load_tests(dirpath) module
     }
-    note for content "discover() tolerates a broken meta.json:\nit logs to stderr and SKIPS that folder\nrather than failing the whole scan."
     content ..> config : CHAPTERS_DIR
 ```
 
-`load_tests` re‑imports each `tests.py` fresh per call — that is what gives the
-audit fresh randomness on every attempt.
+`discover()` tolerates a broken `meta.json` — it logs to stderr and skips that
+folder rather than failing the whole scan. `load_tests` re‑imports each
+`tests.py` fresh per call, which is what gives the audit fresh randomness on
+every attempt.
 
 ## inputs.py — the input seam ("input automizer")
 
@@ -115,8 +126,12 @@ classDiagram
         +random_int(low, high, rng) int
     }
     inputs ..> Case : builds
-    note for Case "Chapters 1-2, 6+ tests build fixed + randomized\nCases; script puzzles feed case.stdin, import\npuzzles feed case.args, both validate vs case.expect."
 ```
+
+A `tests.py` builds fixed + randomized `Case`s: script puzzles feed
+`case.stdin`, import puzzles feed `case.args`, and both validate against
+`case.expect` — one source decides input *and* expected result, so answers
+can't be hardcoded.
 
 ## state.py — per‑user progress & the work.py lifecycle
 
@@ -127,42 +142,33 @@ an unreadable file is moved aside as `<name>.corrupt`, never overwritten.
 classDiagram
     class state {
         <<module>>
-        +USERNAME_RE, WELCOME_WORK
         +valid_username(name) bool
         +current_user() str
-        +user_dir/progress_path/answers_path(user) str
-        +list_users() list
-        +ensure_user(user)
-        +migrate_legacy()
+        +user_dir / progress_path / answers_path(user)
+        +list_users() · ensure_user() · migrate_legacy()
         +backup_corrupt(path) str
         +default_progress(puzzles) dict
-        +load_progress(puzzles) (prog, fresh)
-        +save_progress(prog)
-        +stat(prog, pid) dict
-        +current_puzzle(prog, by_id, puzzles) Puzzle
-        +load_answers() dict
-        +save_answers(answers)
-        +work_path() str
-        +read_work() str
-        +write_work(code)
-        +archive_work(puzzle, answers, solved)
-        +ensure_workspace(puzzle, answers, active)
-        +activate(prog, puzzle, answers)
-        +switch_to(target, prog, by_id, puzzles, answers, unlock)
+        +load_progress(...) prog, fresh
+        +save_progress(prog) · stat(prog, pid)
+        +current_puzzle(...) Puzzle
+        +load_answers() · save_answers()
+        +work_path() · read_work() · write_work(code)
+        +archive_work(...) · ensure_workspace(...)
+        +activate(...) · switch_to(...)
     }
-    state ..> config : write_json / paths
+    state ..> config : write_json · paths
 ```
 
 ### The `work.py` lifecycle
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Welcome : first run (no profile)
-    Welcome --> Seeded : begin/goto a puzzle\nensure_workspace seeds from starter.py\n(or saved answers.json code)
-    Seeded --> Edited : learner edits in their editor
-    Edited --> Archived : check / switch puzzle\narchive_work → answers.json
-    Archived --> Seeded : switch_to(next)
-    Archived --> Welcome : reset (delete answers.json,\nregenerate work.py)
+    [*] --> Welcome : first run
+    Welcome --> Seeded : begin / goto — seed from starter
+    Seeded --> Edited : learner edits
+    Edited --> Archived : check / switch — archive to answers.json
+    Archived --> Seeded : switch_to next
+    Archived --> Welcome : reset
 ```
 
 ## checker.py — one check, end to end

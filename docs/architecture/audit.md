@@ -15,13 +15,13 @@ grades against exactly what learners run.
 
 ```mermaid
 flowchart TB
-    main["main()"] --> conf["conformance_issues(p)"]
-    main --> side["sidestep_report(p)  (--sidestep)"]
-    main --> eng["_engine_selftest()  (--engine)"]
-    conf --> tk["Toolkit(solution, mode).check"]
-    side --> rec["Recorder (records the tape)"]
+    main["main()"] --> conf["conformance_issues<br/>«default»"]
+    main --> side["sidestep_report<br/>«--sidestep»"]
+    main --> eng["_engine_selftest<br/>«--engine»"]
+    conf --> tk["Toolkit.check"]
+    side --> rec["Recorder «records the tape»"]
     side --> adv["adversaries → impostor_passes"]
-    side --> dod["load_dodges(dir)"]
+    side --> dod["load_dodges"]
     rec --> tk
 ```
 
@@ -33,30 +33,33 @@ flowchart TB
 classDiagram
     class Toolkit
     class Recorder {
-        +list stdin_runs  "(stdin, stdout)"
-        +list fn_calls    "(name, args, kwargs, result)"
+        +list stdin_runs
+        +list fn_calls
         +run(stdin, files)
-        +call(name, *a, **k)
+        +call(name, ...)
     }
     Toolkit <|-- Recorder
 
     class audit {
         <<module>>
-        +ALLOWED  "passing impostor is the accepted ceiling"
-        +CHAFF    "dead code with every construct"
-        +build_impostor(rec)  "replay lookup table"
-        +build_synth(rec, named)  "compute fixed output another way"
-        -_synth_expr(line)
-        +load_dodges(pdir)  "per-puzzle pinned sidesteps"
+        +ALLOWED · CHAFF
+        +build_impostor(rec)
+        +build_synth(rec, named)
+        +load_dodges(pdir)
         +impostor_passes(p, src, attempts)
-        +sidestep_report(p) (breaches, dodge_passes)
-        +conformance_issues(p) list
-        +_engine_selftest() int
-        +main() int
+        +sidestep_report(p)
+        +conformance_issues(p)
+        +_engine_selftest()
+        +main()
     }
     audit ..> Recorder
-    audit ..> content : discover / load_tests
+    audit ..> content : discover · load_tests
 ```
+
+`ALLOWED` whitelists puzzles where the cheapest passing program is a legitimate
+answer; `CHAFF` is dead code holding every construct (to test that liveness
+ignores it). `build_impostor`/`build_synth` synthesize the adversaries;
+`sidestep_report` returns `(breaches, dodge_passes)` per puzzle.
 
 `Recorder` subclasses the real `Toolkit` so it grades identically while also
 capturing the **tape** of every `(stdin → stdout)` and `(call → result)` — the
@@ -65,17 +68,19 @@ raw material every adversary is built from.
 ## The four generic adversaries (mutation testing of the grader)
 
 ```mermaid
-flowchart TB
-    rec["Recorder runs the reference solution<br/>→ tape (stdin_runs / fn_calls)"]
-    rec --> r1["replay<br/>answer from a lookup table,<br/>compute nothing"]
-    rec --> r2["chaff-replay<br/>table + CHAFF: a never-called fn<br/>stuffed with every construct"]
-    rec --> r3["synth (fixed-output scripts)<br/>print each constant via arithmetic<br/>the brief never asked for"]
-    rec --> r4["named-synth<br/>same constants parked in a var<br/>and reused"]
-    r1 --> defeat1{{"defeated by:<br/>randomized inputs"}}
-    r2 --> defeat2{{"defeated by:<br/>liveness checks"}}
-    r3 --> defeat3{{"defeated by:<br/>line_* expression checks"}}
-    r4 --> defeat4{{"defeated by:<br/>pinning the stored value"}}
+flowchart LR
+    rec["Recorder → tape"] --> r1["replay"] --> d1{{"randomized inputs"}}
+    rec --> r2["chaff-replay"] --> d2{{"liveness checks"}}
+    rec --> r3["synth"] --> d3{{"line_* checks"}}
+    rec --> r4["named-synth"] --> d4{{"pin the stored value"}}
 ```
+
+The Recorder runs the reference solution to capture the **tape**, then four
+adversaries answer from it: **replay** (a lookup table, computing nothing),
+**chaff-replay** (the table plus `CHAFF` — a never-called function holding every
+construct), **synth** (re-derive a fixed output via arithmetic the brief never
+asked for), and **named-synth** (the same constants parked in a variable). Each
+hexagon is the defense that defeats it.
 
 **A passing impostor is a hole.** Each puzzle should be saved by at least one
 defense per adversary. `ALLOWED` whitelists the rare puzzle where the cheapest
@@ -92,36 +97,35 @@ flowchart LR
 ```
 
 Every known hand‑found sidestep is pinned here with the check that now blocks
-it; the audit fails forever if one ever passes again. (The manual hunting
-process is documented in the gitignored `SIDESTEP_PLAYBOOK.md`.)
+it; the audit fails forever if one ever passes again.
 
 ## Sequence — `--sidestep` against one puzzle
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant M as main()
+    participant M as main
     participant SR as sidestep_report
     participant Rec as Recorder
-    participant B as build_impostor / build_synth
+    participant B as builders
     participant IP as impostor_passes
     participant D as load_dodges
 
     M->>SR: sidestep_report(p)
-    SR->>Rec: load_tests(dir).check(Recorder)  %% record the tape
+    SR->>Rec: run reference solution, record the tape
     SR->>B: build replay / chaff / synth / named-synth
     loop each adversary
         SR->>IP: impostor_passes(p, src, attempts=2)
-        IP->>IP: write src to temp · load_tests fresh · Toolkit().check
-        IP-->>SR: passed? (breach if yes)
+        IP->>IP: temp file · fresh tests · Toolkit.check
+        IP-->>SR: passed? — a breach if yes
     end
     SR->>D: load_dodges(dir)
     loop each pinned dodge
         SR->>IP: impostor_passes(p, src, attempts=1)
         IP-->>SR: must be False
     end
-    SR-->>M: (breaches, dodge_passes)
-    M-->>M: weak++ if any breach (not ALLOWED) or any dodge passes
+    SR-->>M: breaches, dodge_passes
+    M-->>M: weak++ on any breach or passing dodge
 ```
 
 ## `--engine` — the guard's guarantees, pinned

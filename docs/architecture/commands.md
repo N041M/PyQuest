@@ -7,25 +7,22 @@ they go through [render/theme](visuals.md). ← [overview](README.md)
 
 ```mermaid
 flowchart TB
-    app["app.py dispatch"] --> init["commands/__init__ (facade re-export)"]
-    init --> play["play.py — loop verbs"]
-    init --> profiles["profiles.py — theme/user/reset"]
-    init --> shortcuts["shortcuts.py — shell installer"]
-    init --> menu["menu.py — begin/menu"]
-    init --> help["help.py"]
-    play --> cards["cards.py (shared card/goto helpers)"]
+    app["app.py «dispatch»"] --> init["commands/__init__ «facade»"]
+    init --> play["play «loop verbs»"]
+    init --> profiles["profiles «theme/user/reset»"]
+    init --> shortcuts["shortcuts «installer»"]
+    init --> menu["menu «begin/menu»"]
+    init --> help["help"]
+    play --> cards["cards «shared card/goto»"]
     menu --> cards
     menu --> profiles
     menu --> shortcuts
-    cards --> state
-    cards --> render
-    play --> render
-    play --> state
-    play --> content
 ```
 
-`checker.cmd_check` lives in `engine/checker.py` (not here) because it owns the
-toolkit run; everything else verb‑shaped is in this package.
+Each verb also reads `content`/`state` and draws through `render` (the module
+diagram below); those edges are left off here to keep the verb topology clear.
+`checker.cmd_check` lives in `engine/checker.py` (not this package) because it
+owns the toolkit run; everything else verb‑shaped is here.
 
 ---
 
