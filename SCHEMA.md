@@ -105,18 +105,29 @@ Available on `T`:
 ### Construct checks (integrity)
 
 `T.uses_op("+")`, `T.uses_if/for/while/loop/break/continue`, `T.uses_try`,
-`T.uses_raise`, `T.uses_in`, `T.uses_call(name)`, `T.uses_dict/set`,
+`T.uses_raise`, `T.uses_in`, `T.uses_boolop(op=)`, `T.uses_call(name)`,
+`T.uses_dict/set`, `T.uses_nested_if`,
 `T.uses_index/negative_index/slice(step=)`, `T.uses_fstring`,
-`T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_print`,
-`T.print_uses_keyword(kw)`, `T.print_has_min_args(n)`,
+`T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_default_param(name)`,
+`T.uses_print`, `T.print_uses_keyword(kw)`, `T.print_has_min_args(n)`,
 `T.prints_computed(min_calls=)`, `T.prints_name(min_calls=, same=)`,
 `T.assigns_a_variable(value=)`, `T.reassigns_a_variable(values=)`.
 
-All of these are **liveness-checked**: a construct only counts if mutating it
+Most of these are **liveness-checked**: a construct only counts if mutating it
 away changes the program's behavior on the inputs the tests already ran. Dead
 decorations (`q = 1 * 1`, `if False: pass`, a print routed into a StringIO)
 don't satisfy anything, so call the behavior assertions (`T.run`/`T.call`)
 **before** the construct checks — liveness replays those recorded inputs.
+(`uses_default_param`, like `uses_yield`/`uses_lambda`, is AST-only: ablating a
+default is awkward.) A failed construct check raises `LessonNotUsedError` — the
+answer was right but the lesson's tool was skipped — which the checker shows as
+its own "so close" screen, distinct from a plain wrong-result failure.
+
+Use these to pin the lesson against a *different tool* that gets the same
+answer: `uses_boolop()` (not `n % 6 == 0` for "divisible by 2 and 3"; accepts a
+De Morgan `not(a or b)`), `uses_nested_if` (a real body nest, not a flat `elif`
+chain — an `elif` is AST-identical to `else: if`), `uses_default_param("greet")`
+(the `name=value` default, not `*args`), `uses_call("int")` (not `eval`).
 
 For fixed-output puzzles (no input to randomize) where the lesson IS one
 specific expression, pin the printed expression itself:

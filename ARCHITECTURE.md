@@ -103,7 +103,8 @@ state.py      per-user progress + answers (users/<name>/...) + workspace
               (work.py) lifecycle: seed, archive, switch, reset, users.
 toolkit/      the T object handed to each tests.py. "The tester." A package
               composed by concern; internal dependencies point down:
-                errors.py      the four translated failure categories
+                errors.py      the translated failure categories (incl.
+                               LessonNotUsedError: right answer, wrong lesson)
                 textutil.py    normalize / short_tb / fmt_args
                 guard.py       ExecutionGuard -- the ONE place in-process
                                learner code runs (sandbox, alarm, capture)
@@ -118,7 +119,8 @@ toolkit/      the T object handed to each tests.py. "The tester." A package
               `__init__.py` assembles Toolkit as a facade over these mixins;
               the import path `engine.toolkit` and the flat T API are frozen.
 checker.py    orchestrates one check: load tests, build T, run check()/bonus(),
-              translate failures into the four categories, render pass/fail.
+              translate failures into their categories (a missed construct
+              check renders its own "so close" screen), render pass/fail.
 commands.py   the verbs (status, map, goto, next, skip, retry, hint, solution,
               mode, reset, help) — compose state + content + render + checker.
 app.py        argv dispatch + main().
@@ -199,12 +201,18 @@ code and raises *translated* failures, so messages stay friendly.
   `T.assigns_a_variable(value=)`, `T.reassigns_a_variable(values=)`,
   `T.uses_if/uses_while/uses_for/uses_loop/uses_break/uses_continue`,
   `T.uses_fstring`, `T.uses_index/uses_negative_index/uses_slice(step=)`,
-  `T.uses_in`, `T.uses_comprehension(with_if=)`, `T.uses_call(name)`,
-  `T.uses_dict/uses_set/uses_unpacking`, `T.uses_try`, `T.uses_raise`,
+  `T.uses_in`, `T.uses_boolop(op=)`, `T.uses_comprehension(with_if=)`,
+  `T.uses_call(name)`, `T.uses_dict/uses_set/uses_unpacking`,
+  `T.uses_nested_if`, `T.uses_default_param(name)`, `T.uses_try`, `T.uses_raise`,
   `T.uses_with`, `T.uses_import(module)`, `T.uses_class`, `T.uses_yield`,
   `T.uses_lambda` (staged for Ch8+),
   `T.source()`. Require the *kind* of construct, not one exact spelling, so
-  legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s).
+  legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s,
+  and `uses_boolop()` accepts a De Morgan `not(a or b)` for an `and`). The
+  inverse — a *nesting* puzzle that must reject a flat `elif` — needs
+  `uses_nested_if` (an `elif` is AST-identical to `else: if`, so only a body
+  nest counts). A failed construct check is a `LessonNotUsedError`: the output
+  was right but the taught tool was skipped, shown as its own screen.
 - **Liveness (how construct checks judge).** A construct check is itself
   behavioral: a candidate node only counts if ablating it — removing the
   statement, substituting the expression with a sentinel value, dropping the
