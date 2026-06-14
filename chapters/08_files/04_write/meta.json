@@ -1,0 +1,8 @@
+{
+  "id": "8.4",
+  "title": "Writing a file",
+  "chapter": "Files & I/O",
+  "concept": "open(name, \"w\") and f.write() -- create a file and put exact text in it (no automatic newline)",
+  "mode": "script",
+  "why": "Mode \"w\" opens a fresh file for writing and write() emits exactly the string given, so reading one file and writing a transformed copy is the everyday file pipeline."
+}

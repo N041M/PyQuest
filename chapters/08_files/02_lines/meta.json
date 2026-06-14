@@ -1,0 +1,8 @@
+{
+  "id": "8.2",
+  "title": "A file, line by line",
+  "chapter": "Files & I/O",
+  "concept": "for line in f -- a file is iterable; each line still carries its trailing newline, so strip it",
+  "mode": "script",
+  "why": "Iterating a file object yields its lines one at a time without loading it whole; .strip() removes the newline each line ends with."
+}

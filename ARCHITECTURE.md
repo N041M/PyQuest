@@ -238,8 +238,10 @@ code and raises *translated* failures, so messages stay friendly.
   `T.uses_in`, `T.uses_boolop(op=)`, `T.uses_comprehension(with_if=)`,
   `T.uses_call(name)`, `T.uses_dict/uses_set/uses_unpacking`,
   `T.uses_nested_if`, `T.uses_default_param(name)`, `T.uses_try`, `T.uses_raise`,
-  `T.uses_with`, `T.uses_import(module)`, `T.uses_class`, `T.uses_yield`,
-  `T.uses_lambda` (staged for Ch8+),
+  `T.uses_with`/`T.uses_with_open` (the latter requires the FILE itself to be
+  opened by the `with`, not merely some live `with` elsewhere),
+  `T.uses_import(module)`, `T.uses_class`, `T.uses_yield`,
+  `T.uses_lambda` (`uses_class`/`yield`/`lambda` staged for Ch9+),
   `T.source()`. Require the *kind* of construct, not one exact spelling, so
   legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s,
   and `uses_boolop()` accepts a De Morgan `not(a or b)` for an `and`). The

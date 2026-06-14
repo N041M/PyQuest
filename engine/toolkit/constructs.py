@@ -287,11 +287,35 @@ class ConstructsMixin:
 
     # ---- construct checks staged for the upcoming chapters -------------------
     def uses_with(self, because=""):
-        """A with statement (the files chapter: `with open(...) as f`)."""
-        self._require_live("a with statement (with open(...) as f:)",
+        """A with statement (any context manager). For the files chapter use
+        uses_with_open: this plain check is satisfied by ANY live with -- even a
+        `with io.StringIO() as s:` wrapping a print -- so it does NOT prove the
+        FILE was opened with a with (the file could still be read/written bare).
+        """
+        self._require_live("a with statement (with ... as ...:)",
                            "no with statement was used",
                            self._find(lambda n: isinstance(n, ast.With)),
                            "stmt", because)
+
+    def uses_with_open(self, because=""):
+        """A `with open(...) as f:` -- the file itself must be opened by a with
+        block. The with's context expression has to be an open() call, so an
+        unrelated `with io.StringIO()` (which satisfies the generic uses_with)
+        won't pass while the file is opened bare. Still liveness-checked: a dead
+        `with open(...) as f: pass` decoy doesn't count, so the with-open must
+        be the one actually doing the file I/O the output depends on."""
+        def ok(n):
+            if not isinstance(n, ast.With):
+                return False
+            return any(isinstance(it.context_expr, ast.Call)
+                       and isinstance(it.context_expr.func, ast.Name)
+                       and it.context_expr.func.id == "open"
+                       for it in n.items)
+        self._require_live("a `with open(...) as f:` block",
+                           "the file wasn't opened with a with statement "
+                           "(a with on something other than open() doesn't "
+                           "count)",
+                           self._find(ok), "stmt", because)
 
     def uses_import(self, module=None, because=""):
         """An import -- optionally of one specific module."""

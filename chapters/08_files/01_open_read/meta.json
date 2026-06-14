@@ -1,0 +1,8 @@
+{
+  "id": "8.1",
+  "title": "Opening a file",
+  "chapter": "Files & I/O",
+  "concept": "with open(name) as f: f.read() -- read a file's whole contents, and let `with` close it for you",
+  "mode": "script",
+  "why": "open() returns a file object; read() pulls its entire text in one string, and the with block guarantees the file is closed afterwards, even on error."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "8.8",
+  "title": "Capstone: a ranking report",
+  "chapter": "Files & I/O",
+  "concept": "read records, parse and rank them, write a formatted report -- split, unpack, int, sorted-by-key, f-strings and files together",
+  "mode": "script",
+  "why": "Each line is split and unpacked into name/score, the list is sorted by a key for the ranking, and the report plus a total line is written out -- the full read-process-write program."
+}

@@ -97,8 +97,9 @@ Available on `T`:
 - `T.does_not_mutate(name, *args)` → call and require the arguments back
   unchanged (for "return a NEW value" lessons); returns the result.
 - `T.eq(actual, expected, because="")` → assert equal. String outputs are
-  whitespace-normalized and compared **case-insensitively**; pass
-  `match_case=True` when capitalisation is the lesson (e.g. an `.upper()` task).
+  whitespace-normalized and compared **case-sensitively** by default (this is a
+  Python course; capitalisation is part of the answer); pass `match_case=False`
+  for the rare puzzle where any casing is fine.
 - `T.true(cond, because="")`, `T.is_a(value, type, because="")`.
 - `T.raises(ExcType, name, *args, **kwargs)`.
 
@@ -106,7 +107,10 @@ Available on `T`:
 
 `T.uses_op("+")`, `T.uses_if/for/while/loop/break/continue`, `T.uses_try`,
 `T.uses_raise`, `T.uses_in`, `T.uses_boolop(op=)`, `T.uses_call(name)`,
-`T.uses_dict/set`, `T.uses_nested_if`,
+`T.uses_with`, `T.uses_with_open` (the files chapter: the FILE must be opened
+by a `with` — a generic `uses_with` is satisfied by any live `with`, even a
+`with io.StringIO()` wrapping a print, so use `uses_with_open` for file
+lessons), `T.uses_dict/set`, `T.uses_nested_if`,
 `T.uses_index/negative_index/slice(step=)`, `T.uses_fstring`,
 `T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_default_param(name)`,
 `T.uses_print`, `T.print_uses_keyword(kw)`, `T.print_has_min_args(n)`,

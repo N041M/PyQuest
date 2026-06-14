@@ -1,0 +1,8 @@
+{
+  "id": "8.5",
+  "title": "Append, don't overwrite",
+  "chapter": "Files & I/O",
+  "concept": "open(name, \"a\") adds to a file; \"w\" empties it first -- one mode letter is the whole difference",
+  "mode": "script",
+  "why": "Append mode writes after the existing contents instead of truncating, so a growing log keeps its history while \"w\" would discard it."
+}

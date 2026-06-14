@@ -447,6 +447,33 @@ def _engine_selftest():
             return
         raise AssertionError("uses_import('random') should fail here")
 
+    def t_with_open_construct():
+        """uses_with_open demands the FILE be opened with `with`. A live
+        `with io.StringIO()` wrapping a print satisfies the generic uses_with
+        but must NOT satisfy uses_with_open while the file is read bare -- the
+        files-chapter hole the targeted check closes."""
+        from engine.toolkit import LessonNotUsedError
+        real = "with open('note.txt') as f:\n    t = f.read()\nprint(t)\n"
+        path, T = learner(real, mode="script")
+        T.timeout = 5
+        T.run(files={"note.txt": "hello"})
+        T.uses_with_open()                      # the file is opened with `with`
+        os.unlink(path)
+
+        dodge = ("import io\n"
+                 "t = open('note.txt').read()\n"
+                 "with io.StringIO() as s:\n    print(t)\n")
+        path, T = learner(dodge, mode="script")
+        T.timeout = 5
+        T.run(files={"note.txt": "hello"})
+        T.uses_with()                           # the generic check is fooled
+        try:
+            T.uses_with_open()                  # the targeted check is not
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        raise AssertionError("an unrelated `with` satisfied uses_with_open")
+
     def t_raises_still_works():
         path, T = learner("def f(x):\n    if x < 0:\n"
                           "        raise ValueError('no')\n    return x\n")
@@ -644,6 +671,7 @@ def _engine_selftest():
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_does_not_mutate, t_does_not_mutate_uncopyable,
                t_eq_case_sensitive, t_deep_approx, t_new_constructs,
+               t_with_open_construct,
                t_raises_still_works, t_liveness_dead_chaff,
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,
