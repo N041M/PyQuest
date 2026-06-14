@@ -21,6 +21,15 @@ module‑level class diagrams and the relevant sequences:
 > classes. Dependencies point **downward**: a box only knows about the boxes
 > below it.
 
+> [!IMPORTANT]
+> **Keep these diagrams in sync with the code.** They are hand‑maintained, not
+> generated, so they drift the moment a module, dependency, command verb, or
+> `T.uses_*` check is added, removed, or rewired. When you change the
+> structure, update the affected diagram(s) in the same change — the dependency
+> edges in §4 mirror the real `import` graph (`grep -rE "^from \.\.?" engine`),
+> the dispatch list mirrors `app.main()`, and the toolkit/error diagrams mirror
+> `engine/toolkit/`. A diagram that lies is worse than none.
+
 ---
 
 ## 1. System context (C4 level 1)
@@ -46,61 +55,27 @@ short `python3 play.py <verb>` that reads content + per‑user state from disk,
 does one thing, prints, and exits. The only interactive surface is the `begin`
 menu. There are **no third‑party dependencies** (Python 3.8+ stdlib only).
 
-## 2. Containers & components (C4 level 2)
+## 2. Containers (C4 level 2)
+
+The runnable units and the stores they read/write — kept deliberately coarse.
+The engine's internal **components** are the next level down: see §3 (layers)
+and the per‑module pages.
 
 ```mermaid
 flowchart TB
-    subgraph entry["entry point"]
-        play["play.py<br/>«launcher»"]
-    end
+    play["play.py<br/>«launcher»"]
+    engine["engine/<br/>«the application»<br/>dispatch · verbs · checker · toolkit ·<br/>content · inputs · state · visuals"]
+    audit["audit.py<br/>«test harness — not shipped»"]
+    chapters[("chapters/<br/>puzzle content")]
+    users[("users/&lt;name&gt;/<br/>progress · answers · work.py")]
+    cfg[("themes/ · settings.json")]
 
-    subgraph engine["engine/ (the application)"]
-        app["app.py<br/>«argv dispatch»"]
-        subgraph cmds["commands/ — the verbs"]
-            verbs["status · map · hint · solution<br/>goto/next/skip/retry/revert · mode<br/>theme · user · reset · setup · begin/menu · help"]
-        end
-        checker["checker.py<br/>«orchestrates one check»"]
-        subgraph tk["toolkit/ — the T tester"]
-            toolkit["Toolkit + ExecutionGuard<br/>+ liveness"]
-        end
-        content["content.py<br/>«discovery + loaders»"]
-        inputs["inputs.py<br/>«input providers»"]
-        state["state.py<br/>«progress / answers / work.py»"]
-        config["config.py<br/>«paths · settings · atomic write»"]
-        subgraph vis["presentation"]
-            theme["theme.py"]
-            render["render.py"]
-        end
-    end
-
-    subgraph data["content & state on disk"]
-        chapters[("chapters/NN/MM/<br/>brief·starter·tests·hints·solution·meta(+dodges)")]
-        users[("users/<name>/<br/>progress.json·answers.json·work.py")]
-        themes[("themes/*.json")]
-        settings[("settings.json")]
-    end
-
-    audit["audit.py<br/>«conformance + anti-sidestep»<br/>(not part of engine)"]
-
-    play --> app
-    app --> verbs
-    app --> checker
-    verbs --> checker
-    checker --> toolkit
-    checker --> content
-    checker --> state
-    verbs --> content
-    verbs --> state
-    verbs --> render
-    toolkit --> inputs
-    content --> chapters
-    state --> users
-    theme --> themes
-    config --> settings
-    render --> theme
-    audit --> content
-    audit --> toolkit
-    audit --> chapters
+    play --> engine
+    engine -->|read| chapters
+    engine -->|read/write| users
+    engine -->|read/write| cfg
+    audit -->|reuses| engine
+    audit -->|grades| chapters
 ```
 
 ## 3. Layered architecture (the five concerns that never bleed)
@@ -136,7 +111,100 @@ flowchart TB
 | Colours/glyphs/boxes exist **only** in the visual layer | `theme.py` / `render.py` |
 | Every JSON write is **atomic** (temp + rename); a corrupt file is moved aside | `config.write_json` · `state.backup_corrupt` |
 
-## 4. Domain model (the data a check moves through)
+## 4. Engine components (C4 level 3)
+
+The wiring *inside* the `engine/` container, shown as one coarse view plus
+three focused slices so each stays small. Arrows point **toward the dependency**
+(A → B means "A imports B"); verify the edges with
+`grep -rE "^from \.\.?" engine`. `config` is the universal foundation imported
+widely, so it appears only where a slice needs it. The per‑verb edges into the
+data and visual layers live in [commands.md](commands.md); the tester in
+[toolkit.md](toolkit.md).
+
+### 4.1 At a glance
+
+```mermaid
+flowchart TB
+    play["play.py «launcher»"] --> app["app.py «argv dispatch»"]
+    app --> verbs["commands/ «verbs»"]
+    app --> checker["checker.py «one check»"]
+    app --> data["content + state «data access»"]
+    app --> vis["render + theme «visuals»"]
+    checker --> toolkit["toolkit/ «the T tester»"]
+    checker --> data
+    checker --> vis
+    verbs --> data
+    verbs --> vis
+    data --> config["config.py «foundation»"]
+    vis --> config
+    toolkit --> config
+    classDef base fill:#eef,stroke:#557;
+    class config base;
+```
+
+A clean DAG, no cycles: `app` on top fans out to the verbs, the checker, and the
+data/visual layers; everything bottoms out at `config`. The next three slices
+zoom into one region each.
+
+### 4.2 Dispatch & verbs
+
+```mermaid
+flowchart TB
+    app["app.py"] --> cinit["commands/__init__ «facade»"]
+    cinit --> cplay["play «loop verbs»"]
+    cinit --> cmenu["menu «begin/menu»"]
+    cinit --> cprof["profiles «theme/user/reset»"]
+    cinit --> cshort["shortcuts «shell installer»"]
+    cinit --> chelp["help"]
+    cplay --> ccards["cards «shared card/goto»"]
+    cmenu --> ccards
+    cmenu --> cprof
+    cmenu --> cshort
+```
+
+Only `cards` is shared and `menu` composes the other verbs, so adding a verb
+touches one module plus one `elif` in `app.main()`. (Each verb's edges to
+`content`/`state`/`render` are in [commands.md](commands.md).)
+
+### 4.3 The check path
+
+```mermaid
+flowchart LR
+    app["app.py"] --> checker["checker.py"]
+    checker -->|load_tests| content["content.py"]
+    checker -->|workspace + progress| state["state.py"]
+    checker -->|runs check(T)| toolkit["toolkit/"]
+    checker -->|cards + feedback| render["render.py"]
+    toolkit --> config["config.py «TIMEOUT»"]
+    classDef base fill:#eef,stroke:#557;
+    class config base;
+```
+
+`checker` is the only module that touches the `toolkit`; the §6 sequence traces
+this path end to end.
+
+### 4.4 Data, visuals & foundation
+
+```mermaid
+flowchart TB
+    state["state.py «progress/answers/work.py»"] --> content["content.py «discovery + loaders»"]
+    state --> config["config.py «paths · atomic write · WIDTH»"]
+    content --> config
+    render["render.py «primitives»"] --> theme["theme.py «palette · glyphs · paint»"]
+    theme --> config
+    inputs["inputs.py «input seam»"]
+    tests["a puzzle's tests.py"] -. imports .-> inputs
+    classDef base fill:#eef,stroke:#557;
+    class config base;
+    classDef seam fill:#efe,stroke:#575,stroke-dasharray:3 3;
+    class inputs seam;
+    class tests seam;
+```
+
+The bottom layers. `inputs` is intentionally an island — no engine module
+imports it; only a puzzle's `tests.py` does (the authoring seam, dashed).
+
+## 5. Domain model (the data a check moves through)
 
 ```mermaid
 classDiagram
@@ -185,7 +253,7 @@ classDiagram
     Puzzle ..> Case : tests build cases
 ```
 
-## 5. Key runtime sequence — `python3 play.py check`
+## 6. Key runtime sequence — `python3 play.py check`
 
 ```mermaid
 sequenceDiagram
@@ -223,7 +291,7 @@ sequenceDiagram
 The five translated failure types (`toolkit/errors.py`) each map to a distinct
 learner‑facing screen — see [toolkit.md](toolkit.md) and [engine-core.md](engine-core.md).
 
-## 6. Anti‑sidestep posture (why the grader is hard to cheat)
+## 7. Anti‑sidestep posture (why the grader is hard to cheat)
 
 ```mermaid
 flowchart LR

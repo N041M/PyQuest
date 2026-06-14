@@ -13,11 +13,16 @@ flowchart TB
     checker --> content
     checker --> state
     checker --> render["render/theme"]
-    content["content.py"] --> config
-    state["state.py"] --> config["config.py"]
-    toolkit --> inputs["inputs.py"]
-    content --> inputs
+    content["content.py"] --> config["config.py"]
+    state["state.py"] --> config
+    toolkit --> config
+    tests["a puzzle's tests.py<br/>(content, not engine code)"] -. imports .-> inputs["inputs.py"]
+    tests -. uses .-> toolkit
 ```
+
+> `inputs.py` is consumed by each puzzle's `tests.py` (loaded via
+> `content.load_tests`), **not** by `toolkit` or `content` themselves — it is
+> the authoring seam, not an engine dependency.
 
 ---
 
