@@ -3,9 +3,9 @@
 The file formats for adding or editing puzzles. For the design rules behind
 them, see [ARCHITECTURE.md](ARCHITECTURE.md). A puzzle is one folder under
 `chapters/NN_title/MM_title/` containing six files: `brief.md`, `starter.py`,
-`tests.py`, `hints.md`, `solution.py`, and `meta.json` — plus an optional
+`tests.py`, `hints.md`, `solution.py`, and `meta.json`, plus an optional
 `dodges.py` of pinned sidesteps (see below). The engine discovers new puzzle
-folders automatically — no code changes needed.
+folders automatically, no code changes needed.
 
 ## The workspace model
 
@@ -14,7 +14,7 @@ single `users/<name>/work.py` that the engine owns. When a puzzle becomes
 current, the engine seeds `work.py` from that puzzle's `starter.py` (or from the
 learner's previously saved code). `check` validates `work.py`. Every check
 archives the workspace into that user's `answers.json` (see below). This is what
-lets `reset` restore a truly clean slate — it deletes the profile's
+lets `reset` restore a truly clean slate, it deletes the profile's
 `answers.json` and regenerates `work.py`.
 
 So when authoring, the file you write as the starting point is `starter.py`; the
@@ -79,7 +79,7 @@ Every execution of the learner's code runs under the engine's guard: stdin is
 blanked (a stray `input()` fails with a friendly message instead of hanging),
 stdout is captured into `T.printed`, infinite loops hit the wall-clock timeout,
 `exit()`/`sys.exit()` is translated, and the working directory is a throwaway
-sandbox — so learner file I/O can never touch the project.
+sandbox, so learner file I/O can never touch the project.
 
 Available on `T`:
 
@@ -108,13 +108,13 @@ Available on `T`:
 `T.uses_op("+")`, `T.uses_if/for/while/loop/break/continue`, `T.uses_try`,
 `T.uses_raise`, `T.uses_in`, `T.uses_boolop(op=)`, `T.uses_call(name)`,
 `T.uses_with`, `T.uses_with_open` (the files chapter: the FILE must be opened
-by a `with` — a generic `uses_with` is satisfied by any live `with`, even a
+by a `with`, a generic `uses_with` is satisfied by any live `with`, even a
 `with io.StringIO()` wrapping a print, so use `uses_with_open` for file
 lessons), `T.uses_dict/set`, `T.uses_nested_if`,
 `T.uses_index/negative_index/slice(step=)`, `T.uses_fstring`,
 `T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_default_param(name)`,
 `T.uses_class(name)` (the OOP chapters: pass the class name the tests
-instantiate — object puzzles run through `make`/`method`/`attr`, which aren't on
+instantiate, object puzzles run through `make`/`method`/`attr`, which aren't on
 the tape, so this is an AST presence check and the name stops a decoy
 `class X: pass` standing in for a namedtuple/`type()`),
 `T.uses_print`, `T.print_uses_keyword(kw)`, `T.print_has_min_args(n)`,
@@ -125,16 +125,16 @@ Most of these are **liveness-checked**: a construct only counts if mutating it
 away changes the program's behavior on the inputs the tests already ran. Dead
 decorations (`q = 1 * 1`, `if False: pass`, a print routed into a StringIO)
 don't satisfy anything, so call the behavior assertions (`T.run`/`T.call`)
-**before** the construct checks — liveness replays those recorded inputs.
+**before** the construct checks, liveness replays those recorded inputs.
 (`uses_default_param`, like `uses_yield`/`uses_lambda`, is AST-only: ablating a
-default is awkward.) A failed construct check raises `LessonNotUsedError` — the
-answer was right but the lesson's tool was skipped — which the checker shows as
+default is awkward.) A failed construct check raises `LessonNotUsedError`, the
+answer was right but the lesson's tool was skipped, which the checker shows as
 its own "so close" screen, distinct from a plain wrong-result failure.
 
 Use these to pin the lesson against a *different tool* that gets the same
 answer: `uses_boolop()` (not `n % 6 == 0` for "divisible by 2 and 3"; accepts a
 De Morgan `not(a or b)`), `uses_nested_if` (a real body nest, not a flat `elif`
-chain — an `elif` is AST-identical to `else: if`), `uses_default_param("greet")`
+chain, an `elif` is AST-identical to `else: if`), `uses_default_param("greet")`
 (the `name=value` default, not `*args`), `uses_call("int")` (not `eval`).
 
 For fixed-output puzzles (no input to randomize) where the lesson IS one
@@ -144,7 +144,7 @@ specific expression, pin the printed expression itself:
   argument* (defeats `print(7*2)` + `print(10+10)` answering an
   order-of-operations task).
 - `T.line_shape(i, outer, inner)` → print #i contains `inner` evaluated
-  before `outer` (`(2 + 3) * 4` is a Mult with an Add operand — a shape only
+  before `outer` (`(2 + 3) * 4` is a Mult with an Add operand, a shape only
   parentheses can write).
 - `T.line_only_literals(i, {2, 3, 4})` → print #i is built only from the
   task's own literals (type-strict; no variables, calls, or other numbers).
@@ -187,7 +187,7 @@ instead of one canonical value:
 ### Performance check (optional, advisory)
 
 A puzzle's `tests.py` may also define `bonus(T)`. It runs **only after** the
-answer is already accepted and **never blocks** progress — it prints a separate
+answer is already accepted and **never blocks** progress; it prints a separate
 `⚡` line (LeetCode-style "correct, and also fast?"). Use it for an efficiency or
 elegance target:
 
@@ -204,13 +204,13 @@ def bonus(T):
 
 Timing is best-effort: keep budgets loose, prefer `T.scales` (relative growth)
 over absolute time, and never gate correctness on it. There is no way to *prove*
-big-O automatically — this catches gross inefficiency (accidental O(n^2)/O(2^n)),
+big-O automatically, this catches gross inefficiency (accidental O(n^2)/O(2^n)),
 which is what LeetCode-style timing does in practice too.
 
 Rules to follow when authoring tests:
 
 - Never inspect the learner's source text; only check behavior. (The
-  construct checks are the sanctioned exception — and liveness makes even
+  construct checks are the sanctioned exception, and liveness makes even
   them behavioral.)
 - Include at least one edge case per puzzle.
 - Prefer `because=` to name the concept being tested; it shows up on failure.
@@ -218,7 +218,7 @@ Rules to follow when authoring tests:
   one fixed value.
 - Run behavior assertions before construct checks (liveness replays the
   recorded runs/calls).
-- After adding or changing a puzzle, run `python3 audit.py --sidestep` — the
+- After adding or changing a puzzle, run `python3 audit.py --sidestep`: the
   attack suite must report it robust (see ARCHITECTURE §8).
 
 ## progress.json

@@ -1,4 +1,4 @@
-# audit.py — conformance, anti‑sidestep, engine self‑test
+# audit.py: conformance, anti‑sidestep, engine self‑test
 
 `audit.py` is the project's executable reality check. It is **not part of the
 engine** (safe to delete) and is the test suite: there is no pytest layer.
@@ -62,7 +62,7 @@ ignores it). `build_impostor`/`build_synth` synthesize the adversaries;
 `sidestep_report` returns `(breaches, dodge_passes)` per puzzle.
 
 `Recorder` subclasses the real `Toolkit` so it grades identically while also
-capturing the **tape** of every `(stdin → stdout)` and `(call → result)` — the
+capturing the **tape** of every `(stdin → stdout)` and `(call → result)`, the
 raw material every adversary is built from.
 
 ## The four generic adversaries (mutation testing of the grader)
@@ -77,7 +77,7 @@ flowchart LR
 
 The Recorder runs the reference solution to capture the **tape**, then four
 adversaries answer from it: **replay** (a lookup table, computing nothing),
-**chaff-replay** (the table plus `CHAFF` — a never-called function holding every
+**chaff-replay** (the table plus `CHAFF`, a never-called function holding every
 construct), **synth** (re-derive a fixed output via arithmetic the brief never
 asked for), and **named-synth** (the same constants parked in a variable). Each
 hexagon is the defense that defeats it.
@@ -89,10 +89,10 @@ passing program *is* a legitimate answer (e.g. 1.1 "print one literal").
 The tape only records `run`/`call`, **not** `make`/`method`/`attr`, so the four
 adversaries don't fire for object (OOP) puzzles. Those rely instead on
 randomized `make`/`method` arguments, `uses_class(name)`, and hand‑pinned
-`dodges.py` — which is why the OOP dodges are written out by hand rather than
+`dodges.py`, which is why the OOP dodges are written out by hand rather than
 generated.
 
-## Per‑puzzle pinned regressions — `dodges.py`
+## Per‑puzzle pinned regressions: `dodges.py`
 
 ```mermaid
 flowchart LR
@@ -105,7 +105,7 @@ flowchart LR
 Every known hand‑found sidestep is pinned here with the check that now blocks
 it; the audit fails forever if one ever passes again.
 
-## Sequence — `--sidestep` against one puzzle
+## Sequence: `--sidestep` against one puzzle
 
 ```mermaid
 sequenceDiagram
@@ -123,7 +123,7 @@ sequenceDiagram
     loop each adversary
         SR->>IP: impostor_passes(p, src, attempts=2)
         IP->>IP: temp file · fresh tests · Toolkit.check
-        IP-->>SR: passed? — a breach if yes
+        IP-->>SR: passed? (a breach if yes)
     end
     SR->>D: load_dodges(dir)
     loop each pinned dodge
@@ -134,7 +134,7 @@ sequenceDiagram
     M-->>M: weak++ on any breach or passing dodge
 ```
 
-## `--engine` — the guard's guarantees, pinned
+## `--engine`: the guard's guarantees, pinned
 
 `_engine_selftest()` runs ~26 direct cases asserting each promise the
 [ExecutionGuard](toolkit.md) and toolkit make: `exit()`/hang/stray‑`input()`

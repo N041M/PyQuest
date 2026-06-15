@@ -1,4 +1,4 @@
-# PyQuest — Architecture (UML)
+# PyQuest: Architecture (UML)
 
 A UML view of PyQuest's design. The diagrams are written in [Mermaid](https://mermaid.js.org)
 so they render directly on GitHub and in most Markdown/IDE viewers.
@@ -11,8 +11,8 @@ module‑level class diagrams and the relevant sequences:
 | **[engine-core.md](engine-core.md)** | `app`, `config`, `content`, `inputs`, `state`, `checker` |
 | **[toolkit.md](toolkit.md)** | the `T` tester: `Toolkit` facade, mixins, `ExecutionGuard`, liveness, errors |
 | **[commands.md](commands.md)** | the verb package (`commands/`) and argv dispatch |
-| **[visuals.md](visuals.md)** | `theme`, `render` — the isolated presentation layer |
-| **[audit.md](audit.md)** | `audit.py` — conformance, the anti‑sidestep attack suite, engine self‑test |
+| **[visuals.md](visuals.md)** | `theme`, `render`, the isolated presentation layer |
+| **[audit.md](audit.md)** | `audit.py`, conformance, the anti‑sidestep attack suite, engine self‑test |
 
 > **Notation.** Python here is mostly module‑level functions, not classes, so a
 > file is drawn as a UML class with the «module» stereotype: its functions are
@@ -30,7 +30,7 @@ flowchart TB
     learner["Learner<br/>(writes work.py)"]
     author["Author<br/>(adds puzzles)"]
     pq["PyQuest<br/>terminal Python course"]
-    fs[("Filesystem<br/>chapters/ · users/ · themes/ · settings.json")]
+    fs[("Filesystem<br/>chapters/ · users/ · themes/")]
     editor["The learner's own editor"]
 
     learner -->|"runs python3 play.py ..."| pq
@@ -48,7 +48,7 @@ menu. There are **no third‑party dependencies** (Python 3.8+ stdlib only).
 
 ## 2. Containers (C4 level 2)
 
-The runnable units and the stores they read/write — kept deliberately coarse.
+The runnable units and the stores they read/write, kept deliberately coarse.
 The engine's internal **components** are the next level down: see §3 (layers)
 and the per‑module pages.
 
@@ -56,15 +56,15 @@ and the per‑module pages.
 flowchart TB
     play["play.py<br/>«launcher»"]
     engine["engine/<br/>«the application»<br/>dispatch · verbs · checker · toolkit ·<br/>content · inputs · state · visuals"]
-    audit["audit.py<br/>«test harness — not shipped»"]
+    audit["audit.py<br/>«test harness, not shipped»"]
     chapters[("chapters/<br/>puzzle content")]
-    users[("users/&lt;name&gt;/<br/>progress · answers · work.py")]
-    cfg[("themes/ · settings.json")]
+    users[("users/<br/>profiles (progress · answers · work.py)<br/>+ settings.json")]
+    themes[("themes/<br/>colour presets")]
 
     play --> engine
     engine -->|read| chapters
     engine -->|read/write| users
-    engine -->|read/write| cfg
+    engine -->|read| themes
     audit -->|reuses| engine
     audit -->|grades| chapters
 ```
@@ -95,7 +95,7 @@ flowchart TB
 
 | Rule | Where it lives |
 |---|---|
-| A new **puzzle** is files on disk only — zero code change | `content.discover()` auto‑scans |
+| A new **puzzle** is files on disk only, zero code change | `content.discover()` auto‑scans |
 | A new **command** → one `commands/` module + one dispatch line | `app.main()` |
 | A new **validation helper** → one `toolkit/` module | `Toolkit` mixins |
 | All in‑process learner code runs through **one guard** | `ExecutionGuard.guarded()` |
@@ -138,7 +138,7 @@ flowchart TB
 Four tiers, no cycles: the **launcher** starts **dispatch**, which routes each
 command to the **verbs** or the **checker**; both lean on the shared **services**
 (data, visuals, the tester), and everything bottoms out at **config**. The three
-slices below zoom in — including which services each branch imports.
+slices below zoom in, including which services each branch imports.
 
 ### 4.2 Dispatch & verbs
 
@@ -195,7 +195,7 @@ flowchart TB
     class tests seam;
 ```
 
-The bottom layers. `inputs` is intentionally an island — no engine module
+The bottom layers. `inputs` is intentionally an island, no engine module
 imports it; only a puzzle's `tests.py` does (the authoring seam, dashed).
 
 ### 4.5 Inside the toolkit
@@ -220,8 +220,8 @@ flowchart TB
 ```
 
 The dependency spine runs downward: the integrity checks lean on `liveness`
-(does ablating the construct change behavior?), and every run of learner code —
-behavior assertion or liveness re‑run — funnels through the single
+(does ablating the construct change behavior?), and every run of learner code,
+behavior assertion or liveness re‑run, funnels through the single
 `ExecutionGuard`. `perf` is the optional, advisory `bonus(T)` branch.
 
 ## 5. Domain model (the data a check moves through)
@@ -291,7 +291,7 @@ flowchart LR
         dodges["dodges.py"]
     end
 
-    subgraph loop["engine — the learner loop"]
+    subgraph loop["engine, the learner loop"]
         direction TB
         discover["content.discover()"]
         ws["state → work.py"]
@@ -315,12 +315,12 @@ flowchart LR
 ```
 
 `meta.json` is the only file loaded for *every* puzzle (discovery reads id,
-mode, why); `brief.md` is never parsed — the engine just shows its path and the
+mode, why); `brief.md` is never parsed, the engine just shows its path and the
 learner opens it; `tests.py`, `solution.py`, and `dodges.py` are also what
-`audit.py` grades against. Adding a puzzle is dropping these files on disk —
+`audit.py` grades against. Adding a puzzle is dropping these files on disk,
 zero code changes.
 
-## 6. Key runtime sequence — `python3 play.py check`
+## 6. Key runtime sequence: `python3 play.py check`
 
 ```mermaid
 sequenceDiagram
@@ -356,7 +356,7 @@ sequenceDiagram
 ```
 
 The five translated failure types (`toolkit/errors.py`) each map to a distinct
-learner‑facing screen — see [toolkit.md](toolkit.md) and [engine-core.md](engine-core.md).
+learner‑facing screen, see [toolkit.md](toolkit.md) and [engine-core.md](engine-core.md).
 
 ## 7. Anti‑sidestep posture (why the grader is hard to cheat)
 
@@ -380,6 +380,6 @@ flowchart LR
 ```
 
 Each generic adversary has a structural defense (the dashed pairs).
-**Behavioral file checks** add cover for write puzzles — the impostors
-reproduce stdout, not files — and **per‑puzzle `dodges.py`** pins every
+**Behavioral file checks** add cover for write puzzles, the impostors
+reproduce stdout, not files, and **per‑puzzle `dodges.py`** pins every
 hand‑found sidestep as a permanent regression. Detailed in [audit.md](audit.md).

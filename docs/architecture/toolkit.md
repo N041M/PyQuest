@@ -1,4 +1,4 @@
-# toolkit/ — the `T` tester
+# toolkit/: the `T` tester
 
 `T`, the object handed to every puzzle's `check(T)`. It runs the learner's code
 through one guard, asserts on behavior, and judges whether the lesson's
@@ -24,7 +24,7 @@ flowchart TB
 
 ---
 
-## Composition — the facade and its mixins
+## Composition: the facade and its mixins
 
 ```mermaid
 classDiagram
@@ -87,10 +87,10 @@ classDiagram
 The mixins share state through the facade (`self.path`, `self.guard`, the tape
 `self._runs`/`self._calls`, the AST/liveness caches). Method‑resolution order is
 fixed in the `Toolkit(...)` base list, so the tape‑aware liveness checks see the
-runs that the behavior assertions recorded — **call behavior assertions before
+runs that the behavior assertions recorded, **call behavior assertions before
 construct checks**.
 
-## The execution guard — the one place learner code runs
+## The execution guard: the one place learner code runs
 
 ```mermaid
 classDiagram
@@ -111,10 +111,10 @@ throwaway sandbox so file I/O is contained.
 
 Script mode gets stronger isolation via a real subprocess (cross‑platform
 timeout + sandbox cwd); import/liveness runs in‑process under the same guard.
-**No learner code is ever invoked outside `guarded()`** — `audit.py --engine`
+**No learner code is ever invoked outside `guarded()`**, `audit.py --engine`
 pins each guarantee.
 
-## Translated failures — one type per learner screen
+## Translated failures: one type per learner screen
 
 ```mermaid
 classDiagram
@@ -137,11 +137,11 @@ classDiagram
     Exception <|-- PuzzleCrashError
 ```
 
-`LessonNotUsedError` **is‑a** `WrongResultError` — catch it first (the checker
+`LessonNotUsedError` **is‑a** `WrongResultError`, catch it first (the checker
 does). It carries the wanted construct as `expected` and the offending code (or
 the "decorative code doesn't count" note) as `actual`.
 
-## Sequence — `T.run()` (script mode) records the tape
+## Sequence: `T.run()` (script mode) records the tape
 
 ```mermaid
 sequenceDiagram
@@ -151,7 +151,7 @@ sequenceDiagram
     participant G as ExecutionGuard
     participant P as work.py subprocess
     Test->>R: run(stdin, files)
-    R->>G: put_file — seed fixtures
+    R->>G: put_file, seed fixtures
     R->>P: run in sandbox cwd, stdin piped
     P-->>R: returncode, stdout, stderr
     alt non-zero exit
@@ -163,7 +163,7 @@ sequenceDiagram
     end
 ```
 
-## Sequence — liveness: "is this construct actually used?"
+## Sequence: liveness: "is this construct actually used?"
 
 ```mermaid
 sequenceDiagram
@@ -172,12 +172,12 @@ sequenceDiagram
     participant L as LivenessMixin
     participant G as ExecutionGuard
     C->>L: _require_live(found nodes, kind)
-    L->>L: _baseline — replay the tape, signature is stdout
+    L->>L: _baseline, replay the tape, signature is stdout
     alt no tape / not reproducible
         L-->>C: degrade to plain AST presence
     else have baseline
         loop each candidate node
-            L->>L: _ablate — remove stmt / sentinel-swap expr
+            L->>L: _ablate, remove stmt / sentinel-swap expr
             L->>G: re-run recorded inputs on the mutated AST
             G-->>L: ablated signature
             L->>L: live? stmt = crash/any change · expr = clean+changed
@@ -191,13 +191,13 @@ sequenceDiagram
 ```
 
 Liveness signatures capture **stdout only**. For file/side‑effect lessons that
-means a write‑only `with` looks dead — which is exactly why the files chapter
+means a write‑only `with` looks dead, which is exactly why the files chapter
 uses `uses_with_open` anchored on a *read* whose removal crashes downstream (see
 [audit.md](audit.md)).
 
 A second gap: `make`/`method`/`attr` (the object helpers) are **not on the
 tape**, so the OOP chapters have no liveness at all. There, construct checks
-degrade to plain AST presence, which a decoy `class X: pass` could satisfy — so
+degrade to plain AST presence, which a decoy `class X: pass` could satisfy, so
 `uses_class(name)` takes the class name the tests instantiate, and the lessons
 lean on randomized `make`/`method` arguments plus hand‑pinned `dodges.py`.
 Recording the object tape (and replaying it in liveness) is the remaining work
@@ -207,13 +207,13 @@ flagged in `runners.py`.
 
 ```mermaid
 flowchart TB
-    a["AST‑only presence<br/>(uses_yield/lambda/default_param)<br/>weakest — ablation is awkward"]
-    b["liveness‑checked construct<br/>(most uses_*) — must change behavior"]
-    c["expression‑scoped line_*<br/>strongest — pins the exact printed expression"]
+    a["AST‑only presence<br/>(uses_yield/lambda/default_param)<br/>weakest, ablation is awkward"]
+    b["liveness‑checked construct<br/>(most uses_*), must change behavior"]
+    c["expression‑scoped line_*<br/>strongest, pins the exact printed expression"]
     a --- b --- c
 ```
 
 `require_live(want, missing, node_indices, kind, because)` is the public seam: a
 complex puzzle composes a bespoke structural check from `T.tree()` + audited
-liveness instead of hand‑rolling AST logic — and ships a `dodges.py` proving it
+liveness instead of hand‑rolling AST logic, and ships a `dodges.py` proving it
 bites.

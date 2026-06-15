@@ -22,12 +22,12 @@ flowchart TB
 ```
 
 > `inputs.py` is consumed by each puzzle's `tests.py` (loaded via
-> `content.load_tests`), **not** by `toolkit` or `content` themselves — it is
+> `content.load_tests`), **not** by `toolkit` or `content` themselves: it is
 > the authoring seam, not an engine dependency.
 
 ---
 
-## play.py / app.py — entry & dispatch
+## play.py / app.py: entry & dispatch
 
 `play.py` is a 30‑line shim that calls `engine.app.main()`. `app.main()` is the
 **only** place argv becomes an action: it builds the puzzle list once, loads
@@ -56,7 +56,7 @@ classDiagram
 | theme · user · reset | `cmd_theme` · `cmd_user` · `cmd_reset` |
 | begin · menu · setup · uninstall · help | the rest |
 
-## config.py — foundation
+## config.py: foundation
 
 Pure constants + the atomic‑write primitive everything else builds on. Knows
 no other engine module (the bottom of the dependency graph).
@@ -80,7 +80,7 @@ classDiagram
 `write_json` is the single atomic JSON writer (write temp → `os.replace`), so a
 crash mid‑write can never corrupt `progress.json` / `answers.json` / settings.
 
-## content.py — the structured question
+## content.py: the structured question
 
 Discovers puzzle folders and loads their files. **Stateless**: no learner data
 here. `discover()` returns the ordered `Puzzle` dicts the whole app keys on.
@@ -99,12 +99,12 @@ classDiagram
     content ..> config : CHAPTERS_DIR
 ```
 
-`discover()` tolerates a broken `meta.json` — it logs to stderr and skips that
+`discover()` tolerates a broken `meta.json`, it logs to stderr and skips that
 folder rather than failing the whole scan. `load_tests` re‑imports each
 `tests.py` fresh per call, which is what gives the audit fresh randomness on
 every attempt.
 
-## inputs.py — the input seam ("input automizer")
+## inputs.py: the input seam ("input automizer")
 
 Where a single source decides **both** the value fed to the solution and the
 data needed to validate it, so answers can't be hardcoded.
@@ -130,10 +130,10 @@ classDiagram
 
 A `tests.py` builds fixed + randomized `Case`s: script puzzles feed
 `case.stdin`, import puzzles feed `case.args`, and both validate against
-`case.expect` — one source decides input *and* expected result, so answers
+`case.expect`, one source decides input *and* expected result, so answers
 can't be hardcoded.
 
-## state.py — per‑user progress & the work.py lifecycle
+## state.py: per‑user progress & the work.py lifecycle
 
 Owns everything mutable and per‑user. All writes go through `config.write_json`;
 an unreadable file is moved aside as `<name>.corrupt`, never overwritten.
@@ -164,14 +164,14 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Welcome : first run
-    Welcome --> Seeded : begin / goto — seed from starter
+    Welcome --> Seeded : begin / goto, seed from starter
     Seeded --> Edited : learner edits
-    Edited --> Archived : check / switch — archive to answers.json
+    Edited --> Archived : check / switch, archive to answers.json
     Archived --> Seeded : switch_to next
     Archived --> Welcome : reset
 ```
 
-## checker.py — one check, end to end
+## checker.py: one check, end to end
 
 Translates the toolkit's typed failures into learner‑facing screens. It is the
 bridge between the tester (`toolkit/`) and the presentation (`render`/`theme`).
@@ -207,6 +207,6 @@ flowchart LR
 ```
 
 `LessonNotUsedError` subclasses `WrongResultError`, so its **more specific**
-`except` must come first in `cmd_check` (and does) — this is the "so close"
+`except` must come first in `cmd_check` (and does), this is the "so close"
 screen that distinguishes a wrong answer from a right answer that skipped the
 lesson.

@@ -1,48 +1,55 @@
 # PyQuest
 
-**A Python course you run from the terminal: read a short brief, write code in your own editor, then run one command to check it and unlock the next puzzle.**
+**Learn Python by doing, one small puzzle at a time.**
 
-Nine chapters and 90 puzzles take you from `print("hello")` to functions,
-error handling, files, and classes — using only the Python standard library,
-so it runs anywhere Python 3 does.
+PyQuest gives you a series of short, friendly puzzles. You read a quick
+explanation, write a few lines of code in your own editor, and run one command
+to check your answer. Get it right, and the next puzzle unlocks.
 
-There is no TUI to learn. The only interactive screen is the optional `begin`
-menu (pick a level, theme, or profile); everything else is a short, one-shot
-command. The terminal is just a command runner — the learning happens in files
-you open in your editor.
+It starts at the very beginning, `print("hello")`, and builds up gently
+through **90 puzzles in 9 chapters**: the basics, text, decisions and loops,
+lists and dictionaries, functions, handling errors, files, and classes. Each
+puzzle adds just one new idea, so you're never thrown in the deep end.
 
-> Python 3.8+ · standard library only · zero dependencies · MIT licensed
+There's nothing to install and no complicated setup. If you have Python 3, or
+just a web browser (see **Run in a Codespace** below), you're ready, even if
+you've never written code before.
+
+> Works with any Python 3.8+ · nothing to install · free and open-source (MIT)
 
 ---
 
-## Features
+## What you get
 
-- **90 puzzles in 9 chapters** — basics, strings, decisions & loops,
-  collections, power tools, functions, errors, files & I/O, classes & objects.
-  One new idea per puzzle.
-- **Behavioral checking** — tests validate what your code *does*, with
-  plain-language failure messages instead of raw tracebacks.
-- **Hard to cheat, easy to learn** — randomized inputs defeat hardcoded
-  answers, and an automated replay-attack audit (`audit.py --sidestep`) proves
-  every puzzle's lesson is unavoidable.
-- **Three difficulty modes**, escalating hints, reference solutions with a
-  "why it works" explanation.
-- **Profiles, colour themes, and safe progress** — atomic saves, nothing is
-  ever silently lost, and `reset` gives a true clean slate.
-- **Zero dependencies** — Python 3.8+ standard library only. Nothing to
-  install.
+- **90 bite-sized puzzles, one idea each**: from `print` all the way to
+  classes, in small steps you can actually keep up with.
+- **Friendly, plain-English feedback**: when something's wrong, you get a
+  clear note about *what* went wrong, not a wall of scary red error text.
+- **You can't fake it**: the checker runs your code and changes the numbers
+  each time, so copying an answer or hard-coding the result won't work. The
+  only way forward is to genuinely get it, which means you actually learn.
+- **Help when you're stuck**: three hints per puzzle that get more specific,
+  plus a full worked solution with a "why it works" explanation when you want it.
+- **Go at your own pace**: pick an easier or harder mode, and your progress
+  saves automatically, so you can stop and pick up again any time.
 
 ## Quick start
+
+Open a terminal (the text window where you type commands), go into the PyQuest
+folder, and run it:
 
 ```
 cd pyquest
 python3 play.py
 ```
 
+> No Python on your computer, or new to all this? You can run PyQuest in your
+> web browser instead: jump to [Run in a Codespace](#run-in-a-codespace) below.
+
 That prints your progress and points you at two files for the current puzzle:
 
-- `brief.md` — read this. It explains the concept and the task.
-- `work.py` — edit this. One workspace file per profile (at
+- `brief.md`: read this. It explains the concept and the task.
+- `work.py`: edit this. One workspace file per profile (at
   `users/<name>/work.py`); PyQuest loads each puzzle's starter into it as you
   go (`start` shows the exact path).
 
@@ -58,13 +65,35 @@ Move on whenever you're ready with `next`. That is the whole loop:
 
 > **read `brief.md` → edit `work.py` → save → `check` → `next`**
 
+## Run in a Codespace
+
+Don't want to install Python or use a terminal on your own machine? **GitHub
+Codespaces** gives you a ready-to-go PyQuest that runs in your web browser, no
+setup at all.
+
+1. On this project's page on GitHub, click the green **Code** button.
+2. Open the **Codespaces** tab and click **Create codespace on main**.
+3. Wait a moment while it gets ready. A code editor opens in your browser, with
+   a terminal panel at the bottom.
+4. In that terminal, type the command and press Enter:
+
+   ```
+   python3 play.py
+   ```
+
+Everything is already set up for you: the right version of Python, the editor's
+Python support, and PyQuest itself. (The setup lives in the `.devcontainer`
+folder, which you never have to touch.) Codespaces is free
+for personal use within GitHub's monthly allowance, and you can delete your
+Codespace whenever you're done.
+
 New to the project? [GETTING_STARTED.md](GETTING_STARTED.md) walks through the
 first session step by step.
 
 ## Terminal setup
 
-PyQuest needs nothing beyond Python 3 — `python3 play.py <command>` always
-works, in any shell, on any platform. The setup below is optional comfort.
+PyQuest needs nothing beyond Python 3: `python3 play.py <command>` always
+works in any shell, on any platform. The setup below is optional comfort.
 
 ### Short commands
 
@@ -77,16 +106,16 @@ python3 play.py setup
 
 `setup` checks for Python 3 and offers two ways in:
 
-- **local** — it prints a `source` line you run once; the shortcuts work in
+- **local**: it prints a `source` line you run once; the shortcuts work in
   **this terminal only** and nothing on your system is changed.
-- **persistent** — `python3 play.py setup persist` adds one line to your
+- **persistent**: `python3 play.py setup persist` adds one line to your
   `~/.zshrc`, so every new terminal has the shortcuts. It is safe to run more
   than once: it never duplicates the line and never touches your code or
   progress (it edits `~/.zshrc` and nothing else).
 
 After persisting, open a new terminal or run `source ~/.zshrc` once. The same
 setup is also reachable from the `begin` menu (option **5 → shortcuts**), and
-the old `./setup.sh` still works — it forwards to `python3 play.py setup`.
+the old `./setup.sh` still works and forwards to `python3 play.py setup`.
 
 If you would rather do it by hand, add this line to the end of `~/.zshrc`,
 replacing the path with wherever the folder actually lives:
@@ -101,7 +130,7 @@ you can move or rename the PyQuest folder without editing anything inside it.
 ### Uninstalling
 
 Run `uninstall` (or `python3 play.py uninstall`). It removes the line from
-`~/.zshrc` **and** clears the shortcut functions from the current terminal —
+`~/.zshrc` **and** clears the shortcut functions from the current terminal,
 or just delete the `# PyQuest shell shortcuts` line from `~/.zshrc` yourself.
 
 ### The context-aware `reset`
@@ -109,7 +138,7 @@ or just delete the `# PyQuest shell shortcuts` line from `~/.zshrc` yourself.
 `reset` is also a real terminal command that reinitializes your session, and
 the shortcuts deliberately don't steal it. Inside the PyQuest folder, `reset`
 clears PyQuest progress (after a y/N prompt); anywhere else it falls through
-to the normal terminal reset. You can always be explicit — `start reset` for
+to the normal terminal reset. You can always be explicit, `start reset` for
 PyQuest, `command reset` for the terminal.
 
 ### How PyQuest treats your terminal
@@ -123,7 +152,7 @@ PyQuest, `command reset` for the terminal.
   `goto`) degrade to a plain print when stdin is not a terminal, so scripts
   and tests never hang.
 - **Shell support.** The shortcut functions are written for zsh, the macOS
-  default. On other shells, use the `python3 play.py` long form for now — bash
+  default. On other shells, use the `python3 play.py` long form for now; bash
   support is on the roadmap below.
 
 ## Commands
@@ -143,7 +172,7 @@ installed, drop the `python3 play.py` prefix.
 | `python3 play.py next` | move on to the next puzzle |
 | `python3 play.py goto` | pick a puzzle from a list (`goto 2` = first open puzzle of chapter 2) |
 | `python3 play.py goto 2.4` | jump to a puzzle by id (restores your saved code) |
-| `python3 play.py load 2.4` | same as `goto` — reload a puzzle's saved code |
+| `python3 play.py load 2.4` | same as `goto`, reload a puzzle's saved code |
 | `python3 play.py skip` | move on without solving (not in hard mode) |
 | `python3 play.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
 | `python3 play.py revert` | fully reset this puzzle: blank code + clear its progress |
@@ -170,7 +199,7 @@ Set once with `mode <name>`; change it whenever you like.
 
 Every `check` archives your `work.py` into your profile's `answers.json`,
 keyed by puzzle id. Switching puzzles (`next`, `skip`, `goto`) saves the
-current draft and reloads the target puzzle's saved code — nothing is lost,
+current draft and reloads the target puzzle's saved code, nothing is lost,
 and `goto 1.1` brings back exactly what you wrote there. All saves are atomic.
 
 `python3 play.py reset` is the one true wipe: completed puzzles, attempts,
@@ -186,7 +215,7 @@ pyquest/
   engine/            the implementation, split by concern (see docs/ARCHITECTURE.md)
   audit.py           mechanical checks: conformance + anti-sidestep replay attack
   docs/              ARCHITECTURE.md, SCHEMA.md, CONTRIBUTING.md, architecture/ (UML)
-  chapters/          the course content — one folder per puzzle, no code
+  chapters/          the course content, one folder per puzzle, no code
     01_basics/
       01_hello/
         brief.md     concept + task (read)
@@ -197,8 +226,7 @@ pyquest/
         meta.json    puzzle metadata
   themes/            optional JSON colour presets (see themes/README.md)
   shell/             the zsh shortcuts sourced by setup
-  users/<name>/      per profile: progress.json, answers.json, work.py (generated)
-  settings.json      current user + colour theme (created on first run)
+  users/             local state (gitignored): per-profile dirs + settings.json
 ```
 
 ## Documentation
@@ -228,15 +256,15 @@ place:
   a bash-compatible version of the shortcut functions is planned so the short
   commands work beyond zsh.
 
-Adding a chapter is content-only — puzzle folders on disk, zero engine
-changes — which is exactly what the architecture was shaped for.
+Adding a chapter is content-only, puzzle folders on disk, zero engine
+changes, which is exactly what the architecture was shaped for.
 
 ## Requirements
 
-Python 3.8+ — standard library only. No installation, no dependencies. The
+Python 3.8+, standard library only. No installation, no dependencies. The
 shell shortcuts target zsh (the macOS default); everything also works by
 prefixing commands with `python3 play.py` on any platform.
 
 ## License
 
-[MIT](LICENSE) — © 2026 Ronald Karel Grant
+[MIT](LICENSE), © 2026 Ronald Karel Grant

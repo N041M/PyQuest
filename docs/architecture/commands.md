@@ -1,8 +1,8 @@
-# commands/ — the verbs
+# commands/: the verbs
 
 The verb implementations, split by concern and re‑exported from a facade
 `__init__` so `app.py` imports them from one place. Each verb is a plain
-function `(puzzles, by_id, prog, ...)`; none of them touch colours directly —
+function `(puzzles, by_id, prog, ...)`; none of them touch colours directly,
 they go through [render/theme](visuals.md). ← [overview](README.md)
 
 ```mermaid
@@ -79,7 +79,7 @@ classDiagram
 target, jumping, and advancing one puzzle. `play.py` and `menu.py` both build on
 it so navigation behaves identically from the CLI and the menu.
 
-## The only interactive surface — `begin` / `menu`
+## The only interactive surface: `begin` / `menu`
 
 Every other verb is one‑shot. `cmd_begin`/`cmd_menu` are the lone read‑loop, and
 they still delegate the real work to the same one‑shot verbs.
@@ -107,9 +107,9 @@ decide whether `next`/`skip`/`goto` may move past an unsolved puzzle.
 
 ```mermaid
 flowchart LR
-    easy["easy — free roam"]
-    normal["normal — forward only to unlocked"]
-    hard["hard — must solve to advance"]
+    easy["easy, free roam"]
+    normal["normal, forward only to unlocked"]
+    hard["hard, must solve to advance"]
     easy -.-> normal -.-> hard
 ```
 

@@ -1,21 +1,21 @@
-# Visuals — theme & render
+# Visuals: theme & render
 
 The isolated presentation layer. **All** colour codes, glyphs and box‑drawing
-characters live here and nowhere else — a restyle touches only these two files.
+characters live here and nowhere else, a restyle touches only these two files.
 `render` consumes `theme`; the rest of the engine consumes `render` (and
 `theme.paint`). ← [overview](README.md)
 
 ```mermaid
 flowchart TB
     cmds["commands/* · checker.py"] --> render
-    render["render.py — primitives"] --> theme
-    theme["theme.py — palette · glyphs · paint()"] --> config["config.WIDTH"]
+    render["render.py, primitives"] --> theme
+    theme["theme.py, palette · glyphs · paint()"] --> config["config.WIDTH"]
     theme --> themesdir[("themes/*.json presets")]
 ```
 
 ---
 
-## theme.py — palette, glyphs, paint
+## theme.py: palette, glyphs, paint
 
 The visual identity: ANSI capability detection, the named palettes, the
 deliberate glyph set, and `paint()` (the single colouriser). The glyph set
@@ -42,7 +42,7 @@ classDiagram
 `_supports_color()` gates every escape: with `COLOR` false, `paint()` returns
 plain text, so output stays correct when piped or redirected.
 
-## render.py — drawing primitives
+## render.py: drawing primitives
 
 Pure layout built from `theme` parts: boxes, banners, the progress bar, wrapped
 text, fields. Stateless; takes data, returns strings. Re‑exports `paint`/`STAR`
