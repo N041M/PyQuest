@@ -200,7 +200,7 @@ code and raises *translated* failures, so messages stay friendly.
   `sys.exit()` (learner code cannot kill the checker), and chdirs into a
   throwaway sandbox so **relative**-path file I/O lands there, not in the
   project. Script mode gets stronger isolation via its subprocess (timeout +
-  sandbox cwd). Never invoke learner code outside this guard; `python3 audit.py
+  sandbox cwd). Never invoke learner code outside this guard; `python3 tools/audit.py
   --engine` pins these guarantees.
   *Isolation caveat:* the sandbox is a convenience boundary, not a security
   one. A chdir contains an honest mistake (a stray `open("out.txt", "w")`); it
@@ -335,7 +335,7 @@ just its output. The defenses stack, one per attack class:
 When adding a puzzle, ask: "could I pass this without using the concept?",
 and close the hole with the narrowest matching check.
 
-This is verified **mechanically**, not by inspection: `python3 audit.py
+This is verified **mechanically**, not by inspection: `python3 tools/audit.py
 --sidestep` is mutation testing aimed at the grader, intentionally wrong
 programs must fail. It attacks every puzzle with four generic adversaries
 (`replay`: answer from a recorded lookup table; `chaff-replay`: the table
@@ -348,7 +348,7 @@ variable), and additionally runs every pinned dodge from a puzzle's optional
 SIDESTEPPABLE unless whitelisted in `ALLOWED` with a written reason, which
 is reserved for puzzles where the cheapest passing program *is* a legitimate
 answer (1.1: the lesson is printing one fixed literal). Run the sidestep
-audit whenever a puzzle or toolkit check changes; plain `python3 audit.py`
+audit whenever a puzzle or toolkit check changes; plain `python3 tools/audit.py`
 (conformance only) is the quick pass.
 
 **Known residual risks** (accepted, documented): liveness proves a construct

@@ -1,8 +1,8 @@
 """Project audit: solution conformance plus an anti-sidestep attack suite.
 
-    python3 audit.py             every solution.py must pass its own tests.py
-    python3 audit.py --sidestep  ALSO attack every puzzle with the adversaries
-    python3 audit.py --engine    self-test the execution guard & toolkit APIs
+    python3 tools/audit.py             every solution.py must pass its own tests.py
+    python3 tools/audit.py --sidestep  ALSO attack every puzzle with the adversaries
+    python3 tools/audit.py --engine    self-test the execution guard & toolkit APIs
 
 The sidestep audit is mutation testing aimed at the GRADER: intentionally
 wrong programs must fail. Four generic adversaries attack every puzzle:
@@ -39,7 +39,10 @@ import sys
 import tempfile
 import importlib.util
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# audit.py lives in tools/; the repo root (which holds the engine package) is
+# its parent, so climb one level to make `import engine` work from anywhere.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 
 from engine.content import discover, load_tests, load_hints
 from engine.toolkit import (Toolkit, PuzzleSyntaxError, MissingSymbolError,

@@ -26,7 +26,7 @@ tests.py would corrupt it.
 
 Script mode gets stronger isolation from its subprocess (cross-platform
 timeout + sandbox cwd) -- see runners.py. Never invoke learner code outside
-this guard; `python3 audit.py --engine` pins these guarantees.
+this guard; `python3 tools/audit.py --engine` pins these guarantees.
 """
 
 import io

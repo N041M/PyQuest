@@ -115,16 +115,19 @@ python3 play.py setup
 
 - **local**: it prints a `source` line you run once; the shortcuts work in
   **this terminal only** and nothing on your system is changed.
-- **persistent**: `python3 play.py setup persist` adds one line to your
-  `~/.zshrc`, so every new terminal has the shortcuts. It is safe to run more
-  than once: it never duplicates the line and never touches your code or
-  progress (it edits `~/.zshrc` and nothing else).
+- **persistent**: `python3 play.py setup persist` adds one line to your shell's
+  startup file (`~/.zshrc`, or `~/.bashrc` on bash), so every new terminal has
+  the shortcuts. It is safe to run more than once: it never duplicates the line
+  and never touches your code or progress (it edits that one file and nothing
+  else).
 
-After persisting, open a new terminal or run `source ~/.zshrc` once. The same
-setup is also reachable from the `begin` menu (option **5 → shortcuts**).
+After persisting, open a new terminal or re-source that file once (e.g.
+`source ~/.zshrc`). The same setup is also reachable from the `begin` menu
+(option **5 → shortcuts**).
 
-If you would rather do it by hand, add this line to the end of `~/.zshrc`,
-replacing the path with wherever the folder actually lives:
+If you would rather do it by hand, add this line to the end of `~/.zshrc` (or
+`~/.bashrc`, sourcing `shell/pyquest.bash`), replacing the path with wherever
+the folder actually lives:
 
 ```sh
 [ -f "/path/to/pyquest/shell/pyquest.zsh" ] && source "/path/to/pyquest/shell/pyquest.zsh"
@@ -175,9 +178,10 @@ PyQuest, `command reset` for the terminal.
   `goto`) degrade to a plain print when stdin is not a terminal, so scripts
   and tests never hang.
 - **Shell support.** The shortcuts ship for zsh (`shell/pyquest.zsh`, the macOS
-  default) and for Windows PowerShell (`shell/pyquest.ps1`, see above). On other
-  shells, use the `python3 play.py` long form for now; bash support is on the
-  roadmap below.
+  default), bash (`shell/pyquest.bash`, Linux and Codespaces), and Windows
+  PowerShell (`shell/pyquest.ps1`, see above). `setup` installs the file that
+  matches your shell. On anything else, the `python3 play.py` long form always
+  works.
 
 ## Commands
 
@@ -238,7 +242,7 @@ pyquest/
   start.py           one-step start: enable shortcuts for the session + menu
   play.py            the thin launcher you run
   engine/            the implementation, split by concern (see docs/ARCHITECTURE.md)
-  audit.py           mechanical checks: conformance + anti-sidestep replay attack
+  tools/audit.py       mechanical checks: conformance + anti-sidestep replay attack
   docs/              ARCHITECTURE.md, SCHEMA.md, CONTRIBUTING.md, architecture/ (UML)
   chapters/          the course content, one folder per puzzle, no code
     01_basics/
@@ -277,9 +281,6 @@ place:
   (see [ARCHITECTURE.md §8](docs/ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
   remaining fixed-input puzzles will migrate to it where it strengthens the
   lesson.
-- **bash support for the shortcuts.** zsh and Windows PowerShell shortcuts ship
-  today; `setup` already detects `~/.bashrc`, and a bash-compatible version of
-  the shortcut functions is planned to round out the set.
 
 Adding a chapter is content-only, puzzle folders on disk, zero engine
 changes, which is exactly what the architecture was shaped for.
@@ -287,8 +288,8 @@ changes, which is exactly what the architecture was shaped for.
 ## Requirements
 
 Python 3.8+, standard library only. No installation, no dependencies. The
-shell shortcuts target zsh (the macOS default); everything also works by
-prefixing commands with `python3 play.py` on any platform.
+shell shortcuts ship for zsh, bash, and Windows PowerShell; everything also
+works by prefixing commands with `python3 play.py` on any platform.
 
 ## License
 

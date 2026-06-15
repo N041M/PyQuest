@@ -167,7 +167,7 @@ DODGES = [
 ]
 ```
 
-`python3 audit.py --sidestep` runs every entry against the puzzle's tests and
+`python3 tools/audit.py --sidestep` runs every entry against the puzzle's tests and
 fails the audit if any of them ever passes. Add an entry whenever a real
 sidestep is discovered, together with the check that now blocks it.
 
@@ -218,7 +218,7 @@ Rules to follow when authoring tests:
   one fixed value.
 - Run behavior assertions before construct checks (liveness replays the
   recorded runs/calls).
-- After adding or changing a puzzle, run `python3 audit.py --sidestep`: the
+- After adding or changing a puzzle, run `python3 tools/audit.py --sidestep`: the
   attack suite must report it robust (see ARCHITECTURE §8).
 
 ## progress.json

@@ -35,12 +35,12 @@ local setup, the devcontainer ships Python 3.12.
 
 ## The audit is the test suite
 
-There is no pytest layer. [`audit.py`](../audit.py) is the test suite, and it
+There is no pytest layer. [`audit.py`](../tools/audit.py) is the test suite, and it
 must be green before any change is committed:
 
 ```bash
-python3 audit.py --sidestep   # conformance + the anti-sidestep attack suite
-python3 audit.py --engine     # execution-guard & toolkit self-tests
+python3 tools/audit.py --sidestep   # conformance + the anti-sidestep attack suite
+python3 tools/audit.py --engine     # execution-guard & toolkit self-tests
 ```
 
 `--sidestep` is mutation testing aimed at the *grader*: it builds intentionally
@@ -64,7 +64,7 @@ Checklist:
    can't be reached with a different tool. Run behavior assertions *before*
    construct checks (liveness replays the recorded inputs).
 4. Randomize inputs where you can, so answers can't be hardcoded.
-5. Confirm `solution.py` passes, then run `python3 audit.py --sidestep`.
+5. Confirm `solution.py` passes, then run `python3 tools/audit.py --sidestep`.
 
 ## Closing a sidestep
 
@@ -74,7 +74,7 @@ If you (or the audit) find a program that passes without using the lesson:
    check, or pin the exact expression with a `line_*` check.
 2. Add the sidestep to that puzzle's `dodges.py` as a `(label, source)` pair, so
    the audit fails forever if it ever passes again.
-3. Re-run `python3 audit.py --sidestep` and confirm it reports the puzzle
+3. Re-run `python3 tools/audit.py --sidestep` and confirm it reports the puzzle
    robust.
 
 ## Pull requests

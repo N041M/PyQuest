@@ -111,7 +111,7 @@ throwaway sandbox so file I/O is contained.
 
 Script mode gets stronger isolation via a real subprocess (cross‑platform
 timeout + sandbox cwd); import/liveness runs in‑process under the same guard.
-**No learner code is ever invoked outside `guarded()`**, `audit.py --engine`
+**No learner code is ever invoked outside `guarded()`**, `tools/audit.py --engine`
 pins each guarantee.
 
 ## Translated failures: one type per learner screen

@@ -5,9 +5,9 @@ engine** (safe to delete) and is the test suite: there is no pytest layer.
 ← [overview](README.md)
 
 ```bash
-python3 audit.py            # every solution.py passes its own tests.py
-python3 audit.py --sidestep # ALSO attack every puzzle with the adversaries
-python3 audit.py --engine   # self-test the execution guard & toolkit APIs
+python3 tools/audit.py            # every solution.py passes its own tests.py
+python3 tools/audit.py --sidestep # ALSO attack every puzzle with the adversaries
+python3 tools/audit.py --engine   # self-test the execution guard & toolkit APIs
 ```
 
 It reuses the real engine (`content.discover/load_tests`, the `Toolkit`), so it

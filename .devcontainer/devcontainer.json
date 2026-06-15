@@ -6,5 +6,5 @@
       "extensions": ["ms-python.python"]
     }
   },
-  "postAttachCommand": "python3 play.py"
+  "postAttachCommand": "python3 start.py"
 }
