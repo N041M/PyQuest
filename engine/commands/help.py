@@ -28,6 +28,8 @@ def cmd_help():
         ("theme <name>", "switch colour theme (neon, amber, forest, mono)"),
         ("user <name>", "switch or create a profile"),
         ("reset", "wipe progress, saved answers, and workspaces"),
+        ("export", "save this profile's progress to a portable file"),
+        ("import <file>", "load a profile from an exported file"),
     ]
     pre = "" if os.environ.get("PYQUEST_SHELL") else "python3 play.py "
     for name, desc in rows:

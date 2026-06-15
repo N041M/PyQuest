@@ -1,5 +1,7 @@
 """Config-ish verbs: theme (colour palette), user (per-profile progress), and
 reset (wipe this profile). They compose state + settings + render.
+
+Profile portability (export/import) is a separate concern -- see transfer.py.
 """
 
 import os
@@ -7,7 +9,7 @@ import json
 
 from ..config import load_settings, set_setting
 from ..theme import apply_theme, THEME_NAMES
-from ..state import (current_puzzle, load_answers, archive_work,
+from ..state import (current_puzzle, load_answers, archive_current,
                      save_progress, load_progress, default_progress,
                      ensure_workspace, answers_path, progress_path,
                      list_users, current_user, ensure_user, valid_username,
@@ -82,10 +84,7 @@ def cmd_user(arg, puzzles, by_id, prog):
     if name == cur:
         print(PAD + paint("already on '%s'." % name, "gray"))
         return prog
-    # save the current user's work before leaving
-    here = current_puzzle(prog, by_id, puzzles)
-    if here is not None:
-        archive_work(here, load_answers())
+    archive_current(prog, by_id, puzzles)        # save the leaving user's work
     creating = name not in list_users()
     ensure_user(name)
     set_setting("user", name)

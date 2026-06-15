@@ -54,6 +54,7 @@ classDiagram
 | check · hint · solution · map | `cmd_check` · `cmd_hint` · `cmd_solution` · `cmd_map` |
 | next · skip · retry · revert · goto · mode | the navigation verbs |
 | theme · user · reset | `cmd_theme` · `cmd_user` · `cmd_reset` |
+| export · import | `cmd_export` · `cmd_import` (portable profile bundle) |
 | begin · menu · setup · uninstall · help | the rest |
 
 ## config.py: foundation
@@ -153,8 +154,8 @@ classDiagram
         +current_puzzle(...) Puzzle
         +load_answers() · save_answers()
         +work_path() · read_work() · write_work(code)
-        +archive_work(...) · ensure_workspace(...)
-        +activate(...) · switch_to(...)
+        +archive_work(...) · archive_current(...)
+        +ensure_workspace(...) · activate(...) · switch_to(...)
     }
     state ..> config : write_json · paths
 ```

@@ -5,6 +5,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
   play.py       loop verbs: status, map, hint, solution, goto, next, skip,
                 retry, revert, mode
   profiles.py   theme, user, reset
+  transfer.py   export, import (portable profile bundles)
   shortcuts.py  the ~/.zshrc shortcuts installer (setup/persist/uninstall)
   help.py       help
   menu.py       the interactive launcher (begin / menu)
@@ -15,6 +16,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
 from .play import (cmd_status, cmd_map, cmd_hint, cmd_solution, cmd_goto,
                    cmd_next, cmd_skip, cmd_retry, cmd_revert, cmd_mode)
 from .profiles import cmd_theme, cmd_user, cmd_reset
+from .transfer import cmd_export, cmd_import
 from .shortcuts import cmd_setup, cmd_setup_persist, cmd_uninstall
 from .menu import cmd_begin, cmd_menu
 from .help import cmd_help
@@ -22,7 +24,7 @@ from .help import cmd_help
 __all__ = [
     "cmd_status", "cmd_map", "cmd_hint", "cmd_solution", "cmd_goto",
     "cmd_next", "cmd_skip", "cmd_retry", "cmd_revert", "cmd_mode",
-    "cmd_theme", "cmd_user", "cmd_reset",
+    "cmd_theme", "cmd_user", "cmd_reset", "cmd_export", "cmd_import",
     "cmd_setup", "cmd_setup_persist", "cmd_uninstall",
     "cmd_begin", "cmd_menu", "cmd_help",
 ]

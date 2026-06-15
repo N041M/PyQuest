@@ -16,6 +16,8 @@ for the module map and the rules that keep it modular.
     python3 play.py retry      clear the current puzzle and solve it again
     python3 play.py mode easy  set difficulty: easy | normal | hard
     python3 play.py reset      wipe progress, answers, and workspaces
+    python3 play.py export     save this profile's progress to a file
+    python3 play.py import f    load a profile from an exported file
 
 Each command runs once, prints plain text, and exits. No prompts, no loops.
 """

@@ -52,6 +52,12 @@ classDiagram
         +cmd_reset(puzzles, prog, arg)
         -_swatch() / _user_count(...)
     }
+    class transfer {
+        <<module>>
+        +cmd_export(...) / cmd_import(...)
+        -_export_dest(...)
+        -_sanitize_progress / _sanitize_answers
+    }
     class shortcuts {
         <<module>>
         +cmd_setup() / cmd_setup_persist()

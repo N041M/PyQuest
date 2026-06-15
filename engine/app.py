@@ -10,9 +10,9 @@ from .render import paint, cli, STAR
 from .checker import cmd_check
 from .commands import (cmd_status, cmd_map, cmd_hint, cmd_solution, cmd_next,
                        cmd_goto, cmd_skip, cmd_retry, cmd_revert, cmd_mode,
-                       cmd_theme, cmd_user, cmd_reset, cmd_setup,
-                       cmd_setup_persist, cmd_uninstall, cmd_begin, cmd_menu,
-                       cmd_help)
+                       cmd_theme, cmd_user, cmd_reset, cmd_export, cmd_import,
+                       cmd_setup, cmd_setup_persist, cmd_uninstall, cmd_begin,
+                       cmd_menu, cmd_help)
 
 
 def main():
@@ -33,6 +33,8 @@ def main():
     args = sys.argv[1:]
     cmd = args[0].lower() if args else "status"
     arg = args[1] if len(args) > 1 else None
+    arg2 = args[2] if len(args) > 2 else None
+    arg3 = args[3] if len(args) > 3 else None
 
     # make sure work.py exists (welcome placeholder until a puzzle is loaded)
     ensure_workspace(current_puzzle(prog, by_id, puzzles), load_answers(),
@@ -71,6 +73,10 @@ def main():
         cmd_user(arg, puzzles, by_id, prog)
     elif cmd == "reset":
         cmd_reset(puzzles, prog, arg)
+    elif cmd == "export":
+        cmd_export(puzzles, by_id, prog, arg)
+    elif cmd == "import":
+        cmd_import(puzzles, by_id, prog, arg, arg2, arg3)
     elif cmd == "begin":
         cmd_begin(puzzles, by_id, prog)
     elif cmd == "menu":

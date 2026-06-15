@@ -132,6 +132,8 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                 play.py       the loop verbs: status, map, hint, solution,
                               goto, next, skip, retry, revert, mode
                 profiles.py   theme, user, reset
+                transfer.py   export, import: portable profile bundles
+                              (serialize + validate against current content)
                 shortcuts.py  the ~/.zshrc shortcuts installer -- the only part
                               that edits the user's environment (setup/persist/
                               uninstall)

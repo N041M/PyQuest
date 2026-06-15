@@ -193,6 +193,20 @@ def archive_work(puzzle, answers, solved=None):
     return entry
 
 
+def archive_current(prog, by_id, puzzles, answers=None):
+    """Snapshot the active puzzle's live draft into answers before switching
+    profile, exporting, or jumping away. A no-op when no puzzle is loaded, so
+    the welcome placeholder is never saved as a puzzle's code. Returns the
+    answers dict it wrote into (loaded here if not supplied)."""
+    if answers is None:
+        answers = load_answers()
+    if prog.get("active"):
+        here = current_puzzle(prog, by_id, puzzles)
+        if here is not None:
+            archive_work(here, answers)
+    return answers
+
+
 def ensure_workspace(puzzle, answers, active=False):
     """Make sure work.py exists. If a puzzle is active, hold its draft; if not,
     show the puzzle-free welcome placeholder."""
