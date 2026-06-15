@@ -36,17 +36,24 @@ you've never written code before.
 ## Quick start
 
 Open a terminal (the text window where you type commands), go into the PyQuest
-folder, and run it:
+folder, and run:
 
 ```
 cd pyquest
-python3 play.py
+python3 start.py
 ```
+
+That one command checks your Python, turns on the short commands (`check`,
+`hint`, `next`, ...) for this session, and drops you into the menu. Pick a level
+and start solving. It works the same on macOS, Linux, Codespaces, and Windows:
+`start.py` sets up whichever shell you have, just for this session, and changes
+nothing permanently.
 
 > No Python on your computer, or new to all this? You can run PyQuest in your
 > web browser instead: jump to [Run in a Codespace](#run-in-a-codespace) below.
 
-That prints your progress and points you at two files for the current puzzle:
+Prefer to drive it yourself? `python3 play.py` shows your progress and points
+you at two files for the current puzzle:
 
 - `brief.md`: read this. It explains the concept and the task.
 - `work.py`: edit this. One workspace file per profile (at
@@ -78,7 +85,7 @@ setup at all.
 4. In that terminal, type the command and press Enter:
 
    ```
-   python3 play.py
+   python3 start.py
    ```
 
 Everything is already set up for you: the right version of Python, the editor's
@@ -114,8 +121,7 @@ python3 play.py setup
   progress (it edits `~/.zshrc` and nothing else).
 
 After persisting, open a new terminal or run `source ~/.zshrc` once. The same
-setup is also reachable from the `begin` menu (option **5 → shortcuts**), and
-the old `./setup.sh` still works and forwards to `python3 play.py setup`.
+setup is also reachable from the `begin` menu (option **5 → shortcuts**).
 
 If you would rather do it by hand, add this line to the end of `~/.zshrc`,
 replacing the path with wherever the folder actually lives:
@@ -126,6 +132,23 @@ replacing the path with wherever the folder actually lives:
 
 The shortcuts file resolves its own location, so once that line points at it
 you can move or rename the PyQuest folder without editing anything inside it.
+
+### Windows (PowerShell)
+
+On Windows the same shortcuts ship as a PowerShell script. From the PyQuest
+folder, load them into the current terminal:
+
+```powershell
+. .\shell\pyquest.ps1
+```
+
+Now `check`, `hint`, `map`, `next`, and the rest work, with `pq` as the umbrella
+command (`pq`, `pq check`, `pq reset`). To get them in every new terminal, run
+`Install-PyQuest` once (it adds one line to your PowerShell profile); remove
+them later with `uninstall`. If Windows blocks the script the first time, allow
+local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+On any platform, `python play.py <command>` (or `py -3 play.py <command>`)
+always works without any of this.
 
 ### Uninstalling
 
@@ -151,9 +174,10 @@ PyQuest, `command reset` for the terminal.
 - **Nothing blocks a pipe.** The two interactive moments (`begin` and bare
   `goto`) degrade to a plain print when stdin is not a terminal, so scripts
   and tests never hang.
-- **Shell support.** The shortcut functions are written for zsh, the macOS
-  default. On other shells, use the `python3 play.py` long form for now; bash
-  support is on the roadmap below.
+- **Shell support.** The shortcuts ship for zsh (`shell/pyquest.zsh`, the macOS
+  default) and for Windows PowerShell (`shell/pyquest.ps1`, see above). On other
+  shells, use the `python3 play.py` long form for now; bash support is on the
+  roadmap below.
 
 ## Commands
 
@@ -211,6 +235,7 @@ mode is preserved. After a reset you are genuinely back to a blank puzzle 1.1.
 
 ```
 pyquest/
+  start.py           one-step start: enable shortcuts for the session + menu
   play.py            the thin launcher you run
   engine/            the implementation, split by concern (see docs/ARCHITECTURE.md)
   audit.py           mechanical checks: conformance + anti-sidestep replay attack
@@ -225,7 +250,7 @@ pyquest/
         tests.py     behavioral checks
         meta.json    puzzle metadata
   themes/            optional JSON colour presets (see themes/README.md)
-  shell/             the zsh shortcuts sourced by setup
+  shell/             the zsh / bash / PowerShell shortcut scripts
   users/             local state (gitignored): per-profile dirs + settings.json
 ```
 
@@ -252,9 +277,9 @@ place:
   (see [ARCHITECTURE.md §8](docs/ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
   remaining fixed-input puzzles will migrate to it where it strengthens the
   lesson.
-- **bash support for the shortcuts.** `setup` already detects `~/.bashrc`;
-  a bash-compatible version of the shortcut functions is planned so the short
-  commands work beyond zsh.
+- **bash support for the shortcuts.** zsh and Windows PowerShell shortcuts ship
+  today; `setup` already detects `~/.bashrc`, and a bash-compatible version of
+  the shortcut functions is planned to round out the set.
 
 Adding a chapter is content-only, puzzle folders on disk, zero engine
 changes, which is exactly what the architecture was shaped for.

@@ -23,8 +23,13 @@ editor, right-click the `pyquest` folder and "Open in Integrated Terminal".
 ## 2. Open the menu
 
 ```
-python3 play.py begin
+python3 start.py
 ```
+
+`start.py` is the easy way in: it checks your Python, turns on the short
+commands (`check`, `hint`, ...) for this session, and opens the menu. (If you
+would rather not use the shortcuts, `python3 play.py begin` just opens the
+menu.)
 
 This is the main menu, shown before any puzzles. Pick a number:
 

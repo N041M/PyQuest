@@ -12,11 +12,13 @@ from ..render import paint, wordmark, header, PAD, OK, NO
 
 
 def _shortcuts_paths():
-    shortcuts = os.path.join(ROOT, "shell", "pyquest.zsh")
     home = os.path.expanduser("~")
     shell = os.environ.get("SHELL", "")
-    rc = os.path.join(home, ".bashrc" if shell.endswith("bash") else ".zshrc")
-    return shortcuts, rc
+    if shell.endswith("bash"):
+        return os.path.join(ROOT, "shell", "pyquest.bash"), \
+            os.path.join(home, ".bashrc")
+    return os.path.join(ROOT, "shell", "pyquest.zsh"), \
+        os.path.join(home, ".zshrc")
 
 
 def _local_source_cmd():
