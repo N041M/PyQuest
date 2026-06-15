@@ -55,13 +55,13 @@ def main():
         else:
             print("  Set up and pick a level from the menu below.\n")
 
-    # Context gate: verbs that act on the current puzzle need one loaded first.
-    # Redirect to the menu instead of running a verb with nothing to act on.
+    # Context gate: the puzzle-logic verbs only mean something with a puzzle
+    # loaded. Without one the learner is between the two command sets, so route
+    # them to the menu (the home base) rather than dead-ending on a message.
     if cmd in NEEDS_PUZZLE and not prog.get("active"):
-        print(paint("  %s  '%s' needs a puzzle loaded first." % (NO, cmd),
+        print(paint("  %s  No puzzle loaded yet -- here's the menu." % NO,
                     "yellow"))
-        print("  Open the menu with %s, or jump straight in with %s."
-              % (cli("begin"), cli("goto 1.1")))
+        cmd_begin(puzzles, by_id, prog)
         return
 
     if cmd == "status":
@@ -108,7 +108,7 @@ def main():
     elif cmd == "uninstall":
         cmd_uninstall()
     elif cmd == "help":
-        cmd_help()
+        cmd_help(prog)
     else:
         near = suggest(raw)
         if near:
@@ -118,4 +118,4 @@ def main():
                               "gray"))
         else:
             print(paint("  Unknown command '%s'." % raw, "yellow"))
-            cmd_help()
+            cmd_help(prog)

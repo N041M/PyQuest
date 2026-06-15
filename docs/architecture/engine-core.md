@@ -36,10 +36,12 @@ a session shell with the shortcuts loaded and opens the menu (the one place
 that spawns a shell); given a verb it calls `engine.app.main()`. `app.main()`
 is the **only** place argv becomes an action:
 it builds the puzzle list once, loads progress, guarantees `work.py` exists,
-then routes the verb to exactly one command function. Before routing it
-consults `commands/registry`: canonicalize the verb (fold aliases), gate
-puzzle-context verbs (`check`, `hint`, `next`, … redirect to `begin` when no
-puzzle is loaded), and on an unknown verb suggest the closest match. Adding a
+then routes the verb to exactly one command function. A bare run with no verb
+defaults to `begin`, so every entry point — cold launch or warm `start` — lands
+on the menu. Before routing it consults `commands/registry`: canonicalize the
+verb (fold aliases), gate puzzle-context verbs (`check`, `hint`, `next`, … open
+`begin` when no puzzle is loaded), and on an unknown verb suggest the closest
+match. Adding a
 verb = one `elif` here + one function in `commands/` + one registry row.
 
 The two ways in -- a cold bare launch versus running a verb -- and how a

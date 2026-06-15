@@ -53,7 +53,8 @@ classDiagram
     class render {
         <<module>>
         +PAD
-        +cli(verb) / label(text) / rule(color, width)
+        +cli(verb)  "shell-aware: bare verb, else `start verb`/`python3 …`"
+        +label(text) / rule(color, width)
         +deco_border(left, right, inner, orn)
         +box(title, color, tall) / banner(title, color)
         +bigbox(art_lines, border, ramp) / wordmark(color)

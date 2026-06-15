@@ -12,14 +12,25 @@ from .theme import (paint, paint_code,
 PAD = "   "          # standard content indent
 
 
+# Verbs with no bare shell shortcut (see shell/pyquest.*): `export`/`import`
+# would collide with the shell's own `export` built-in, so they stay reachable
+# only through the umbrella `start export`. cli() must show them that way -- a
+# bare `export` the shell wouldn't define would be a dead instruction.
+UMBRELLA_ONLY = ("export", "import")
+
+
 def cli(verb=""):
     """Render a command the way the learner invokes it.
 
     If the shell shortcuts are installed (PYQUEST_SHELL=1), show the bare verb
-    like `check`; otherwise show the full `python3 start.py check`.
+    like `check`; otherwise show the full `python3 start.py check`. Verbs with no
+    bare shortcut fall back to the umbrella form (`start export`) so whatever we
+    print is something the learner can actually run.
     """
     if os.environ.get("PYQUEST_SHELL"):
-        return verb if verb else "start"
+        if not verb:
+            return "start"
+        return "start " + verb if verb.split()[0] in UMBRELLA_ONLY else verb
     return ("python3 start.py " + verb).strip()
 
 

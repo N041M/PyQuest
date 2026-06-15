@@ -60,7 +60,7 @@ two files:
 - `brief.md`: read this. It explains the concept and the task.
 - `work.py`: edit this. One workspace file per profile (at
   `users/<name>/work.py`); PyQuest loads each puzzle's starter into it as you
-  go (`start` shows the exact path).
+  go (`status` shows the exact path).
 
 Write your code, **save the file in your editor** (unsaved edits are the most
 common reason a correct-looking answer fails), then check it:
@@ -188,14 +188,16 @@ PyQuest, `command reset` for the terminal.
 ## Commands
 
 Every command runs once, prints plain text, and exits. With the shortcuts
-installed, drop the `python3 start.py` prefix.
+installed, drop the `python3 start.py` prefix (`export`/`import` keep the `start`
+umbrella — `start export` — since the shell owns a bare `export`).
 
 | Command | What it does |
 |---|---|
-| `python3 start.py` | set up the session and open the menu (bare, from a cold terminal) |
-| `python3 start.py status` | show progress and the current puzzle (`start` / `pq` as a shortcut) |
-| `python3 start.py begin` | open the main menu (also `menu`, from anywhere) |
-| `python3 start.py menu` | return to the main menu from anywhere |
+| `python3 start.py` | open the menu — every session starts here (bare `start` / `pq` with the shortcuts on); a cold terminal also sets up the session |
+| `python3 start.py status` | show progress and the current puzzle |
+| `python3 start.py begin` | open the main menu (start here) |
+| `python3 start.py menu` | leave a puzzle and return to the main menu (alias `back`) |
+| `python3 start.py help` | list every command, highlighting the ones available in your current space |
 | `python3 start.py check` | validate your `work.py` against the puzzle |
 | `python3 start.py hint` | reveal the next hint (three per puzzle, escalating) |
 | `python3 start.py solution` | show the reference solution and why it works |

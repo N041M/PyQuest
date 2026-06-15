@@ -18,8 +18,8 @@ Each row: (canonical, label, aliases, context, help)
 VERBS = [
     ("begin",     "begin",        (),                "always",
      "open the main menu (start here)"),
-    ("menu",      "menu",         (),                "always",
-     "return to the main menu from anywhere"),
+    ("menu",      "menu",         ("back",),         "always",
+     "leave the puzzle and return to the main menu"),
     ("status",    "status",       ("current", "progress"), "always",
      "show progress and the current puzzle"),
     ("map",       "map",          (),                "always",

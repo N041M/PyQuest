@@ -21,8 +21,15 @@ flowchart TB
     menu --> cards
     menu --> profiles
     menu --> shortcuts
+    menu --> views
+    menu --> help
+    menu --> registry
     help --> registry
 ```
+
+The hub runs the read‑only inspection verbs (`help`/`status`/`map`) and `mode`
+in place, hence `menu → views`/`help`; the puzzle‑solving verbs still route the
+learner to "pick 1 to start".
 
 Each verb also reads `content`/`state` and draws through `render` (the module
 diagram below); those edges are left off here to keep the verb topology clear.
@@ -30,9 +37,12 @@ diagram below); those edges are left off here to keep the verb topology clear.
 owns the toolkit run; everything else verb‑shaped is here.
 
 `app.py` consults `registry` before dispatch: it canonicalizes aliases
-(`load`→`goto`), redirects puzzle-context verbs (`check`, `hint`, `next`, …)
-to `begin` when no puzzle is loaded, and offers a "did you mean?" suggestion on
-an unknown verb. `help` renders its grouped list from the same table.
+(`load`→`goto`, `back`→`menu`), opens the menu (`begin`) when a puzzle-context
+verb (`check`, `hint`, `next`, …) is run with no puzzle loaded, and offers a
+"did you mean?" suggestion on an unknown verb. A bare invocation also defaults
+to the menu, so every entry point lands on the same home base. `help` renders its grouped list from the same table, taking
+`prog` so it can highlight the set that is live in the current space (the puzzle
+verbs are bright ▸ while solving, dimmed · otherwise).
 
 ---
 
@@ -92,13 +102,16 @@ classDiagram
     }
     class help {
         <<module>>
-        +cmd_help()
+        +cmd_help(prog)  "context-highlighted reference"
     }
     views ..> cards : status marker + card
     navigate ..> cards : goto/advance helpers
     menu ..> cards
     menu ..> profiles
     menu ..> shortcuts
+    menu ..> views : run help/status/map inline
+    menu ..> help
+    menu ..> registry : canonical · gate
     cards ..> registry : NAV_CLUSTERS + NEEDS_PUZZLE
 ```
 

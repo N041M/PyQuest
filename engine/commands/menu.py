@@ -9,8 +9,16 @@ from ..config import load_settings
 from ..state import current_puzzle, activate, load_answers, current_user
 from ..render import paint, wordmark, header, pane_open, cli, PAD
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
-from .profiles import cmd_theme, cmd_user
+from .profiles import cmd_theme, cmd_user, cmd_mode
+from .views import cmd_status, cmd_map
+from .help import cmd_help
 from .registry import canonical, CANONICAL, NEEDS_PUZZLE
+
+# Read-only inspection verbs: they only print, so the hub runs them inline
+# rather than kicking the learner out to a terminal.
+_INLINE = {"help": lambda pz, by, pr: cmd_help(pr),
+           "status": lambda pz, by, pr: cmd_status(pz, by, pr),
+           "map": lambda pz, by, pr: cmd_map(pz, by, pr)}
 from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
                         cmd_setup_persist, cmd_uninstall)
 
@@ -66,12 +74,17 @@ def cmd_begin(puzzles, by_id, prog):
                 prog = cmd_user(arg, puzzles, by_id, prog)
             else:
                 prog = _menu_users(puzzles, by_id, prog)
+        elif head in ("mode",):                     # "mode hard" -- set from the hub
+            cmd_mode(prog, arg)
         elif head in ("5", "shortcuts", "short"):
             _menu_shortcuts()
         elif head in ("6", "q", "quit", "exit"):
             print(PAD + paint("see you in the terminal -- solve with  "
                               + cli("check"), "gray"))
             return
+        elif canonical(head) in _INLINE:
+            print("")                               # run inspection verbs in place
+            _INLINE[canonical(head)](puzzles, by_id, prog)
         else:
             # A learner often types a real verb (check, hint, next...) at this
             # prompt. The menu only picks options 1-6, so point them at where
@@ -118,6 +131,8 @@ def _menu_options(puzzles, by_id, prog):
          % ("on" if _is_persistent() else "off"))
     item("6", "quit")
     print("")
+    print(PAD + paint("pick a number, or type a command "
+                      "(help · map · status · mode hard)", "gray"))
 
 
 def _menu_level(puzzles, by_id, prog):

@@ -131,11 +131,14 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
               the import path `engine.commands` and the dispatcher stay frozen:
                 registry.py   the command surface declared once: each verb's
                               aliases, context (always / needs a puzzle), and
-                              one-line help. app.py canonicalizes, gates, and
+                              one-line help, plus NAV_CLUSTERS (which verbs the
+                              nav strip shows). app.py canonicalizes, gates, and
                               suggests from it; help renders from it.
                 cards.py      shared composition: the puzzle card, status
-                              marker, the goto/advance helpers (the layer the
-                              loop verbs and the menu both build on)
+                              marker, the one chapter tree (map + goto picker),
+                              the registry-driven bottom nav strip, and the
+                              goto/advance helpers (the layer the loop verbs and
+                              the menu both build on)
                 views.py      the read verbs (show, never move you): status,
                               map, hint, solution
                 navigate.py   navigation + workspace reset: goto, next, skip,
@@ -149,7 +152,9 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                 help.py       the help screen
                 menu.py       the interactive launcher (begin / menu), the one
                               interactive surface (§3 invariant 8a); sits on top
-                              of cards + profiles + shortcuts
+                              of cards + profiles + shortcuts, and runs the
+                              read-only inspection verbs (help/status/map) +
+                              mode inline via views + help
 app.py        argv dispatch + main().
 session.py    cold-start launcher: detect the shell, host a session with the
               shortcuts loaded, open the menu. The one place that spawns a
@@ -163,8 +168,10 @@ Rules for the map:
   etc.; a new concern → a new module),
   re-export it from `commands/__init__.py`, add a row in `commands/registry.py`
   (aliases + context + help), plus one dispatch line in `app.py` and a shell
-  shortcut. Nowhere else. (`t_command_registry` fails the audit if dispatch and
-  the registry drift apart.)
+  shortcut — unless the bare word collides with a shell built-in (`export`),
+  in which case it stays umbrella-only (`start export`) and `render.cli()`'s
+  `UMBRELLA_ONLY` list shows it that way. Nowhere else. (`t_command_registry`
+  fails the audit if dispatch and the registry drift apart.)
 - A new **screen/visual** or restyle → `theme.py` / `render.py` only.
 - A new **validation helper** → the matching `toolkit/` module
   (assertion → `asserts.py`, construct check → `constructs.py`, …); the
