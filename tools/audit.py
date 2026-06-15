@@ -715,6 +715,53 @@ def _engine_selftest():
         assert dispatched == CANONICAL, \
             "dispatch/registry drift: %s" % sorted(dispatched ^ CANONICAL)
 
+    def t_transfer_sanitize():
+        # An imported bundle is untrusted: it may be stale (ids gone from this
+        # version), hand-edited (inflated highest to unlock the course), or
+        # malformed. The sanitizers must scrub it back to something safe before
+        # it becomes a profile -- pin both directions: hostile in, clean out;
+        # already-valid in, unchanged out. Pure functions, so no filesystem.
+        from engine.commands.transfer import (_sanitize_progress,
+                                              _sanitize_answers)
+        puzzles = [{"id": "1.1", "index": 0}, {"id": "1.2", "index": 1},
+                   {"id": "2.1", "index": 2}]
+        by_id = {p["id"]: p for p in puzzles}
+
+        hostile = {
+            "mode": "wizard",                       # not a real mode
+            "completed": ["1.1", "9.9", "1.1", "2.1"],  # unknown id + duplicate
+            "highest": 999,                         # inflated to skip the gate
+            "stats": {"1.1": {"attempts": 3, "hints_used": 1},
+                      "9.9": {"attempts": 5}},      # stat for a gone puzzle
+            "current": "9.9",                       # parked on a gone puzzle
+            "active": False,
+        }
+        out, dropped = _sanitize_progress(hostile, by_id, puzzles)
+        assert out["mode"] == "normal", out["mode"]
+        assert out["completed"] == ["1.1", "2.1"], out["completed"]  # drop+dedupe
+        assert out["stats"] == {"1.1": {"attempts": 3, "hints_used": 1}}, \
+            out["stats"]
+        assert out["current"] == "1.1", out["current"]   # gone -> first puzzle
+        assert out["highest"] == 2, out["highest"]        # recomputed, not 999
+        assert out["active"] is True, out["active"]       # has progress
+        assert dropped == 2, dropped                      # 9.9 + the duplicate
+
+        # a clean, valid profile must pass through untouched (idempotent)
+        good = {"mode": "hard", "completed": ["1.1"], "highest": 7,
+                "stats": {}, "current": "1.2", "active": True}
+        out2, dropped2 = _sanitize_progress(good, by_id, puzzles)
+        assert dropped2 == 0, dropped2
+        assert out2["mode"] == "hard" and out2["completed"] == ["1.1"]
+        assert out2["current"] == "1.2"
+        assert out2["highest"] == 1, out2["highest"]      # max(idx 1.1=0, 1.2=1)
+
+        ans = _sanitize_answers({"1.1": {"solved": True, "code": "print(1)"},
+                                 "9.9": {"solved": True, "code": "x"},  # gone
+                                 "2.1": "not a dict"},                  # malformed
+                                by_id)
+        assert set(ans) == {"1.1"}, set(ans)
+        assert ans["1.1"] == {"solved": True, "code": "print(1)"}, ans["1.1"]
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -726,7 +773,7 @@ def _engine_selftest():
                t_structural_checks,
                t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
                t_username_validation, t_discover_tolerates_bad_meta,
-               t_command_registry):
+               t_command_registry, t_transfer_sanitize):
         case(fn.__name__[2:], fn)
 
     bad = 0
