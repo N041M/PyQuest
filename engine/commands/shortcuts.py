@@ -1,5 +1,6 @@
 """The shell-shortcuts installer: the only part of the engine that edits the
-user's environment (a single source line in ~/.zshrc or ~/.bashrc). It never
+user's environment (a single source line in ~/.zshrc or ~/.bashrc, picking the
+file that matches $SHELL). It never
 makes surprise edits -- `setup` offers both ways, `setup persist` opts in,
 `uninstall` removes the line. Self-contained: config + render only.
 """
@@ -19,6 +20,12 @@ def _shortcuts_paths():
             os.path.join(home, ".bashrc")
     return os.path.join(ROOT, "shell", "pyquest.zsh"), \
         os.path.join(home, ".zshrc")
+
+
+def _shortcuts_label():
+    """The shortcut file as a repo-relative path, e.g. shell/pyquest.bash."""
+    shortcuts, _ = _shortcuts_paths()
+    return os.path.join("shell", os.path.basename(shortcuts))
 
 
 def _local_source_cmd():
@@ -69,8 +76,8 @@ def _disclaimer():
     print(PAD + paint("Shortcuts let you type  ", "gray")
           + paint("check", "green", "bold")
           + paint("  instead of  python3 play.py check.", "gray"))
-    print(PAD + paint("They are shell functions defined in shell/pyquest.zsh "
-                      "(check, hint, start, …).", "gray"))
+    print(PAD + paint("They are shell functions defined in %s "
+                      "(check, hint, start, …)." % _shortcuts_label(), "gray"))
     print(PAD + paint("Local = nothing outside this folder changes.  "
                       "Persistent = one line in your shell startup file.",
                       "gray"))
@@ -115,8 +122,8 @@ def cmd_setup_persist():
     elif status == "installed":
         print(paint("  %s Already enabled in %s." % (OK, rc), "green"))
     else:
-        print(paint("  %s shell/pyquest.zsh is missing -- can't install." % NO,
-                    "red"))
+        print(paint("  %s %s is missing -- can't install."
+                    % (NO, _shortcuts_label()), "red"))
 
 
 def cmd_uninstall():
