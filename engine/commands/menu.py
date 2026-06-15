@@ -1,5 +1,5 @@
 """The interactive launcher menu -- the one allowed interactive surface (see
-ARCHITECTURE.md sec 3, invariant 8a). The puzzle-solving loop stays single-shot
+docs/ARCHITECTURE.md sec 3, invariant 8a). The puzzle-solving loop stays single-shot
 commands; this sits on top of the verbs, composing cards + profiles + shortcuts.
 """
 

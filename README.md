@@ -183,8 +183,9 @@ mode is preserved. After a reset you are genuinely back to a blank puzzle 1.1.
 ```
 pyquest/
   play.py            the thin launcher you run
-  engine/            the implementation, split by concern (see ARCHITECTURE.md)
+  engine/            the implementation, split by concern (see docs/ARCHITECTURE.md)
   audit.py           mechanical checks: conformance + anti-sidestep replay attack
+  docs/              ARCHITECTURE.md, SCHEMA.md, CONTRIBUTING.md, architecture/ (UML)
   chapters/          the course content — one folder per puzzle, no code
     01_basics/
       01_hello/
@@ -205,9 +206,10 @@ pyquest/
 | Document | What it covers |
 |---|---|
 | [GETTING_STARTED.md](GETTING_STARTED.md) | a learner's first session, step by step |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | module map, design invariants, how validation works |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | module map, design invariants, how validation works |
 | [docs/architecture/](docs/architecture/README.md) | UML architecture (Mermaid): overview + per‑module diagrams |
-| [SCHEMA.md](SCHEMA.md) | file formats for authoring your own puzzles |
+| [docs/SCHEMA.md](docs/SCHEMA.md) | file formats for authoring your own puzzles |
+| [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | how to add a puzzle, the audit gate, project conventions |
 | [themes/README.md](themes/README.md) | creating custom colour themes |
 
 ## Roadmap
@@ -219,7 +221,7 @@ place:
 - **Generators, lambdas, and the standard library.** Construct checks for
   `yield`, `lambda`, and per-module `import` are staged for these chapters.
 - **Randomized inputs everywhere.** The structured `Case` provider flow
-  (see [ARCHITECTURE.md §8](ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
+  (see [ARCHITECTURE.md §8](docs/ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
   remaining fixed-input puzzles will migrate to it where it strengthens the
   lesson.
 - **bash support for the shortcuts.** `setup` already detects `~/.bashrc`;

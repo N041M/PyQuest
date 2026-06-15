@@ -91,7 +91,7 @@ flowchart TB
     class CF f;
 ```
 
-**Invariants** (verified by `audit.py` + the docs in `../../ARCHITECTURE.md`):
+**Invariants** (verified by `audit.py` + the docs in `../ARCHITECTURE.md`):
 
 | Rule | Where it lives |
 |---|---|

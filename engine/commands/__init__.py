@@ -9,7 +9,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
   help.py       help
   menu.py       the interactive launcher (begin / menu)
 
-`check` lives in checker.py; the dispatcher is app.py. See ARCHITECTURE.md sec 4.
+`check` lives in checker.py; the dispatcher is app.py. See docs/ARCHITECTURE.md sec 4.
 """
 
 from .play import (cmd_status, cmd_map, cmd_hint, cmd_solution, cmd_goto,

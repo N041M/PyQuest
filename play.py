@@ -2,7 +2,7 @@
 """PyQuest -- a terminal-run Python course.
 
 This is a thin launcher. The implementation lives in the `engine/` package,
-split by concern (visuals, content, input, checking, state). See ARCHITECTURE.md
+split by concern (visuals, content, input, checking, state). See docs/ARCHITECTURE.md
 for the module map and the rules that keep it modular.
 
     python3 play.py            show progress + the current puzzle

@@ -1,0 +1,10 @@
+{
+  "name": "PyQuest",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"]
+    }
+  },
+  "postAttachCommand": "python3 play.py"
+}

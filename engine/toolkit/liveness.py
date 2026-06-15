@@ -270,5 +270,5 @@ class LivenessMixin:
         live. `kind` is "stmt" (removal must change behavior; crash counts),
         "expr" (sentinel substitution must change a clean run), "bool",
         "container" (reachability bar), "trim", or "kw:<name>". Ship a
-        dodges.py entry alongside any bespoke check (SCHEMA.md)."""
+        dodges.py entry alongside any bespoke check (docs/SCHEMA.md)."""
         self._require_live(want, missing, found, kind, because, min_count)
