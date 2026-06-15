@@ -136,9 +136,11 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                 cards.py      shared composition: the puzzle card, status
                               marker, the goto/advance helpers (the layer the
                               loop verbs and the menu both build on)
-                play.py       the loop verbs: status, map, hint, solution,
-                              goto, next, skip, retry, revert, mode
-                profiles.py   theme, user, reset
+                views.py      the read verbs (show, never move you): status,
+                              map, hint, solution
+                navigate.py   navigation + workspace reset: goto, next, skip,
+                              retry, revert
+                profiles.py   settings: theme, mode, user, reset
                 transfer.py   export, import: portable profile bundles
                               (serialize + validate against current content)
                 shortcuts.py  the ~/.zshrc shortcuts installer -- the only part
@@ -156,8 +158,9 @@ session.py    cold-start launcher: detect the shell, host a session with the
 
 Rules for the map:
 
-- A new **command** → the matching `commands/` module (a loop verb → `play.py`,
-  a profile/theme verb → `profiles.py`, etc.; a new concern → a new module),
+- A new **command** → the matching `commands/` module (a read verb →
+  `views.py`, a navigation verb → `navigate.py`, a setting → `profiles.py`,
+  etc.; a new concern → a new module),
   re-export it from `commands/__init__.py`, add a row in `commands/registry.py`
   (aliases + context + help), plus one dispatch line in `app.py` and a shell
   shortcut. Nowhere else. (`t_command_registry` fails the audit if dispatch and

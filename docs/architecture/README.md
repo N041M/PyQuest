@@ -146,13 +146,15 @@ slices below zoom in, including which services each branch imports.
 flowchart TB
     app["app.py"] --> creg["registry «verb table»"]
     app --> cinit["commands/__init__ «facade»"]
-    cinit --> cplay["play «loop verbs»"]
+    cinit --> cviews["views «status/map/hint/solution»"]
+    cinit --> cnav["navigate «goto/next/skip/retry/revert»"]
     cinit --> cmenu["menu «begin/menu»"]
-    cinit --> cprof["profiles «theme/user/reset»"]
+    cinit --> cprof["profiles «theme/mode/user/reset»"]
     cinit --> ctrans["transfer «export/import»"]
     cinit --> cshort["shortcuts «shell installer»"]
     cinit --> chelp["help"]
-    cplay --> ccards["cards «shared card/goto»"]
+    cviews --> ccards["cards «shared card/goto»"]
+    cnav --> ccards
     cmenu --> ccards
     cmenu --> cprof
     cmenu --> cshort

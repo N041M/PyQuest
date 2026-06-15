@@ -9,13 +9,15 @@ they go through [render/theme](visuals.md). ← [overview](README.md)
 flowchart TB
     app["app.py «dispatch»"] --> registry["registry «verb table»"]
     app --> init["commands/__init__ «facade»"]
-    init --> play["play «loop verbs»"]
-    init --> profiles["profiles «theme/user/reset»"]
+    init --> views["views «status/map/hint/solution»"]
+    init --> nav["navigate «goto/next/skip/retry/revert»"]
+    init --> profiles["profiles «theme/mode/user/reset»"]
     init --> transfer["transfer «export/import»"]
     init --> shortcuts["shortcuts «installer»"]
     init --> menu["menu «begin/menu»"]
     init --> help["help"]
-    play --> cards["cards «shared card/goto»"]
+    views --> cards["cards «shared card/goto»"]
+    nav --> cards
     menu --> cards
     menu --> profiles
     menu --> shortcuts
@@ -50,17 +52,19 @@ classDiagram
         -_goto_list(...) / _resolve_goto(arg,...)
         -_jump(target,...) / _advance_one(...,verb)
     }
-    class play {
+    class views {
         <<module>>
         +cmd_status / cmd_map
         +cmd_hint / cmd_solution
+    }
+    class navigate {
+        <<module>>
         +cmd_goto / cmd_next / cmd_skip
         +cmd_retry / cmd_revert
-        +cmd_mode(prog, arg)
     }
     class profiles {
         <<module>>
-        +cmd_theme(arg)
+        +cmd_theme(arg) / cmd_mode(prog, arg)
         +cmd_user(arg, puzzles, by_id, prog)
         +cmd_reset(puzzles, prog, arg)
         -_swatch() / _user_count(...)
@@ -88,15 +92,17 @@ classDiagram
         <<module>>
         +cmd_help()
     }
-    play ..> cards : reuse card + goto/advance helpers
+    views ..> cards : status marker + card
+    navigate ..> cards : goto/advance helpers
     menu ..> cards
     menu ..> profiles
     menu ..> shortcuts
 ```
 
 `cards.py` is the shared core: card rendering, the goto list, resolving a goto
-target, jumping, and advancing one puzzle. `play.py` and `menu.py` both build on
-it so navigation behaves identically from the CLI and the menu.
+target, jumping, and advancing one puzzle. `views.py`, `navigate.py`, and
+`menu.py` all build on it so navigation behaves identically from the CLI and
+the menu.
 
 ## The only interactive surface: `begin` / `menu`
 

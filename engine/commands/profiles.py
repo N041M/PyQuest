@@ -1,5 +1,6 @@
-"""Config-ish verbs: theme (colour palette), user (per-profile progress), and
-reset (wipe this profile). They compose state + settings + render.
+"""Config-ish verbs: theme (colour palette), mode (difficulty), user
+(per-profile progress), and reset (wipe this profile). They compose state +
+settings + render.
 
 Profile portability (export/import) is a separate concern -- see transfer.py.
 """
@@ -7,7 +8,7 @@ Profile portability (export/import) is a separate concern -- see transfer.py.
 import os
 import json
 
-from ..config import load_settings, set_setting
+from ..config import load_settings, set_setting, MODES
 from ..theme import apply_theme, THEME_NAMES
 from ..state import (current_puzzle, load_answers, archive_current,
                      save_progress, load_progress, default_progress,
@@ -111,3 +112,21 @@ def cmd_reset(puzzles, prog, arg=None):
     print(paint("  %s Full reset done." % OK, "green", "bold"))
     print("  Cleared this profile's progress, saved answers, and workspace.")
     print("  Open the menu to start again:  %s" % cli("begin"))
+
+
+# ---- mode (difficulty) ----------------------------------------------------
+def cmd_mode(prog, arg):
+    arg = (arg or "").lower()
+    if arg not in MODES:
+        print("Usage: %s" % cli("mode <easy|normal|hard>"))
+        print("Current mode: %s" % paint(prog["mode"], "magenta", "bold"))
+        return
+    prog["mode"] = arg
+    save_progress(prog)
+    desc = {
+        "easy": "Pointers shown, hints/solution always available, free jumps.",
+        "normal": "Hints on demand, skip forward allowed.",
+        "hard": "No skips, hints only after 3 tries, solution after solving.",
+    }[arg]
+    print(paint("  %s Mode set to '%s'." % (OK, arg), "magenta", "bold"))
+    print("  " + desc)
