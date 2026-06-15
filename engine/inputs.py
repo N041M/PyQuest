@@ -43,15 +43,6 @@ def fixed(*cases):
     return list(cases)
 
 
-def random_ints(count, low, high, seed=None):
-    """A simple randomized provider of integer values.
-
-    `seed` makes a run reproducible; leave it None for fresh values each time.
-    """
-    rng = random.Random(seed)
-    return [rng.randint(low, high) for _ in range(count)]
-
-
 # ---- convenience generators used by tests.py to defeat hardcoding ----------
 def random_word(min_len=3, max_len=8, rng=None):
     """A random lowercase word."""

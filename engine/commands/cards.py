@@ -8,7 +8,7 @@ import os
 from ..config import WIDTH, rel
 from ..content import load_hints
 from ..state import current_puzzle, load_answers, switch_to, work_path
-from ..render import (paint, id_banner, header, bar, field, wrap, indent, cli,
+from ..render import (paint, id_banner, header, bar, field, wrap, cli,
                       PAD, OK, NO, CUR, DOT, ARROW, STAR)
 
 

@@ -28,8 +28,7 @@ def main():
 
     if sys.argv[1:] or os.environ.get("PYQUEST_SHELL"):
         from engine.app import main as run
-        run()
-        return 0
+        return run() or 0          # honor app.main()'s code if it ever sets one
 
     from engine.session import launch_session
     return launch_session()

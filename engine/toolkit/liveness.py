@@ -30,7 +30,7 @@ Mixin contract -- needs the tape and the guard:
 import ast
 import copy
 
-from .errors import (PuzzleSyntaxError, PuzzleCrashError, WrongResultError,
+from .errors import (PuzzleSyntaxError, PuzzleCrashError,
                      LessonNotUsedError)
 from .textutil import normalize
 

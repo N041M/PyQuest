@@ -13,12 +13,13 @@ def cmd_help():
     print("")
     # With the shortcuts on, verbs are bare; otherwise show the full invocation.
     pre = "" if os.environ.get("PYQUEST_SHELL") else "python3 start.py "
-    for title, ctx in (("anywhere", "always"),
-                       ("while solving a puzzle", "puzzle")):
+    groups = (("anywhere", "always"), ("while solving a puzzle", "puzzle"))
+    for i, (title, ctx) in enumerate(groups):
+        if i:
+            print("")                       # blank line between groups, not after
         print(PAD + paint(title, "magenta", "bold"))
         for _canon, label, _aliases, context, desc in VERBS:
             if context == ctx:
                 print("%s%s  %s"
                       % (PAD, paint((pre + label).ljust(24), "green", "bold"),
                          desc))
-        print("")

@@ -11,8 +11,8 @@ import sys
 
 from ..content import read_starter
 from ..state import (current_puzzle, load_answers, save_answers, save_progress,
-                     archive_work, write_work)
-from ..render import paint, cli, PAD, ARROW
+                     archive_current, write_work)
+from ..render import paint, PAD, ARROW
 from .cards import (print_current_card, _goto_list, _resolve_goto, _jump,
                     _advance_one)
 
@@ -63,9 +63,7 @@ def cmd_retry(puzzles, by_id, prog):
     if cur is None:
         print("No current puzzle.")
         return
-    answers = load_answers()
-    if prog.get("active"):
-        archive_work(cur, answers)           # keep their last code in answers
+    archive_current(prog, by_id, puzzles)    # keep their last code in answers
     prog["active"] = True
     save_progress(prog)
     write_work(read_starter(cur))            # blank the workspace

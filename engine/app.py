@@ -81,7 +81,7 @@ def main():
     elif cmd == "theme":
         cmd_theme(arg)
     elif cmd == "user":
-        cmd_user(arg, puzzles, by_id, prog)
+        prog = cmd_user(arg, puzzles, by_id, prog)
     elif cmd == "reset":
         cmd_reset(puzzles, prog, arg)
     elif cmd == "export":

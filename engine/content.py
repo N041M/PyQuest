@@ -54,13 +54,6 @@ def discover():
     return puzzles
 
 
-def by_id_lookup(puzzles, pid):
-    for p in puzzles:
-        if p["id"] == pid:
-            return p
-    return None
-
-
 # ---- file locations -------------------------------------------------------
 # (The editable workspace, work.py, lives per-user; see state.work_path.)
 def starter_path(puzzle):
