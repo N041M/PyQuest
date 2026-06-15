@@ -5,9 +5,9 @@ commands; this sits on top of the verbs, composing cards + profiles + shortcuts.
 
 import sys
 
-from ..config import load_settings
+from ..config import load_settings, WIDTH
 from ..state import current_puzzle, activate, load_answers, current_user
-from ..render import paint, wordmark, header, cli, PAD
+from ..render import paint, wordmark, header, bar, cli, PAD
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user
 from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
@@ -64,14 +64,20 @@ def _menu_options(puzzles, by_id, prog):
     print("")
     print(header("main menu", "cyan"))
     print("")
+    # at-a-glance progress belongs on the hub itself (same line as `status`),
+    # not in a tab of its own
+    print(PAD + "%s     %s"
+          % (paint(prog["mode"] + " mode", "magenta", "bold"),
+             bar(done, total, WIDTH - 24)))
+    print("")
 
     def item(n, lbl, note=""):
         print(PAD + paint(" %s " % n, "byellow", "bold") + "  "
               + paint(lbl.ljust(15), "white", "bold") + paint(note, "gray"))
 
-    here = "%s · %s · %d/%d" % (cur["id"] if cur else "-", prog["mode"],
-                                done, total)
-    item("1", "start", here)
+    where = ("%s · %s" % (cur["id"], cur["meta"].get("title", ""))
+             if cur else "-")
+    item("1", "start", where)
     item("2", "select level", "jump to any puzzle")
     item("3", "theme", load_settings().get("theme", "neon"))
     item("4", "users", current_user())

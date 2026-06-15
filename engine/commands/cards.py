@@ -8,7 +8,7 @@ import os
 from ..config import WIDTH, rel
 from ..content import load_hints
 from ..state import current_puzzle, load_answers, switch_to, work_path
-from ..render import (paint, id_banner, header, field, wrap, indent, cli,
+from ..render import (paint, id_banner, header, bar, field, wrap, indent, cli,
                       PAD, OK, NO, CUR, DOT, ARROW, STAR)
 
 
@@ -62,6 +62,8 @@ def _goto_list(puzzles, by_id, prog, note=None, footer=True):
     """Show every puzzle as a pickable list (used when `goto` has no/bad id)."""
     cur_id = prog.get("current")
     print(header("goto · choose a puzzle", "cyan"))
+    print("")
+    print(PAD + bar(len(prog["completed"]), len(puzzles), WIDTH - 18))
     if note:
         print("")
         print(PAD + paint(note, "yellow"))
