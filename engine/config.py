@@ -12,7 +12,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHAPTERS_DIR = os.path.join(ROOT, "chapters")
 USERS_DIR = os.path.join(ROOT, "users")            # per-user progress/answers
 THEMES_DIR = os.path.join(ROOT, "themes")          # user-made JSON theme presets
-SETTINGS_PATH = os.path.join(ROOT, "settings.json")  # current user + theme
+SETTINGS_PATH = os.path.join(USERS_DIR, "settings.json")  # current user + theme
+_LEGACY_SETTINGS = os.path.join(ROOT, "settings.json")    # pre-move location
 WORK_FILENAME = "work.py"
 PY = sys.executable
 TIMEOUT = 10
@@ -22,6 +23,13 @@ DEFAULT_SETTINGS = {"user": "default", "theme": "neon"}
 
 
 def load_settings():
+    # one-time move from the old root location into users/
+    if os.path.exists(_LEGACY_SETTINGS) and not os.path.exists(SETTINGS_PATH):
+        try:
+            os.makedirs(USERS_DIR, exist_ok=True)
+            os.replace(_LEGACY_SETTINGS, SETTINGS_PATH)
+        except OSError:
+            pass
     try:
         with open(SETTINGS_PATH) as f:
             data = json.load(f)
@@ -50,6 +58,7 @@ def write_json(path, data):
 
 
 def save_settings(settings):
+    os.makedirs(USERS_DIR, exist_ok=True)
     write_json(SETTINGS_PATH, settings)
 
 
