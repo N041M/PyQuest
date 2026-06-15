@@ -469,6 +469,39 @@ def _engine_selftest():
             return
         raise AssertionError("uses_import('random') should fail here")
 
+    def t_generator_backstop():
+        """is_generator + uses_yield make a generators puzzle sidestep-proof:
+        a real generator passes both; a list-returning function with a dead
+        yield fails the behavioral check; a bare genexpr fails the AST check."""
+        from engine.toolkit import LessonNotUsedError
+        # a real yield-based generator passes both checks
+        path, T = learner("def g(n):\n    for i in range(n):\n        "
+                          "yield i * i\n")
+        gen = T.call("g", 3)
+        T.is_generator(gen)
+        T.uses_yield()
+        assert list(gen) == [0, 1, 4]
+        os.unlink(path)
+        # a list (the obvious sidestep) must fail the behavioral check
+        path, T = learner("def g(n):\n    return [i * i for i in range(n)]\n")
+        try:
+            T.is_generator(T.call("g", 3))
+        except WrongResultError:
+            os.unlink(path)
+        else:
+            os.unlink(path)
+            raise AssertionError("is_generator must reject a list")
+        # a bare generator expression is a generator, but uses no yield
+        path, T = learner("def g(n):\n    return (i * i for i in range(n))\n")
+        T.is_generator(T.call("g", 3))
+        try:
+            T.uses_yield()
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        os.unlink(path)
+        raise AssertionError("uses_yield must reject a bare genexpr")
+
     def t_with_open_construct():
         """uses_with_open demands the FILE be opened with `with`. A live
         `with io.StringIO()` wrapping a print satisfies the generic uses_with
@@ -767,7 +800,7 @@ def _engine_selftest():
                t_classes, t_uses_class_named,
                t_does_not_mutate, t_does_not_mutate_uncopyable,
                t_eq_case_sensitive, t_deep_approx, t_new_constructs,
-               t_with_open_construct,
+               t_generator_backstop, t_with_open_construct,
                t_raises_still_works, t_liveness_dead_chaff,
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,

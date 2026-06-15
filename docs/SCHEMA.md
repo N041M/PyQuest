@@ -113,6 +113,7 @@ by a `with`, a generic `uses_with` is satisfied by any live `with`, even a
 lessons), `T.uses_dict/set`, `T.uses_nested_if`,
 `T.uses_index/negative_index/slice(step=)`, `T.uses_fstring`,
 `T.uses_comprehension(with_if=)`, `T.uses_unpacking`, `T.uses_default_param(name)`,
+`T.uses_import(module)`, `T.uses_yield`, `T.uses_lambda`,
 `T.uses_class(name)` (the OOP chapters: pass the class name the tests
 instantiate, object puzzles run through `make`/`method`/`attr`, which aren't on
 the tape, so this is an AST presence check and the name stops a decoy
@@ -136,6 +137,23 @@ answer: `uses_boolop()` (not `n % 6 == 0` for "divisible by 2 and 3"; accepts a
 De Morgan `not(a or b)`), `uses_nested_if` (a real body nest, not a flat `elif`
 chain, an `elif` is AST-identical to `else: if`), `uses_default_param("greet")`
 (the `name=value` default, not `*args`), `uses_call("int")` (not `eval`).
+
+`uses_yield`, `uses_lambda`, and `uses_default_param` are **AST-presence only**
+(liveness cannot ablate them: substituting a `yield` flips the function's
+generator-ness and crashes; a lambda's stand-in isn't callable). Alone they are
+sidesteppable, so back them with behavior:
+
+- **Generators** (`yield`): pair `uses_yield` with `T.is_generator(T.call(...))`
+  — the return value must be a live generator, not a pre-built list. A list with
+  a dead `yield` fails `is_generator`; a bare generator expression passes
+  `is_generator` but fails `uses_yield`; together they force a real
+  yield-driven generator. If the lesson is *laziness*, probe it (e.g. `islice`
+  an effectively endless source) rather than materializing the whole thing.
+- **Lambdas** (`lambda`): a lambda and a `def` compile to identical callables,
+  so there is no behavioral tell — pin the *context* instead. Require it where
+  the inline form is the point (`sorted(xs, key=lambda ...)`) via `uses_lambda`
+  \+ `uses_call("sorted")` \+ the result check, with randomized inputs so the
+  key actually runs.
 
 For fixed-output puzzles (no input to randomize) where the lesson IS one
 specific expression, pin the printed expression itself:

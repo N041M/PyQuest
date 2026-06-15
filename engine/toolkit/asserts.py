@@ -7,6 +7,7 @@ Mixin contract -- needs RunnersMixin (func/call/_record_call/_guarded).
 """
 
 import copy
+import types
 
 from .errors import WrongResultError, PuzzleCrashError
 from .textutil import normalize, fmt_args
@@ -36,6 +37,16 @@ class AssertsMixin:
     def is_a(self, value, typ, because=""):
         if not isinstance(value, typ):
             raise WrongResultError(typ.__name__, type(value).__name__, because)
+
+    def is_generator(self, value, because=""):
+        """The generators-lesson backstop: `value` must be a live generator,
+        not a pre-built list/tuple. `uses_yield` alone is AST-only (a dead
+        `yield` beside a list-returning solution would pass); pairing the two
+        closes both holes -- a list fails here, and a bare generator expression
+        passes here but fails `uses_yield`. So the lesson's `yield` becomes both
+        present AND behaviorally load-bearing."""
+        if not isinstance(value, types.GeneratorType):
+            raise WrongResultError("a generator", type(value).__name__, because)
 
     def raises(self, exc, name, *args, **kwargs):
         fn = self.func(name)
