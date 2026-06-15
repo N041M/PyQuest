@@ -6,7 +6,8 @@ The orchestration, content, input and state layers. Visuals are in
 
 ```mermaid
 flowchart TB
-    play["start.py"] --> app["app.py «dispatch»"]
+    play["start.py «entry»"] --> session["session.py «launcher»"]
+    play --> app["app.py «dispatch»"]
     app --> checker["checker.py"]
     app --> commands["commands/*"]
     checker --> toolkit["toolkit/"]
@@ -29,9 +30,11 @@ flowchart TB
 
 ## start.py / app.py: entry & dispatch
 
-`start.py` is the root entry point. Bare (`python3 start.py`) it sets up a
-session shell with the shortcuts and opens the menu; given a verb it calls
-`engine.app.main()`. `app.main()` is the **only** place argv becomes an action:
+`start.py` is a thin root entry point that only routes (version check, then
+launch-or-dispatch). A cold bare run delegates to `engine.session`, which hosts
+a session shell with the shortcuts loaded and opens the menu (the one place
+that spawns a shell); given a verb it calls `engine.app.main()`. `app.main()`
+is the **only** place argv becomes an action:
 it builds the puzzle list once, loads progress, guarantees `work.py` exists,
 then routes the verb to exactly one command function. Before routing it
 consults `commands/registry`: canonicalize the verb (fold aliases), gate

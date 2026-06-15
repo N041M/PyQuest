@@ -85,9 +85,10 @@ those two files.
 
 ## 4. Module map
 
-The package lives under `pyquest/`. `start.py` at the root is the single entry
-point: bare, it sets up a session shell and opens the menu; `start.py <verb>`
-dispatches one command into `engine.app.main()`.
+The package lives under `pyquest/`. `start.py` at the root is a thin entry
+point that only routes: a cold bare run delegates to `engine.session` (host a
+session shell, open the menu); `start.py <verb>` delegates to
+`engine.app.main()` (run one command).
 Dependencies only ever point **downward** in this list (no cycles):
 
 ```
@@ -148,6 +149,9 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                               interactive surface (§3 invariant 8a); sits on top
                               of cards + profiles + shortcuts
 app.py        argv dispatch + main().
+session.py    cold-start launcher: detect the shell, host a session with the
+              shortcuts loaded, open the menu. The one place that spawns a
+              shell; depends only on config. (`start.py` calls it.)
 ```
 
 Rules for the map:
