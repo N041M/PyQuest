@@ -6,13 +6,14 @@ from .config import CHAPTERS_DIR, rel
 from .content import discover
 from .state import (load_progress, current_puzzle, ensure_workspace,
                     load_answers, migrate_legacy)
-from .render import paint, cli, STAR
+from .render import paint, cli, STAR, NO, PAD
 from .checker import cmd_check
 from .commands import (cmd_status, cmd_map, cmd_hint, cmd_solution, cmd_next,
                        cmd_goto, cmd_skip, cmd_retry, cmd_revert, cmd_mode,
                        cmd_theme, cmd_user, cmd_reset, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall, cmd_begin,
                        cmd_menu, cmd_help)
+from .commands.registry import canonical, NEEDS_PUZZLE, suggest
 
 
 def main():
@@ -31,7 +32,8 @@ def main():
     prog.setdefault("active", len(prog.get("completed", [])) > 0)
 
     args = sys.argv[1:]
-    cmd = args[0].lower() if args else "status"
+    raw = args[0].lower() if args else "status"
+    cmd = canonical(raw)                 # fold aliases (load->goto, replay->retry)
     arg = args[1] if len(args) > 1 else None
     arg2 = args[2] if len(args) > 2 else None
     arg3 = args[3] if len(args) > 3 else None
@@ -45,7 +47,16 @@ def main():
         print("  Open the menu to set up and pick a level:  %s\n"
               % cli("begin"))
 
-    if cmd in ("status", "", "current", "progress"):
+    # Context gate: verbs that act on the current puzzle need one loaded first.
+    # Redirect to the menu instead of running a verb with nothing to act on.
+    if cmd in NEEDS_PUZZLE and not prog.get("active"):
+        print(paint("  %s  '%s' needs a puzzle loaded first." % (NO, cmd),
+                    "yellow"))
+        print("  Open the menu with %s, or jump straight in with %s."
+              % (cli("begin"), cli("goto 1.1")))
+        return
+
+    if cmd == "status":
         cmd_status(puzzles, by_id, prog)
     elif cmd == "check":
         cmd_check(puzzles, by_id, prog)
@@ -57,11 +68,11 @@ def main():
         cmd_map(puzzles, by_id, prog)
     elif cmd == "next":
         cmd_next(puzzles, by_id, prog)
-    elif cmd in ("goto", "load"):
+    elif cmd == "goto":
         cmd_goto(puzzles, by_id, prog, arg)
     elif cmd == "skip":
         cmd_skip(puzzles, by_id, prog)
-    elif cmd in ("retry", "replay"):
+    elif cmd == "retry":
         cmd_retry(puzzles, by_id, prog)
     elif cmd == "revert":
         cmd_revert(puzzles, by_id, prog)
@@ -69,7 +80,7 @@ def main():
         cmd_mode(prog, arg)
     elif cmd == "theme":
         cmd_theme(arg)
-    elif cmd in ("user", "users"):
+    elif cmd == "user":
         cmd_user(arg, puzzles, by_id, prog)
     elif cmd == "reset":
         cmd_reset(puzzles, prog, arg)
@@ -88,8 +99,15 @@ def main():
             cmd_setup()
     elif cmd == "uninstall":
         cmd_uninstall()
-    elif cmd in ("help", "-h", "--help"):
+    elif cmd == "help":
         cmd_help()
     else:
-        print("Unknown command: %s" % cmd)
-        cmd_help()
+        near = suggest(raw)
+        if near:
+            print(paint("  Unknown command '%s'. Did you mean  %s ?"
+                        % (raw, cli(near)), "yellow"))
+            print(PAD + paint("run  %s  for the full list." % cli("help"),
+                              "gray"))
+        else:
+            print(paint("  Unknown command '%s'." % raw, "yellow"))
+            cmd_help()

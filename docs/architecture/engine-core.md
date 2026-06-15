@@ -33,8 +33,11 @@ flowchart TB
 session shell with the shortcuts and opens the menu; given a verb it calls
 `engine.app.main()`. `app.main()` is the **only** place argv becomes an action:
 it builds the puzzle list once, loads progress, guarantees `work.py` exists,
-then routes the verb to exactly one command function. Adding a verb = one
-`elif` here + one function in `commands/`.
+then routes the verb to exactly one command function. Before routing it
+consults `commands/registry`: canonicalize the verb (fold aliases), gate
+puzzle-context verbs (`check`, `hint`, `next`, … redirect to `begin` when no
+puzzle is loaded), and on an unknown verb suggest the closest match. Adding a
+verb = one `elif` here + one function in `commands/` + one registry row.
 
 ```mermaid
 classDiagram
@@ -42,6 +45,7 @@ classDiagram
         <<module>>
         +main()
     }
+    app ..> registry : canonical · gate · suggest
     app ..> content : discover()
     app ..> state : load · current · ensure_workspace
     app ..> checker : cmd_check

@@ -1,6 +1,8 @@
 """The command verbs, split by concern. This facade re-exports every cmd_* so
 the dispatcher (app.py) imports from `engine.commands` exactly as before.
 
+  registry.py   the command surface declared once: verb -> aliases, context
+                (always / needs a puzzle), and help. app.py + help read it.
   cards.py      shared composition: the puzzle card, status marker, goto helpers
   play.py       loop verbs: status, map, hint, solution, goto, next, skip,
                 retry, revert, mode

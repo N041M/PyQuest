@@ -34,6 +34,7 @@ Not part of the engine; safe to delete.
 
 import io
 import os
+import re
 import json
 import sys
 import tempfile
@@ -688,6 +689,32 @@ def _engine_selftest():
             import shutil
             shutil.rmtree(os.path.join(CHAPTERS_DIR, "98_selftest_tmp"))
 
+    def t_command_registry():
+        from engine.commands.registry import (canonical, suggest,
+                                              NEEDS_PUZZLE, CANONICAL)
+        # aliases fold to their canonical verb; empty input is status
+        assert canonical("load") == "goto"
+        assert canonical("replay") == "retry"
+        assert canonical("users") == "user"
+        assert canonical("current") == "status"
+        assert canonical("") == "status"
+        # did-you-mean catches near-misses and gives up on noise
+        assert suggest("helpp") == "help", suggest("helpp")
+        assert suggest("chekc") == "check", suggest("chekc")
+        assert suggest("zzzzz") is None
+        # the puzzle-context set is exactly the verbs that act on a loaded puzzle
+        assert {"check", "hint", "solution", "next", "skip", "retry",
+                "revert"} <= NEEDS_PUZZLE
+        assert not (NEEDS_PUZZLE & {"status", "goto", "begin", "map", "help"})
+        assert NEEDS_PUZZLE <= CANONICAL
+        # dispatch and registry must not drift: every verb app.main switches on
+        # is a registry verb, and every registry verb is dispatched.
+        from engine.config import ROOT
+        src = open(os.path.join(ROOT, "engine", "app.py")).read()
+        dispatched = set(re.findall(r'cmd == "([a-z]+)"', src))
+        assert dispatched == CANONICAL, \
+            "dispatch/registry drift: %s" % sorted(dispatched ^ CANONICAL)
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -698,7 +725,8 @@ def _engine_selftest():
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,
                t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
-               t_username_validation, t_discover_tolerates_bad_meta):
+               t_username_validation, t_discover_tolerates_bad_meta,
+               t_command_registry):
         case(fn.__name__[2:], fn)
 
     bad = 0

@@ -7,9 +7,11 @@ they go through [render/theme](visuals.md). ← [overview](README.md)
 
 ```mermaid
 flowchart TB
-    app["app.py «dispatch»"] --> init["commands/__init__ «facade»"]
+    app["app.py «dispatch»"] --> registry["registry «verb table»"]
+    app --> init["commands/__init__ «facade»"]
     init --> play["play «loop verbs»"]
     init --> profiles["profiles «theme/user/reset»"]
+    init --> transfer["transfer «export/import»"]
     init --> shortcuts["shortcuts «installer»"]
     init --> menu["menu «begin/menu»"]
     init --> help["help"]
@@ -17,6 +19,7 @@ flowchart TB
     menu --> cards
     menu --> profiles
     menu --> shortcuts
+    help --> registry
 ```
 
 Each verb also reads `content`/`state` and draws through `render` (the module
@@ -24,12 +27,22 @@ diagram below); those edges are left off here to keep the verb topology clear.
 `checker.cmd_check` lives in `engine/checker.py` (not this package) because it
 owns the toolkit run; everything else verb‑shaped is here.
 
+`app.py` consults `registry` before dispatch: it canonicalizes aliases
+(`load`→`goto`), redirects puzzle-context verbs (`check`, `hint`, `next`, …)
+to `begin` when no puzzle is loaded, and offers a "did you mean?" suggestion on
+an unknown verb. `help` renders its grouped list from the same table.
+
 ---
 
 ## Module responsibilities
 
 ```mermaid
 classDiagram
+    class registry {
+        <<module>>
+        +VERBS / CANONICAL / ALIASES / NEEDS_PUZZLE
+        +canonical(cmd) / suggest(cmd)
+    }
     class cards {
         <<module>>
         +status_marker(prog, pid, current_id)

@@ -128,6 +128,10 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
               A package split by concern, like toolkit/; internal dependencies
               point down and `__init__.py` re-exports every cmd_* as a facade so
               the import path `engine.commands` and the dispatcher stay frozen:
+                registry.py   the command surface declared once: each verb's
+                              aliases, context (always / needs a puzzle), and
+                              one-line help. app.py canonicalizes, gates, and
+                              suggests from it; help renders from it.
                 cards.py      shared composition: the puzzle card, status
                               marker, the goto/advance helpers (the layer the
                               loop verbs and the menu both build on)
@@ -150,8 +154,10 @@ Rules for the map:
 
 - A new **command** → the matching `commands/` module (a loop verb → `play.py`,
   a profile/theme verb → `profiles.py`, etc.; a new concern → a new module),
-  re-export it from `commands/__init__.py`, plus one dispatch line in `app.py`
-  and a shell shortcut. Nowhere else.
+  re-export it from `commands/__init__.py`, add a row in `commands/registry.py`
+  (aliases + context + help), plus one dispatch line in `app.py` and a shell
+  shortcut. Nowhere else. (`t_command_registry` fails the audit if dispatch and
+  the registry drift apart.)
 - A new **screen/visual** or restyle → `theme.py` / `render.py` only.
 - A new **validation helper** → the matching `toolkit/` module
   (assertion → `asserts.py`, construct check → `constructs.py`, …); the
