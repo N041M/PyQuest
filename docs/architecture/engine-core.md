@@ -115,7 +115,6 @@ classDiagram
     class content {
         <<module>>
         +discover() list~Puzzle~
-        +by_id_lookup(puzzles, pid) Puzzle
         +starter_path(puzzle) str
         +read_starter(puzzle) str
         +load_hints(dirpath) list~str~
@@ -146,7 +145,6 @@ classDiagram
     class inputs {
         <<module>>
         +fixed(*cases) list~Case~
-        +random_ints(count, low, high, seed) list~int~
         +random_word(min, max, rng) str
         +random_int(low, high, rng) int
     }

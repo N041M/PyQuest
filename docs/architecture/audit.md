@@ -136,14 +136,17 @@ sequenceDiagram
 
 ## `--engine`: the guard's guarantees, pinned
 
-`_engine_selftest()` runs ~26 direct cases asserting each promise the
+`_engine_selftest()` runs ~28 direct cases asserting each promise the
 [ExecutionGuard](toolkit.md) and toolkit make: `exit()`/hang/stray‑`input()`
 translation, stdout capture, the file sandbox never leaking into the project,
 class/mutation/`approx`/case‑sensitive‑`eq` behavior, liveness killing dead
 chaff while honest constructs pass, the `line_*` checks, the structural checks
 (`uses_nested_if`, `uses_default_param`, `uses_with_open`, `uses_class(name)`),
-atomic JSON writes, corrupt‑file backup, username validation, and discovery
-tolerating bad meta.
+atomic JSON writes, corrupt‑file backup, username validation, discovery
+tolerating bad meta, the command registry staying in lock‑step with `app.py`
+dispatch, and the profile‑import sanitizers scrubbing a stale or hand‑edited
+export bundle (unknown ids dropped, the unlock high‑water mark recomputed, never
+trusted).
 
 ```mermaid
 flowchart LR
@@ -154,4 +157,4 @@ flowchart LR
 
 Run order in CI‑of‑one: `--engine` after touching `toolkit/`, `--sidestep`
 before any commit; both must be green (current bar: **90/90 conformance,
-0/90 sidesteppable, 26/26 engine self‑tests**).
+0/90 sidesteppable, 28/28 engine self‑tests**).
