@@ -54,7 +54,7 @@ and the per‑module pages.
 
 ```mermaid
 flowchart TB
-    play["start.py<br/>«launcher»"]
+    play["start.py<br/>«entry»"]
     engine["engine/<br/>«the application»<br/>dispatch · verbs · checker · toolkit ·<br/>content · inputs · state · visuals"]
     audit["audit.py<br/>«test harness, not shipped»"]
     chapters[("chapters/<br/>puzzle content")]
@@ -116,7 +116,7 @@ data and visual layers live in [commands.md](commands.md); the tester in
 
 ```mermaid
 flowchart TB
-    play["start.py «launcher»"] --> app["app.py «argv dispatch»"]
+    play["start.py «entry»"] --> app["app.py «argv dispatch»"]
     app --> verbs["commands/ «verbs»"]
     app --> checker["checker.py «one check»"]
 
@@ -135,7 +135,7 @@ flowchart TB
     class config base;
 ```
 
-Four tiers, no cycles: the **launcher** starts **dispatch**, which routes each
+Four tiers, no cycles: the **entry** starts **dispatch**, which routes each
 command to the **verbs** or the **checker**; both lean on the shared **services**
 (data, visuals, the tester), and everything bottoms out at **config**. The three
 slices below zoom in, including which services each branch imports.
@@ -144,16 +144,19 @@ slices below zoom in, including which services each branch imports.
 
 ```mermaid
 flowchart TB
-    app["app.py"] --> cinit["commands/__init__ «facade»"]
+    app["app.py"] --> creg["registry «verb table»"]
+    app --> cinit["commands/__init__ «facade»"]
     cinit --> cplay["play «loop verbs»"]
     cinit --> cmenu["menu «begin/menu»"]
     cinit --> cprof["profiles «theme/user/reset»"]
+    cinit --> ctrans["transfer «export/import»"]
     cinit --> cshort["shortcuts «shell installer»"]
     cinit --> chelp["help"]
     cplay --> ccards["cards «shared card/goto»"]
     cmenu --> ccards
     cmenu --> cprof
     cmenu --> cshort
+    chelp --> creg
 ```
 
 Only `cards` is shared and `menu` composes the other verbs, so adding a verb

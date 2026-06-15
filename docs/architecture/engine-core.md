@@ -42,6 +42,21 @@ puzzle-context verbs (`check`, `hint`, `next`, … redirect to `begin` when no
 puzzle is loaded), and on an unknown verb suggest the closest match. Adding a
 verb = one `elif` here + one function in `commands/` + one registry row.
 
+The two ways in -- a cold bare launch versus running a verb -- and how a
+session folds back into dispatch:
+
+```mermaid
+flowchart TB
+    s["python3 start.py"] --> q{"a verb, or<br/>PYQUEST_SHELL set?"}
+    q -- "no: cold + bare" --> sess["engine.session.launch_session()"]
+    sess --> sh["detect shell · load shortcuts<br/>(throwaway rc) · spawn it · export PYQUEST_SHELL"]
+    sh --> beg["start.py begin  (inside the session)"]
+    q -- "yes" --> app["engine.app.main()"]
+    beg --> app
+    app --> reg["registry: canonical · gate · suggest"]
+    reg --> h["one command handler"]
+```
+
 ```mermaid
 classDiagram
     class app {
