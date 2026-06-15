@@ -64,6 +64,19 @@ CANONICAL = {row[0] for row in VERBS}
 ALIASES = {alias: row[0] for row in VERBS for alias in row[2]}
 NEEDS_PUZZLE = {row[0] for row in VERBS if row[3] == "puzzle"}
 
+# Which verbs appear in the shared bottom nav strip, in clusters and order.
+# `check`/`next`/`begin` are not listed: they surface as the highlighted primary
+# chip instead (chosen from state in cards.nav_strip). Verbs omitted entirely
+# (export/import/setup/uninstall/reset) stay discoverable via `help`/`menu`, not
+# the strip. This keeps the strip the single source of truth for navigation
+# while staying terse. Puzzle-only verbs are filtered out when no puzzle loaded.
+NAV_CLUSTERS = [
+    ("learn", ("hint", "solution")),
+    ("move",  ("map", "goto", "next", "skip")),
+    ("do",    ("retry", "revert")),
+    ("set",   ("mode", "theme", "user")),
+]
+
 
 def canonical(cmd):
     """Map an alias (or empty input) to its canonical verb; pass others through."""

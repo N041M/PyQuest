@@ -5,11 +5,12 @@ commands; this sits on top of the verbs, composing cards + profiles + shortcuts.
 
 import sys
 
-from ..config import load_settings, WIDTH
+from ..config import load_settings
 from ..state import current_puzzle, activate, load_answers, current_user
-from ..render import paint, wordmark, header, bar, cli, PAD
+from ..render import paint, wordmark, header, pane_open, cli, PAD
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user
+from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
                         cmd_setup_persist, cmd_uninstall)
 
@@ -30,31 +31,67 @@ def cmd_begin(puzzles, by_id, prog):
     while True:
         _menu_options(puzzles, by_id, prog)
         try:
-            choice = input(PAD + paint("> ", "cyan", "bold")).strip().lower()
+            raw = input(PAD + paint("> ", "cyan", "bold")).strip()
         except (EOFError, KeyboardInterrupt):
             print("")
             return
-        if choice in ("1", "start", "continue", "play", ""):
+        # Split into a verb + the rest, so "goto 2.4", "theme ocean" and
+        # "user alice" work as one line. The head matches case-insensitively;
+        # the argument keeps its case (usernames are case-sensitive).
+        parts = raw.split(None, 1)
+        head = parts[0].lower() if parts else ""
+        arg = parts[1] if len(parts) > 1 else ""
+        if head in ("1", "start", "continue", "play", ""):
             cur = current_puzzle(prog, by_id, puzzles)
             activate(prog, cur, load_answers())     # load the puzzle into work.py
             print("")
-            print_current_card(prog, cur, show_pointer=(prog["mode"] == "easy"),
-                               arriving=True)
+            print_current_card(prog, cur, arriving=True, puzzles=puzzles)
             return
-        elif choice in ("2", "level", "select", "goto"):
-            _menu_level(puzzles, by_id, prog)
-        elif choice in ("3", "theme"):
-            _menu_theme()
-        elif choice in ("4", "users", "user"):
-            prog = _menu_users(puzzles, by_id, prog)
-        elif choice in ("5", "shortcuts", "short"):
+        elif head in ("2", "level", "select", "goto", "load"):
+            if arg:                                 # "goto 2.4" -- jump straight
+                target = _resolve_goto(arg, puzzles, by_id, prog)
+                if target is None:
+                    print(PAD + paint("no puzzle '%s'." % arg, "yellow"))
+                else:
+                    _jump(target, puzzles, by_id, prog)
+            else:
+                _menu_level(puzzles, by_id, prog)
+        elif head in ("3", "theme"):
+            if arg:                                 # "theme ocean" -- apply now
+                cmd_theme(arg.lower())
+            else:
+                _menu_theme()
+        elif head in ("4", "users", "user"):
+            if arg:                                 # "user alice" -- switch now
+                prog = cmd_user(arg, puzzles, by_id, prog)
+            else:
+                prog = _menu_users(puzzles, by_id, prog)
+        elif head in ("5", "shortcuts", "short"):
             _menu_shortcuts()
-        elif choice in ("6", "q", "quit", "exit"):
+        elif head in ("6", "q", "quit", "exit"):
             print(PAD + paint("see you in the terminal -- solve with  "
                               + cli("check"), "gray"))
             return
         else:
-            print(PAD + paint("type a number 1-6.", "yellow"))
+            # A learner often types a real verb (check, hint, next...) at this
+            # prompt. The menu only picks options 1-6, so point them at where
+            # that verb actually runs instead of a dead-end "type a number".
+            verb = canonical(head)
+            if verb in CANONICAL and verb not in ("begin", "menu"):
+                if verb in NEEDS_PUZZLE:
+                    print(PAD + paint("'%s' runs in your terminal, once a "
+                                      "puzzle is open." % verb, "yellow"))
+                    print(PAD + "Pick %s to start, then save work.py and run  %s"
+                          % (paint("1", "byellow", "bold"),
+                             paint(cli(verb), "cyan", "bold")))
+                else:
+                    print(PAD + paint("'%s' is a terminal command, not a menu "
+                                      "option." % verb, "yellow"))
+                    print(PAD + "Leave the menu (%s) and run  %s"
+                          % (paint("6", "byellow", "bold"),
+                             paint(cli(verb), "cyan", "bold")))
+            else:
+                print(PAD + paint("type a number 1-6.", "yellow"))
         print("")
 
 
@@ -62,13 +99,9 @@ def _menu_options(puzzles, by_id, prog):
     done, total = len(prog["completed"]), len(puzzles)
     cur = current_puzzle(prog, by_id, puzzles)
     print("")
-    print(header("main menu", "cyan"))
-    print("")
-    # at-a-glance progress belongs on the hub itself (same line as `status`),
-    # not in a tab of its own
-    print(PAD + "%s     %s"
-          % (paint(prog["mode"] + " mode", "magenta", "bold"),
-             bar(done, total, WIDTH - 24)))
+    # at-a-glance progress belongs on the hub itself (same opener every pane
+    # uses), not in a tab of its own
+    print(pane_open("main menu", prog["mode"], done, total))
     print("")
 
     def item(n, lbl, note=""):

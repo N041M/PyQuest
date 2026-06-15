@@ -61,11 +61,25 @@ classDiagram
         +wrap(text, width) / field(label, value, lblcolor)
         +bar(done, total, width) / indent(text, prefix)
         +quote_block(value)
+        +pane_open(title, mode, done, total)  "shared sub-pane opener"
+        +nav_row(primary, clusters)  "the nav-strip formatter"
+        +legend()  "the status-marker key"
         +re-exports: paint, paint_code, STAR, ...
     }
     render ..> theme : paint / glyphs / LOGO
     render ..> config : WIDTH
 ```
+
+Three composite primitives give every screen one visual language. `pane_open`
+is the shared sub-pane opener (a titled header rule above a `mode + progress`
+line); the big `wordmark`/`id_banner` art stays reserved for "moments" (the
+menu/status hub, arriving at a puzzle), so sub-panes feel like one app instead
+of each re-blasting the logo. `nav_row` formats the bottom **nav strip** — a
+highlighted primary-action chip plus dim, ·-separated verb clusters — but it
+takes already-resolved labels: the registry-aware selection (which verb is
+primary, which clusters show) lives one layer up in
+[commands/cards.py](commands.md) `nav_strip`, so `render` stays free of any
+command/registry knowledge. `legend` is the shared status-marker key.
 
 ## The rule the audit‑of‑intent protects
 

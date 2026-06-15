@@ -48,7 +48,9 @@ classDiagram
     class cards {
         <<module>>
         +status_marker(prog, pid, current_id)
-        +print_current_card(prog, cur, show_pointer, arriving)
+        +print_current_card(prog, cur, arriving, puzzles)
+        +chapter_tree(puzzles, prog, pickable)  "map + goto picker"
+        +nav_strip(prog, cur, puzzles)  "registry-driven nav bar"
         -_goto_list(...) / _resolve_goto(arg,...)
         -_jump(target,...) / _advance_one(...,verb)
     }
@@ -97,12 +99,17 @@ classDiagram
     menu ..> cards
     menu ..> profiles
     menu ..> shortcuts
+    cards ..> registry : NAV_CLUSTERS + NEEDS_PUZZLE
 ```
 
-`cards.py` is the shared core: card rendering, the goto list, resolving a goto
-target, jumping, and advancing one puzzle. `views.py`, `navigate.py`, and
-`menu.py` all build on it so navigation behaves identically from the CLI and
-the menu.
+`cards.py` is the shared core: card rendering, the one chapter-tree renderer
+(`chapter_tree`, used by both `map` and the goto picker), the registry-driven
+bottom nav strip (`nav_strip`, the consistent footer on every pane), the goto
+list, resolving a goto target, jumping, and advancing one puzzle. `views.py`,
+`navigate.py`, and `menu.py` all build on it so navigation looks and behaves
+identically from the CLI and the menu. `nav_strip` reads `NAV_CLUSTERS` +
+`NEEDS_PUZZLE` from `registry`, so the strip can never list a verb dispatch
+wouldn't accept.
 
 ## The only interactive surface: `begin` / `menu`
 

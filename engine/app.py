@@ -32,7 +32,10 @@ def main():
     prog.setdefault("active", len(prog.get("completed", [])) > 0)
 
     args = sys.argv[1:]
-    raw = args[0].lower() if args else "status"
+    # Bare invocation (`start` / `python3 start.py` inside a session) always
+    # opens the menu -- the same place a cold launch lands. `status` and every
+    # other view stay one explicit word away (`start status`, `status`).
+    raw = args[0].lower() if args else "begin"
     cmd = canonical(raw)                 # fold aliases (load->goto, replay->retry)
     arg = args[1] if len(args) > 1 else None
     arg2 = args[2] if len(args) > 2 else None
@@ -42,10 +45,15 @@ def main():
     ensure_workspace(current_puzzle(prog, by_id, puzzles), load_answers(),
                      prog.get("active"))
 
-    if fresh and cmd == "status":
+    # First run: greet the learner wherever a bare launch lands them. That is
+    # the menu now (`begin`), but an explicit `status` should still welcome too.
+    if fresh and cmd in ("status", "begin", "menu"):
         print(paint("  %s  Welcome to PyQuest!" % STAR, "cyan", "bold"))
-        print("  Open the menu to set up and pick a level:  %s\n"
-              % cli("begin"))
+        if cmd == "status":
+            print("  Open the menu to set up and pick a level:  %s\n"
+                  % cli("begin"))
+        else:
+            print("  Set up and pick a level from the menu below.\n")
 
     # Context gate: verbs that act on the current puzzle need one loaded first.
     # Redirect to the menu instead of running a verb with nothing to act on.

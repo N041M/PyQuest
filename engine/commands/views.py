@@ -11,8 +11,8 @@ from ..config import WIDTH
 from ..content import load_hints
 from ..state import current_puzzle, save_progress, stat
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli,
-                      PAD, OK, CUR, DOT, STAR)
-from .cards import status_marker, print_current_card
+                      pane_open, legend, PAD, STAR)
+from .cards import print_current_card, chapter_tree, nav_strip
 
 
 def cmd_status(puzzles, by_id, prog):
@@ -29,6 +29,8 @@ def cmd_status(puzzles, by_id, prog):
         print(PAD + paint("No puzzle loaded.", "white", "bold"))
         print(PAD + "Open the menu to pick a level and start:  "
               + paint(cli("begin"), "green", "bold"))
+        print("")
+        nav_strip(prog, None, puzzles)
         return
     if cur is None:
         print("\n" + PAD + "No current puzzle.  " + cli("map"))
@@ -37,37 +39,21 @@ def cmd_status(puzzles, by_id, prog):
         print("\n" + PAD + paint("%s  All %d puzzles complete." % (STAR, total),
                                  "green", "bold"))
         print(PAD + paint("revisit any with  goto <id>", "gray"))
+        print("")
+        nav_strip(prog, cur, puzzles)
         return
-    print_current_card(prog, cur, show_pointer=(prog["mode"] == "easy"))
-    print("")
-    print(PAD + paint("hint · solution · next · map · goto · skip · retry · "
-                      "revert · mode · theme · user · reset", "gray"))
+    # the card prints the shared nav strip itself, so status needs no footer
+    print_current_card(prog, cur, puzzles=puzzles)
 
 
 def cmd_map(puzzles, by_id, prog):
-    cur_id = prog.get("current")
     done = len(prog["completed"])
-    print(wordmark("cyan"))
+    print(pane_open("map", prog["mode"], done, len(puzzles)))
+    chapter_tree(puzzles, prog, pickable=False)
     print("")
-    print(PAD + bar(done, len(puzzles), WIDTH - 18))
-    chapters = {}
-    for p in puzzles:
-        chapters.setdefault(p["ch_num"], []).append(p)
-    for ch_num in sorted(chapters):
-        items = chapters[ch_num]
-        print("")
-        print(header("%d · %s" % (ch_num, items[0]["ch_title"])))
-        for p in items:
-            mark = status_marker(prog, p["id"], cur_id)
-            title = p["meta"].get("title", "")
-            if p["id"] == cur_id:
-                title = paint(title, "bcyan", "bold")
-            elif p["id"] in prog["completed"]:
-                title = paint(title, "gray")
-            print("%s %s  %s  %s"
-                  % (PAD, mark, paint("%-4s" % p["id"], "gray"), title))
+    print(legend())
     print("")
-    print(PAD + paint("%s done   %s here   %s to do" % (OK, CUR, DOT), "gray"))
+    nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
 
 
 def cmd_hint(puzzles, by_id, prog):
@@ -88,8 +74,9 @@ def cmd_hint(puzzles, by_id, prog):
     if idx >= len(hints):
         print("No more hints. Try:  %s" % cli("solution"))
         return
-    print(header("hint  %d / %d · %s" % (idx + 1, len(hints), cur["id"]),
-                 "yellow"))
+    print(pane_open("hint  %d / %d · %s" % (idx + 1, len(hints), cur["id"]),
+                    prog["mode"], len(prog["completed"]), len(puzzles),
+                    "yellow"))
     print("")
     print(indent(hints[idx], PAD))
     st["hints_used"] = idx + 1
@@ -97,6 +84,8 @@ def cmd_hint(puzzles, by_id, prog):
     if idx + 1 < len(hints):
         print("")
         print(PAD + paint("run hint again for more", "gray"))
+    print("")
+    nav_strip(prog, cur, puzzles)
 
 
 def cmd_solution(puzzles, by_id, prog):
@@ -113,8 +102,10 @@ def cmd_solution(puzzles, by_id, prog):
         return
     with open(path) as f:
         code = f.read().rstrip()
-    print(header("solution · %s · %s"
-                 % (cur["id"], cur["meta"].get("title", "")), "magenta"))
+    print(pane_open("solution · %s · %s"
+                    % (cur["id"], cur["meta"].get("title", "")),
+                    prog["mode"], len(prog["completed"]), len(puzzles),
+                    "magenta"))
     print("")
     print(indent(paint(code, "bcyan"), PAD))
     why = cur["meta"].get("why")
@@ -124,3 +115,5 @@ def cmd_solution(puzzles, by_id, prog):
         print("")
         for line in wrap(why):
             print(PAD + line)
+    print("")
+    nav_strip(prog, cur, puzzles)

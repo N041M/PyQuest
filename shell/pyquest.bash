@@ -13,7 +13,7 @@ PYQUEST_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Internal: run start.py with the short-command display turned on.
 _pyquest() { PYQUEST_SHELL=1 python3 "$PYQUEST_ROOT/start.py" "$@"; }
 
-# Umbrella command: `start` (status), `start check`, `start reset`, etc.
+# Umbrella command: `start` (opens the menu), `start check`, `start reset`, etc.
 start()    { _pyquest "$@"; }
 pq()       { _pyquest "$@"; }   # short alias for `start`
 pyquest()  { _pyquest "$@"; }

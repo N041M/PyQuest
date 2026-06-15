@@ -8,8 +8,9 @@ import os
 from ..config import WIDTH, rel
 from ..content import load_hints
 from ..state import current_puzzle, load_answers, switch_to, work_path
-from ..render import (paint, id_banner, header, bar, field, wrap, cli,
-                      PAD, OK, NO, CUR, DOT, ARROW, STAR)
+from ..render import (paint, id_banner, header, field, wrap, cli, nav_row,
+                      pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
+from .registry import NAV_CLUSTERS, NEEDS_PUZZLE
 
 
 def status_marker(prog, pid, current_id):
@@ -21,7 +22,67 @@ def status_marker(prog, pid, current_id):
     return paint(DOT, "gray")
 
 
-def print_current_card(prog, cur, show_pointer, arriving=False):
+def chapter_tree(puzzles, prog, pickable=False):
+    """The chapter/puzzle list both `map` and the goto picker draw -- one
+    renderer so they can never drift. `pickable` adds the `locked` tags the
+    picker needs; the marks/colours/layout are identical either way."""
+    cur_id = prog.get("current")
+    chapters = {}
+    for p in puzzles:
+        chapters.setdefault(p["ch_num"], []).append(p)
+    for ch in sorted(chapters):
+        items = chapters[ch]
+        print("")
+        print(header("%d · %s" % (ch, items[0]["ch_title"])))
+        for p in items:
+            mark = status_marker(prog, p["id"], cur_id)
+            title = p["meta"].get("title", "")
+            if p["id"] == cur_id:
+                title = paint(title, "bcyan", "bold")
+            elif p["id"] in prog["completed"]:
+                title = paint(title, "gray")
+            tail = ""
+            if pickable and p["index"] > prog["highest"] and prog["mode"] != "easy":
+                tail = paint("   locked", "gray")
+            print("%s  %s  %s  %s%s"
+                  % (PAD, mark, paint("%-5s" % p["id"], "gray"), title, tail))
+
+
+def nav_strip(prog, cur, puzzles=None):
+    """The shared bottom navigation, derived from the registry so it can't drift
+    from what dispatch accepts. Highlights the primary next action as a chip,
+    groups the rest by cluster, hides puzzle-only verbs when none is loaded, and
+    always offers menu/help as the escape hatch.
+
+    Pass `puzzles` so the primary chip is honest on the last puzzle: a solved
+    final puzzle has nowhere to advance, so the chip becomes `menu` rather than
+    a `next` that would only report 'that was the last puzzle'. Without
+    `puzzles` it can't tell, so it assumes a next exists (the old behaviour)."""
+    has_puzzle = bool(prog.get("active")) and cur is not None
+    solved = has_puzzle and cur["id"] in prog["completed"]
+    if not has_puzzle:
+        primary = "begin"
+    elif not solved:
+        primary = "check"
+    else:
+        last = bool(puzzles) and not any(
+            p["index"] == cur["index"] + 1 for p in puzzles)
+        primary = "menu" if last else "next"
+    clusters = []
+    for _group, verbs in NAV_CLUSTERS:
+        labels = [v for v in verbs
+                  if v != primary and (has_puzzle or v not in NEEDS_PUZZLE)]
+        if labels:
+            clusters.append(labels)
+    clusters.append([v for v in ("menu", "help") if v != primary])
+    print(nav_row(primary, clusters))
+
+
+def print_current_card(prog, cur, arriving=False, puzzles=None):
+    # Easy mode surfaces the first hint as a pointer right on the card; the
+    # stricter modes keep it behind `hint`. This policy lives here, not at every
+    # call site.
+    show_pointer = prog["mode"] == "easy"
     meta = cur["meta"]
     solved = cur["id"] in prog["completed"]
     if arriving:
@@ -50,42 +111,17 @@ def print_current_card(prog, cur, show_pointer, arriving=False):
                 lead = paint("hint  ", "yellow", "bold") if i == 0 else " " * 6
                 print(PAD + lead + line)
     print("")
-    if solved:
-        print(PAD + paint(ARROW + " next", "cyan", "bold")
-              + paint("   move on whenever you're ready", "gray"))
-    else:
-        print(PAD + paint(ARROW + " check", "green", "bold")
-              + paint("   when you've written and saved your code", "gray"))
+    nav_strip(prog, cur, puzzles)
 
 
 def _goto_list(puzzles, by_id, prog, note=None, footer=True):
     """Show every puzzle as a pickable list (used when `goto` has no/bad id)."""
-    cur_id = prog.get("current")
-    print(header("goto · choose a puzzle", "cyan"))
-    print("")
-    print(PAD + bar(len(prog["completed"]), len(puzzles), WIDTH - 18))
+    print(pane_open("goto · choose a puzzle", prog["mode"],
+                    len(prog["completed"]), len(puzzles)))
     if note:
         print("")
         print(PAD + paint(note, "yellow"))
-    chapters = {}
-    for p in puzzles:
-        chapters.setdefault(p["ch_num"], []).append(p)
-    for ch in sorted(chapters):
-        items = chapters[ch]
-        print("")
-        print(PAD + paint("Chapter %d · %s" % (ch, items[0]["ch_title"]),
-                          "cyan", "bold"))
-        for p in items:
-            mark = status_marker(prog, p["id"], cur_id)
-            title = p["meta"].get("title", "")
-            locked = p["index"] > prog["highest"] and prog["mode"] != "easy"
-            if p["id"] == cur_id:
-                title = paint(title, "bcyan", "bold")
-            elif p["id"] in prog["completed"]:
-                title = paint(title, "gray")
-            tail = paint("   locked", "gray") if locked else ""
-            print("%s  %s  %s  %s%s"
-                  % (PAD, mark, paint("%-5s" % p["id"], "gray"), title, tail))
+    chapter_tree(puzzles, prog, pickable=True)
     print("")
     if footer:
         print(PAD + "run  %s   e.g.  %s   (a bare chapter number works too: %s)"
@@ -129,8 +165,7 @@ def _jump(target, puzzles, by_id, prog):
                 % (ARROW, target["id"], target["meta"].get("title", ""),
                    "  (your saved code was restored)" if restored else ""),
                 "cyan", "bold"))
-    print_current_card(prog, target, show_pointer=(prog["mode"] == "easy"),
-                       arriving=True)
+    print_current_card(prog, target, arriving=True, puzzles=puzzles)
     return True
 
 
@@ -156,5 +191,4 @@ def _advance_one(puzzles, by_id, prog, verb):
     word = "Moved on from" if solved else "Skipped (not solved)"
     print(paint("  %s %s %s" % (ARROW, word, cur["id"]),
                 "cyan" if solved else "yellow", "bold"))
-    print_current_card(prog, nxt, show_pointer=(prog["mode"] == "easy"),
-                       arriving=True)
+    print_current_card(prog, nxt, arriving=True, puzzles=puzzles)

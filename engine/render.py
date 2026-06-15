@@ -128,3 +128,31 @@ def quote_block(value):
     text = value if isinstance(value, str) else repr(value)
     lines = text.split("\n") if text != "" else [""]
     return "\n".join("    | " + ln for ln in lines)
+
+
+def pane_open(title, mode, done, total, color="cyan"):
+    """The shared opener every sub-pane prints: a titled header rule above a
+    `mode + progress` line. This is the menu's gold-standard combo lifted into
+    one primitive so map/goto/hint/solution all frame themselves identically."""
+    meter = "%s%s     %s" % (PAD, paint(mode + " mode", "magenta", "bold"),
+                             bar(done, total, WIDTH - 24))
+    return header(title, color) + "\n\n" + meter
+
+
+def nav_row(primary, clusters):
+    """A horizontal navigation strip: a highlighted primary-action chip followed
+    by dim, ·-separated clusters of secondary verbs, the clusters set apart by
+    whitespace. `primary` is a verb label (or None); `clusters` is a list of
+    label-lists. The registry-aware selection lives in commands/cards.py."""
+    parts = []
+    if primary:
+        parts.append(paint("[ %s ]" % primary, "byellow", "bold"))
+    for labels in clusters:
+        if labels:
+            parts.append(paint(" · ".join(labels), "gray"))
+    return PAD + "   ".join(parts)
+
+
+def legend():
+    """The shared status-marker key, reused by map and the goto picker."""
+    return PAD + paint("%s done   %s here   %s to do" % (OK, CUR, DOT), "gray")

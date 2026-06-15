@@ -75,8 +75,7 @@ def cmd_retry(puzzles, by_id, prog):
                           "gray"))
     print(PAD + paint("if your editor still shows old code, reload work.py -- "
                       "its on-disk copy is now blank.", "gray"))
-    print_current_card(prog, cur, show_pointer=(prog["mode"] == "easy"),
-                       arriving=True)
+    print_current_card(prog, cur, arriving=True, puzzles=puzzles)
 
 
 def cmd_revert(puzzles, by_id, prog):
@@ -98,5 +97,4 @@ def cmd_revert(puzzles, by_id, prog):
     write_work(read_starter(cur))
     print(paint("  %s Reverted %s -- blank workspace, progress cleared."
                 % (ARROW, cur["id"]), "magenta", "bold"))
-    print_current_card(prog, cur, show_pointer=(prog["mode"] == "easy"),
-                       arriving=True)
+    print_current_card(prog, cur, arriving=True, puzzles=puzzles)
