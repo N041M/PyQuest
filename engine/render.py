@@ -16,11 +16,11 @@ def cli(verb=""):
     """Render a command the way the learner invokes it.
 
     If the shell shortcuts are installed (PYQUEST_SHELL=1), show the bare verb
-    like `check`; otherwise show the full `python3 play.py check`.
+    like `check`; otherwise show the full `python3 start.py check`.
     """
     if os.environ.get("PYQUEST_SHELL"):
         return verb if verb else "start"
-    return ("python3 play.py " + verb).strip()
+    return ("python3 start.py " + verb).strip()
 
 
 def label(text):

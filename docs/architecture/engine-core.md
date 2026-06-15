@@ -6,7 +6,7 @@ The orchestration, content, input and state layers. Visuals are in
 
 ```mermaid
 flowchart TB
-    play["play.py"] --> app["app.py «dispatch»"]
+    play["start.py"] --> app["app.py «dispatch»"]
     app --> checker["checker.py"]
     app --> commands["commands/*"]
     checker --> toolkit["toolkit/"]
@@ -27,12 +27,14 @@ flowchart TB
 
 ---
 
-## play.py / app.py: entry & dispatch
+## start.py / app.py: entry & dispatch
 
-`play.py` is a 30‑line shim that calls `engine.app.main()`. `app.main()` is the
-**only** place argv becomes an action: it builds the puzzle list once, loads
-progress, guarantees `work.py` exists, then routes the verb to exactly one
-command function. Adding a verb = one `elif` here + one function in `commands/`.
+`start.py` is the root entry point. Bare (`python3 start.py`) it sets up a
+session shell with the shortcuts and opens the menu; given a verb it calls
+`engine.app.main()`. `app.main()` is the **only** place argv becomes an action:
+it builds the puzzle list once, loads progress, guarantees `work.py` exists,
+then routes the verb to exactly one command function. Adding a verb = one
+`elif` here + one function in `commands/`.
 
 ```mermaid
 classDiagram

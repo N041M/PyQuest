@@ -28,7 +28,7 @@ python3 start.py
 
 `start.py` is the easy way in: it checks your Python, turns on the short
 commands (`check`, `hint`, ...) for this session, and opens the menu. (If you
-would rather not use the shortcuts, `python3 play.py begin` just opens the
+would rather not use the shortcuts, `python3 start.py begin` just opens the
 menu.)
 
 This is the main menu, shown before any puzzles. Pick a number:
@@ -54,11 +54,11 @@ In the menu choose **5 → shortcuts**, then pick:
 - **persistent**: adds one line to your `~/.zshrc` (remove it any time with
   `uninstall`).
 
-After that you can type `check` instead of `python3 play.py check`. Open a new
+After that you can type `check` instead of `python3 start.py check`. Open a new
 terminal, or run `source ~/.zshrc` once.
 
 You never *have* to install the shortcuts, every command also works prefixed
-with `python3 play.py` (so `python3 play.py hint`, `python3 play.py next`, and
+with `python3 start.py` (so `python3 start.py hint`, `python3 start.py next`, and
 so on). If a short command says `command not found`, the shortcuts just aren't
 active in this terminal: run `source ~/.zshrc`, open a new terminal, or use
 the long form.

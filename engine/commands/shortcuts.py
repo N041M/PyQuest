@@ -75,7 +75,7 @@ def _uninstall_persistent():
 def _disclaimer():
     print(PAD + paint("Shortcuts let you type  ", "gray")
           + paint("check", "green", "bold")
-          + paint("  instead of  python3 play.py check.", "gray"))
+          + paint("  instead of  python3 start.py check.", "gray"))
     print(PAD + paint("They are shell functions defined in %s "
                       "(check, hint, start, …)." % _shortcuts_label(), "gray"))
     print(PAD + paint("Local = nothing outside this folder changes.  "
@@ -107,10 +107,10 @@ def cmd_setup():
                                                "bold"))
     print(PAD + paint("B) every terminal", "white", "bold")
           + paint("      run:  ", "gray")
-          + paint("python3 play.py setup persist", "yellow", "bold"))
+          + paint("python3 start.py setup persist", "yellow", "bold"))
     print("")
-    print(PAD + paint("remove later with  python3 play.py uninstall", "gray"))
-    print(PAD + paint("or skip shortcuts entirely -- python3 play.py … always "
+    print(PAD + paint("remove later with  python3 start.py uninstall", "gray"))
+    print(PAD + paint("or skip shortcuts entirely -- python3 start.py … always "
                       "works.", "gray"))
 
 

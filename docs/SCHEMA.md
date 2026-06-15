@@ -37,7 +37,7 @@ learner sees its contents in `work.py`.
   - `script`: run the workspace `work.py` as a subprocess, compare stdout.
   - `import`: import the workspace `work.py` and call its functions, assert on returns.
 - `id` must match the folder numbers: chapter `01_` + puzzle `01_` → `"1.1"`.
-- `why` is printed by `play.py solution` under "Why it works".
+- `why` is printed by `start.py solution` under "Why it works".
 
 ## tests.py
 

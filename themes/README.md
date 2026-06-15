@@ -8,7 +8,7 @@ Drop a JSON file in this folder to add your own colour theme. The file name
 theme called `ocean`. Select it with:
 
 ```
-theme ocean          # or: python3 play.py theme ocean
+theme ocean          # or: python3 start.py theme ocean
 ```
 
 Your presets show up in `theme` and in the `begin` menu alongside the built-in

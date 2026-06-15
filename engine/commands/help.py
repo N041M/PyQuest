@@ -31,7 +31,7 @@ def cmd_help():
         ("export", "save this profile's progress to a portable file"),
         ("import <file>", "load a profile from an exported file"),
     ]
-    pre = "" if os.environ.get("PYQUEST_SHELL") else "python3 play.py "
+    pre = "" if os.environ.get("PYQUEST_SHELL") else "python3 start.py "
     for name, desc in rows:
         print("%s%s  %s"
               % (PAD, paint((pre + name).ljust(24), "green", "bold"), desc))

@@ -76,7 +76,7 @@ those two files.
    and runs before puzzles, and (b) bare `goto`, which shows the puzzle list
    and reads ONE id before exiting. Both degrade to a plain print when stdin
    is not a terminal, so they never block pipes or tests. The shell-level
-   `reset` confirmation (outside `play.py`) is the only other prompt.
+   `reset` confirmation (outside `start.py`) is the only other prompt.
 9. **Stdlib only.**
 10. **Progress is recoverable.** `reset` is a true reset; saving never silently
     destroys the learner's code without it living in `answers.json`. All JSON
@@ -85,7 +85,9 @@ those two files.
 
 ## 4. Module map
 
-The package lives under `pyquest/`. `play.py` at the root is a thin launcher.
+The package lives under `pyquest/`. `start.py` at the root is the single entry
+point: bare, it sets up a session shell and opens the menu; `start.py <verb>`
+dispatches one command into `engine.app.main()`.
 Dependencies only ever point **downward** in this list (no cycles):
 
 ```

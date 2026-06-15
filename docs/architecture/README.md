@@ -33,7 +33,7 @@ flowchart TB
     fs[("Filesystem<br/>chapters/ · users/ · themes/")]
     editor["The learner's own editor"]
 
-    learner -->|"runs python3 play.py ..."| pq
+    learner -->|"runs python3 start.py ..."| pq
     learner -->|edits & saves| editor
     editor -->|work.py| fs
     author -->|"drops puzzle folders"| fs
@@ -42,7 +42,7 @@ flowchart TB
 ```
 
 PyQuest is a **stateless command runner**, not a TUI: every invocation is one
-short `python3 play.py <verb>` that reads content + per‑user state from disk,
+short `python3 start.py <verb>` that reads content + per‑user state from disk,
 does one thing, prints, and exits. The only interactive surface is the `begin`
 menu. There are **no third‑party dependencies** (Python 3.8+ stdlib only).
 
@@ -54,7 +54,7 @@ and the per‑module pages.
 
 ```mermaid
 flowchart TB
-    play["play.py<br/>«launcher»"]
+    play["start.py<br/>«launcher»"]
     engine["engine/<br/>«the application»<br/>dispatch · verbs · checker · toolkit ·<br/>content · inputs · state · visuals"]
     audit["audit.py<br/>«test harness, not shipped»"]
     chapters[("chapters/<br/>puzzle content")]
@@ -116,7 +116,7 @@ data and visual layers live in [commands.md](commands.md); the tester in
 
 ```mermaid
 flowchart TB
-    play["play.py «launcher»"] --> app["app.py «argv dispatch»"]
+    play["start.py «launcher»"] --> app["app.py «argv dispatch»"]
     app --> verbs["commands/ «verbs»"]
     app --> checker["checker.py «one check»"]
 
@@ -320,7 +320,7 @@ learner opens it; `tests.py`, `solution.py`, and `dodges.py` are also what
 `audit.py` grades against. Adding a puzzle is dropping these files on disk,
 zero code changes.
 
-## 6. Key runtime sequence: `python3 play.py check`
+## 6. Key runtime sequence: `python3 start.py check`
 
 ```mermaid
 sequenceDiagram
@@ -334,7 +334,7 @@ sequenceDiagram
     participant G as ExecutionGuard
     participant Sol as work.py (learner code)
 
-    L->>App: play.py check
+    L->>App: start.py check
     App->>App: discover() · load_progress()
     App->>Ck: cmd_check(puzzles, by_id, prog)
     Ck->>St: ensure_workspace() · archive_work()

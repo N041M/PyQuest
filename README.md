@@ -52,8 +52,10 @@ nothing permanently.
 > No Python on your computer, or new to all this? You can run PyQuest in your
 > web browser instead: jump to [Run in a Codespace](#run-in-a-codespace) below.
 
-Prefer to drive it yourself? `python3 play.py` shows your progress and points
-you at two files for the current puzzle:
+Prefer to drive it by hand? Every command also works as
+`python3 start.py <command>` (so `python3 start.py status` shows your progress,
+`python3 start.py check` checks your work). For the current puzzle you work in
+two files:
 
 - `brief.md`: read this. It explains the concept and the task.
 - `work.py`: edit this. One workspace file per profile (at
@@ -64,7 +66,7 @@ Write your code, **save the file in your editor** (unsaved edits are the most
 common reason a correct-looking answer fails), then check it:
 
 ```
-python3 play.py check
+python3 start.py check
 ```
 
 When it passes, your code is saved and you stay put so you can keep tinkering.
@@ -99,23 +101,23 @@ first session step by step.
 
 ## Terminal setup
 
-PyQuest needs nothing beyond Python 3: `python3 play.py <command>` always
+PyQuest needs nothing beyond Python 3: `python3 start.py <command>` always
 works in any shell, on any platform. The setup below is optional comfort.
 
 ### Short commands
 
-Typing `python3 play.py` every time gets old. PyQuest ships shell shortcuts so
+Typing `python3 start.py` every time gets old. PyQuest ships shell shortcuts so
 you can type `check`, `hint`, `map`, and so on from any directory:
 
 ```
-python3 play.py setup
+python3 start.py setup
 ```
 
 `setup` checks for Python 3 and offers two ways in:
 
 - **local**: it prints a `source` line you run once; the shortcuts work in
   **this terminal only** and nothing on your system is changed.
-- **persistent**: `python3 play.py setup persist` adds one line to your shell's
+- **persistent**: `python3 start.py setup persist` adds one line to your shell's
   startup file (`~/.zshrc`, or `~/.bashrc` on bash), so every new terminal has
   the shortcuts. It is safe to run more than once: it never duplicates the line
   and never touches your code or progress (it edits that one file and nothing
@@ -150,12 +152,12 @@ command (`pq`, `pq check`, `pq reset`). To get them in every new terminal, run
 `Install-PyQuest` once (it adds one line to your PowerShell profile); remove
 them later with `uninstall`. If Windows blocks the script the first time, allow
 local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
-On any platform, `python play.py <command>` (or `py -3 play.py <command>`)
+On any platform, `python start.py <command>` (or `py -3 start.py <command>`)
 always works without any of this.
 
 ### Uninstalling
 
-Run `uninstall` (or `python3 play.py uninstall`). It removes the line from
+Run `uninstall` (or `python3 start.py uninstall`). It removes the line from
 `~/.zshrc` **and** clears the shortcut functions from the current terminal,
 or just delete the `# PyQuest shell shortcuts` line from `~/.zshrc` yourself.
 
@@ -180,36 +182,37 @@ PyQuest, `command reset` for the terminal.
 - **Shell support.** The shortcuts ship for zsh (`shell/pyquest.zsh`, the macOS
   default), bash (`shell/pyquest.bash`, Linux and Codespaces), and Windows
   PowerShell (`shell/pyquest.ps1`, see above). `setup` installs the file that
-  matches your shell. On anything else, the `python3 play.py` long form always
+  matches your shell. On anything else, the `python3 start.py` long form always
   works.
 
 ## Commands
 
 Every command runs once, prints plain text, and exits. With the shortcuts
-installed, drop the `python3 play.py` prefix.
+installed, drop the `python3 start.py` prefix.
 
 | Command | What it does |
 |---|---|
-| `python3 play.py` | show progress and the current puzzle (`start` / `pq` as a shortcut) |
-| `python3 play.py begin` | open the main menu (start here) |
-| `python3 play.py menu` | return to the main menu from anywhere |
-| `python3 play.py check` | validate your `work.py` against the puzzle |
-| `python3 play.py hint` | reveal the next hint (three per puzzle, escalating) |
-| `python3 play.py solution` | show the reference solution and why it works |
-| `python3 play.py map` | show the chapter/puzzle tree with progress |
-| `python3 play.py next` | move on to the next puzzle |
-| `python3 play.py goto` | pick a puzzle from a list (`goto 2` = first open puzzle of chapter 2) |
-| `python3 play.py goto 2.4` | jump to a puzzle by id (restores your saved code) |
-| `python3 play.py load 2.4` | same as `goto`, reload a puzzle's saved code |
-| `python3 play.py skip` | move on without solving (not in hard mode) |
-| `python3 play.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
-| `python3 play.py revert` | fully reset this puzzle: blank code + clear its progress |
-| `python3 play.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |
-| `python3 play.py theme amber` | switch colour theme (or add your own in `themes/`) |
-| `python3 play.py user alice` | switch or create a profile |
-| `python3 play.py setup` | enable the short commands (local or persistent) |
-| `python3 play.py uninstall` | remove the persistent shortcuts again |
-| `python3 play.py reset` | wipe progress, saved answers, and workspaces |
+| `python3 start.py` | set up the session and open the menu (bare, from a cold terminal) |
+| `python3 start.py status` | show progress and the current puzzle (`start` / `pq` as a shortcut) |
+| `python3 start.py begin` | open the main menu (also `menu`, from anywhere) |
+| `python3 start.py menu` | return to the main menu from anywhere |
+| `python3 start.py check` | validate your `work.py` against the puzzle |
+| `python3 start.py hint` | reveal the next hint (three per puzzle, escalating) |
+| `python3 start.py solution` | show the reference solution and why it works |
+| `python3 start.py map` | show the chapter/puzzle tree with progress |
+| `python3 start.py next` | move on to the next puzzle |
+| `python3 start.py goto` | pick a puzzle from a list (`goto 2` = first open puzzle of chapter 2) |
+| `python3 start.py goto 2.4` | jump to a puzzle by id (restores your saved code) |
+| `python3 start.py load 2.4` | same as `goto`, reload a puzzle's saved code |
+| `python3 start.py skip` | move on without solving (not in hard mode) |
+| `python3 start.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
+| `python3 start.py revert` | fully reset this puzzle: blank code + clear its progress |
+| `python3 start.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |
+| `python3 start.py theme amber` | switch colour theme (or add your own in `themes/`) |
+| `python3 start.py user alice` | switch or create a profile |
+| `python3 start.py setup` | enable the short commands (local or persistent) |
+| `python3 start.py uninstall` | remove the persistent shortcuts again |
+| `python3 start.py reset` | wipe progress, saved answers, and workspaces |
 
 ## Difficulty modes
 
@@ -230,7 +233,7 @@ keyed by puzzle id. Switching puzzles (`next`, `skip`, `goto`) saves the
 current draft and reloads the target puzzle's saved code, nothing is lost,
 and `goto 1.1` brings back exactly what you wrote there. All saves are atomic.
 
-`python3 play.py reset` is the one true wipe: completed puzzles, attempts,
+`python3 start.py reset` is the one true wipe: completed puzzles, attempts,
 hints used (`progress.json`), all saved code (`answers.json`), and the
 workspace files, which are regenerated from their starters. Your difficulty
 mode is preserved. After a reset you are genuinely back to a blank puzzle 1.1.
@@ -239,8 +242,8 @@ mode is preserved. After a reset you are genuinely back to a blank puzzle 1.1.
 
 ```
 pyquest/
-  start.py           one-step start: enable shortcuts for the session + menu
-  play.py            the thin launcher you run
+  start.py           the entry point: bare opens the session + menu;
+                     start.py <command> runs one command (check, next, ...)
   engine/            the implementation, split by concern (see docs/ARCHITECTURE.md)
   tools/audit.py       mechanical checks: conformance + anti-sidestep replay attack
   docs/              ARCHITECTURE.md, SCHEMA.md, CONTRIBUTING.md, architecture/ (UML)
@@ -289,7 +292,7 @@ changes, which is exactly what the architecture was shaped for.
 
 Python 3.8+, standard library only. No installation, no dependencies. The
 shell shortcuts ship for zsh, bash, and Windows PowerShell; everything also
-works by prefixing commands with `python3 play.py` on any platform.
+works by prefixing commands with `python3 start.py` on any platform.
 
 ## License
 

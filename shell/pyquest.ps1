@@ -1,7 +1,7 @@
 # PyQuest shortcuts for PowerShell (Windows).
 #
 # Lets you type `check`, `hint`, `solution`, and so on instead of the long
-# `python play.py check`. PowerShell is the native shell on Windows 10/11.
+# `python start.py check`. PowerShell is the native shell on Windows 10/11.
 #
 # Use it for THIS terminal only:
 #     . .\shell\pyquest.ps1
@@ -16,7 +16,7 @@
 
 # --- locate the PyQuest root, so the folder can live anywhere ----------------
 $PyQuestRoot = Split-Path -Parent $PSScriptRoot
-$PyQuestPlay = Join-Path $PyQuestRoot 'play.py'
+$PyQuestPlay = Join-Path $PyQuestRoot 'start.py'
 $PyQuestMark = '# PyQuest shell shortcuts'
 
 # --- find a Python to run (the py launcher, then python, then python3) --------
@@ -28,7 +28,7 @@ function Find-PyQuestPython {
     return , @('python')
 }
 $PyQuestPython = Find-PyQuestPython
-$env:PYQUEST_SHELL = '1'   # tell play.py the short commands are in use
+$env:PYQUEST_SHELL = '1'   # tell start.py the short commands are in use
 
 function _pyquest {
     $py  = $PyQuestPython

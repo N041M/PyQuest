@@ -105,7 +105,7 @@ WELCOME_WORK = (
     "# PyQuest -- no puzzle loaded yet.\n"
     "#\n"
     "# Open the menu to choose where to start:\n"
-    "#     python3 play.py begin       (or just  begin  with the shortcuts)\n"
+    "#     python3 start.py begin       (or just  begin  with the shortcuts)\n"
     "#\n"
     "# Pick a level and choose 'start', and the puzzle's code will appear\n"
     "# here. Then edit it, save the file, and run  check.\n"

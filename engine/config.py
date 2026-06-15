@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import datetime
 
-# Project root is the folder that contains this package (and play.py, chapters/).
+# Project root is the folder that contains this package (and start.py, chapters/).
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHAPTERS_DIR = os.path.join(ROOT, "chapters")
 USERS_DIR = os.path.join(ROOT, "users")            # per-user progress/answers

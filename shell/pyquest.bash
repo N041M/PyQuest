@@ -1,6 +1,6 @@
 # PyQuest shell shortcuts (bash)
 # Lets you type `check`, `hint`, `solution`, etc. instead of
-# `python3 play.py check`. Source this from your ~/.bashrc, run it directly, or
+# `python3 start.py check`. Source this from your ~/.bashrc, run it directly, or
 # just use `python3 start.py`, which loads it for the session for you.
 #
 # To uninstall: delete the line that sources this file from ~/.bashrc
@@ -10,8 +10,8 @@
 # cloned anywhere without editing this file.
 PYQUEST_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Internal: run play.py with the short-command display turned on.
-_pyquest() { PYQUEST_SHELL=1 python3 "$PYQUEST_ROOT/play.py" "$@"; }
+# Internal: run start.py with the short-command display turned on.
+_pyquest() { PYQUEST_SHELL=1 python3 "$PYQUEST_ROOT/start.py" "$@"; }
 
 # Umbrella command: `start` (status), `start check`, `start reset`, etc.
 start()    { _pyquest "$@"; }

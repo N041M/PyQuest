@@ -26,8 +26,8 @@ the exact file formats.
 No installation. From the repo root:
 
 ```bash
-python3 play.py              # status / the learner loop (begin, check, next, ...)
-python3 play.py setup        # optional: install the `pq ...` shell shortcuts
+python3 start.py              # status / the learner loop (begin, check, next, ...)
+python3 start.py setup        # optional: install the `pq ...` shell shortcuts
 ```
 
 Open the repo in a **GitHub Codespace** (Code → Codespaces) and it runs with no
