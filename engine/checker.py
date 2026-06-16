@@ -11,7 +11,7 @@ from .toolkit import (Toolkit, PuzzleSyntaxError, MissingSymbolError,
                       WrongResultError, LessonNotUsedError, PuzzleCrashError,
                       short_tb)
 from .render import (paint, banner, bar, indent, quote_block, cli, PAD,
-                     OK, NO, STAR, ARROW)
+                     OK, NO, STAR, ARROW, BOLT, RETRY)
 
 
 SAVE_TIP = paint("Did you save work.py in your editor? Unsaved edits are the "
@@ -119,12 +119,12 @@ def _run_bonus(tests, T):
     except (WrongResultError, PuzzleCrashError) as e:
         why = getattr(e, "because", "") or "this works, but could be more efficient"
         print("")
-        print(PAD + paint("⚡ bonus: not optimal yet — " + why, "yellow"))
+        print(PAD + paint(BOLT + " bonus: not optimal yet — " + why, "yellow"))
     except Exception:
         pass                     # a buggy bonus must never block the learner
     else:
         print("")
-        print(PAD + paint("⚡ bonus: optimal — efficient solution", "green",
+        print(PAD + paint(BOLT + " bonus: optimal — efficient solution", "green",
                           "bold"))
 
 
@@ -168,5 +168,5 @@ def _solved(cur, prog, puzzles):
         print(PAD + paint(ARROW + " next", "cyan", "bold")
               + paint("   %s · %s" % (nxt["id"], nxt["meta"].get("title", "")),
                       "gray"))
-    print(PAD + paint("↺ retry", "magenta", "bold")
+    print(PAD + paint(RETRY + " retry", "magenta", "bold")
           + paint("   to clear it and solve again from scratch", "gray"))

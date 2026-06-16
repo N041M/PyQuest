@@ -213,39 +213,61 @@ def cmd_lexicon(puzzles, by_id, prog, arg=None):
     print(paint("  %s Lexicon ready: %s." % (ARROW, where), "magenta", "bold"))
     print(field("read", paint(rel(lexicon_path()), "blue", "bold")
                 + paint("   open it in your editor", "gray")))
-    print(PAD + paint(("for just what you've reached:  " + cli("lexicon"))
+    # `lexicon all` and `lexicon` write the same file, so the pair is a toggle:
+    # expand to the whole language, then revert to just what you've reached.
+    print(PAD + paint(("revert to just what you've reached:  " + cli("lexicon"))
                       if full else
-                      ("for the whole language:  " + cli("lexicon all")),
+                      ("see the whole language:  " + cli("lexicon all")),
                       "gray"))
 
 
 def _lexicon_md(shown, full, total):
-    """Render the lexicon entries as a markdown document. The `concept` is the
-    syntax+tip line; the optional `why` becomes a blockquote for depth."""
+    """Render the lexicon as structured markdown: per chapter, all the syntax
+    bundled together, then all the tips. `concept` supplies the syntax line, the
+    optional `why` the tip -- so it needs no separate authoring and never drifts.
+
+    Built as a list, not a table: a `concept` can carry a literal `|` (e.g. the
+    set-union operator), which a markdown table would split into a stray column.
+    A list also reads cleanly raw, before any markdown renderer touches it."""
     out = ["# PyQuest Lexicon", ""]
     if full:
-        out.append("_The full reference -- every syntax idea the course "
-                   "covers._")
+        out += ["*The whole language PyQuest covers -- every chapter, all %d "
+                "puzzles.*" % total,
+                "*Run `lexicon` to come back to just what you've reached.*"]
     elif shown:
-        out.append("_Syntax & tips you've reached so far (%d of %d). "
-                   "Run `lexicon all` for the full reference._"
-                   % (len(shown), total))
+        out += ["*The syntax & tips you've reached so far -- %d of %d puzzles.*"
+                % (len(shown), total),
+                "*Run `lexicon all` for the whole language; `lexicon` brings "
+                "you back here.*"]
     else:
-        out.append("_Nothing reached yet -- solve a few puzzles, or run "
-                   "`lexicon all` for the full reference._")
+        out += ["*Nothing reached yet -- solve a few puzzles, or run "
+                "`lexicon all` to preview the whole language.*"]
     out.append("")
+
     chapters = {}
     for p in shown:
         chapters.setdefault(p["ch_num"], []).append(p)
+
     for ch in sorted(chapters):
         items = chapters[ch]
-        out += ["## %d · %s" % (ch, items[0]["ch_title"]), ""]
+        out += ["---", "", "## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
+
+        # syntax bundle: one scannable line per puzzle, id + title + the idea
+        out += ["### Syntax", ""]
         for p in items:
-            out += ["### %s -- %s" % (p["id"], p["meta"].get("title", "")), ""]
             concept = p["meta"].get("concept", "")
             if concept:
-                out += [concept, ""]
-            why = p["meta"].get("why")
-            if why:
-                out += ["> %s" % why, ""]
+                out.append("- **%s · %s** — %s"
+                           % (p["id"], p["meta"].get("title", ""), concept))
+        out.append("")
+
+        # tips bundle: only the puzzles that carry a `why`, keyed by id so they
+        # cross-reference the syntax list above without repeating the title
+        tips = [p for p in items if p["meta"].get("why")]
+        if tips:
+            out += ["### Tips", ""]
+            for p in tips:
+                out.append("- **%s** — %s" % (p["id"], p["meta"]["why"]))
+            out.append("")
+
     return "\n".join(out).rstrip() + "\n"

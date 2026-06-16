@@ -96,6 +96,7 @@ THEME_NAMES = tuple(THEMES)
 ANSI = {"reset": "\033[0m", "bold": "\033[1m", "dim": "\033[2m"}
 LOGO_RAMP = []                       # filled by apply_theme()
 OK, NO, CUR, DOT, ARROW, STAR = "✓", "✗", "▸", "·", "→", "✦"
+BOLT, RETRY = "⚡", "↺"               # the bonus / retry status-line glyphs
 
 
 def apply_theme(name):

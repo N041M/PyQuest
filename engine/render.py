@@ -7,7 +7,8 @@ import textwrap
 
 from .config import WIDTH
 from .theme import (paint, paint_code,
-                    OK, NO, CUR, DOT, ARROW, STAR, LOGO, LOGO_RAMP, id_art)
+                    OK, NO, CUR, DOT, ARROW, STAR, BOLT, RETRY,
+                    LOGO, LOGO_RAMP, id_art)
 
 PAD = "   "          # standard content indent
 
