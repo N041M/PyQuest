@@ -3,7 +3,7 @@ check()/bonus(), translate failures into the four categories, and render the
 pass/fail screen.
 """
 
-from .config import WIDTH
+from .config import WIDTH, now
 from .content import load_tests
 from .state import (stat, save_progress, load_answers, ensure_workspace,
                     archive_work, current_puzzle, work_path)
@@ -98,6 +98,7 @@ def cmd_check(puzzles, by_id, prog):
     else:
         if cur["id"] not in prog["completed"]:
             prog["completed"].append(cur["id"])
+            stat(prog, cur["id"])["solved_on"] = now()[:10]   # first-solve date
         save_progress(prog)
         archive_work(cur, answers, solved=True)
         _solved(cur, prog, puzzles)

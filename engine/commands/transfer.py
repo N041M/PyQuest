@@ -81,8 +81,12 @@ def _sanitize_progress(raw, by_id, puzzles):
     stats = {}
     for pid, s in (raw.get("stats") or {}).items():
         if pid in by_id and isinstance(s, dict):
-            stats[pid] = {"attempts": int(s.get("attempts", 0) or 0),
-                          "hints_used": int(s.get("hints_used", 0) or 0)}
+            entry = {"attempts": int(s.get("attempts", 0) or 0),
+                     "hints_used": int(s.get("hints_used", 0) or 0)}
+            solved_on = s.get("solved_on")
+            if isinstance(solved_on, str):       # keep the first-solve date
+                entry["solved_on"] = solved_on
+            stats[pid] = entry
     out["stats"] = stats
     cur = raw.get("current")
     out["current"] = cur if cur in by_id else (puzzles[0]["id"] if puzzles

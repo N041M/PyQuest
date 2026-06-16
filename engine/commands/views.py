@@ -116,10 +116,39 @@ def _when(value):
     return paint(dt.strftime("%Y-%m-%d"), "white") + paint("   %s" % rel, "gray")
 
 
+def _solve_dates(prog):
+    """The set of distinct calendar dates on which puzzles were first solved,
+    read from each stat's `solved_on`."""
+    out = set()
+    for s in prog.get("stats", {}).values():
+        d = s.get("solved_on")
+        if isinstance(d, str):
+            try:
+                out.add(datetime.date.fromisoformat(d))
+            except ValueError:
+                pass
+    return out
+
+
+def _streak(dates):
+    """Consecutive days solved, counting back from today -- or from yesterday,
+    so the streak isn't 'broken' merely because today's puzzle isn't done yet."""
+    if not dates:
+        return 0
+    day = datetime.date.today()
+    if day not in dates:
+        day -= datetime.timedelta(days=1)
+    n = 0
+    while day in dates:
+        n += 1
+        day -= datetime.timedelta(days=1)
+    return n
+
+
 def cmd_stats(puzzles, by_id, prog):
     """The numbers already kept per puzzle, surfaced: attempts, hints, clean
-    first-try solves, and per-chapter completion. A read verb -- it touches
-    nothing, just reflects progress.json back to the learner."""
+    first-try solves, streaks, and per-chapter completion. A read verb -- it
+    touches nothing, just reflects progress.json back to the learner."""
     done = len(prog["completed"])
     total = len(puzzles)
     st = prog.get("stats", {})
@@ -128,12 +157,28 @@ def cmd_stats(puzzles, by_id, prog):
     clean = sum(1 for pid in prog["completed"]
                 if st.get(pid, {}).get("attempts", 0) <= 1
                 and st.get(pid, {}).get("hints_used", 0) == 0)
+    today_n = sum(1 for s in st.values()
+                  if s.get("solved_on") == datetime.date.today().isoformat())
+    streak = _streak(_solve_dates(prog))
 
     print(pane_open("stats · %s" % current_user(), prog["mode"], done, total))
+    if total and done == total:
+        print("")
+        print(PAD + paint("%s  course complete  %s" % (STAR, STAR),
+                          "green", "bold"))
+        print(PAD + paint("all %d puzzles solved -- %d on the first try, "
+                          "no hints." % (total, clean), "gray"))
     print("")
     print(field("since", _when(prog.get("created_at"))))
     print(field("active", _when(prog.get("last_seen"))))
     print(field("solved", paint("%d of %d" % (done, total), "bcyan", "bold")))
+    if done:
+        print(field("today", paint(str(today_n), "white")
+                    + paint("   solved today", "gray")))
+        if streak:
+            print(field("streak", paint("%d day%s" % (streak,
+                        "" if streak == 1 else "s"), "byellow", "bold")
+                        + paint("   in a row", "gray")))
     print(field("tries", paint(str(attempts), "white")
                 + paint("   check runs across all puzzles", "gray")))
     print(field("hints", paint(str(hints), "white")

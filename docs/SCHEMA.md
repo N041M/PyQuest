@@ -256,15 +256,19 @@ Created on first run; you normally never edit it.
   "current": "1.1",
   "completed": ["1.1", "1.2"],
   "highest": 2,
-  "stats": { "1.3": { "attempts": 2, "hints_used": 1 } },
-  "created_at": "2026-01-01T00:00:00"
+  "stats": { "1.1": { "attempts": 2, "hints_used": 1, "solved_on": "2026-01-01" } },
+  "created_at": "2026-01-01T00:00:00",
+  "last_seen": "2026-01-02T09:00:00"
 }
 ```
 
 - `current`: id of the active puzzle.
 - `completed`: ids that have passed `check`.
 - `highest`: furthest puzzle index unlocked (gates forward `goto`).
-- `stats[id]`: per-puzzle attempts and hints used.
+- `stats[id]`: per-puzzle `attempts`, `hints_used`, and `solved_on` (the
+  first-solve date, used by `stats` for streaks and "solved today").
+- `last_seen`: when a puzzle was last loaded (stamped on start/goto); `stats`
+  shows it as "active".
 
 ## answers.json
 
