@@ -16,9 +16,10 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
 `check` lives in checker.py; the dispatcher is app.py. See docs/ARCHITECTURE.md sec 4.
 """
 
-from .views import (cmd_status, cmd_map, cmd_stats, cmd_hint, cmd_solution,
-                    cmd_textbook)
-from .navigate import cmd_goto, cmd_next, cmd_skip, cmd_retry, cmd_restart
+from .views import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
+                    cmd_solution, cmd_textbook)
+from .navigate import (cmd_goto, cmd_next, cmd_skip, cmd_resume, cmd_retry,
+                       cmd_restart)
 from .profiles import cmd_theme, cmd_mode, cmd_user, cmd_wipe
 from .transfer import cmd_export, cmd_import
 from .shortcuts import cmd_setup, cmd_setup_persist, cmd_uninstall
@@ -26,9 +27,9 @@ from .menu import cmd_menu
 from .help import cmd_help
 
 __all__ = [
-    "cmd_status", "cmd_map", "cmd_stats", "cmd_hint", "cmd_solution",
-    "cmd_textbook", "cmd_goto",
-    "cmd_next", "cmd_skip", "cmd_retry", "cmd_restart", "cmd_mode",
+    "cmd_status", "cmd_map", "cmd_search", "cmd_stats", "cmd_hint",
+    "cmd_solution", "cmd_textbook", "cmd_goto",
+    "cmd_next", "cmd_skip", "cmd_resume", "cmd_retry", "cmd_restart", "cmd_mode",
     "cmd_theme", "cmd_user", "cmd_wipe", "cmd_export", "cmd_import",
     "cmd_setup", "cmd_setup_persist", "cmd_uninstall",
     "cmd_menu", "cmd_help",

@@ -8,8 +8,8 @@ from .state import (load_progress, current_puzzle, ensure_workspace,
                     load_answers, migrate_legacy)
 from .render import paint, cli, STAR, NO, PAD
 from .checker import cmd_check
-from .commands import (cmd_status, cmd_map, cmd_stats, cmd_hint, cmd_solution,
-                       cmd_textbook, cmd_next,
+from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
+                       cmd_solution, cmd_textbook, cmd_next, cmd_resume,
                        cmd_goto, cmd_skip, cmd_retry, cmd_restart, cmd_mode,
                        cmd_theme, cmd_user, cmd_wipe, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall,
@@ -75,6 +75,10 @@ def main():
         cmd_solution(puzzles, by_id, prog)
     elif cmd == "map":
         cmd_map(puzzles, by_id, prog)
+    elif cmd == "search":
+        cmd_search(puzzles, by_id, prog, arg)
+    elif cmd == "resume":
+        cmd_resume(puzzles, by_id, prog)
     elif cmd == "stats":
         cmd_stats(puzzles, by_id, prog)
     elif cmd == "textbook":

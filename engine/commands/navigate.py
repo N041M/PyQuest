@@ -11,8 +11,8 @@ import sys
 
 from ..content import read_starter
 from ..state import (current_puzzle, load_answers, save_answers, save_progress,
-                     archive_current, write_work)
-from ..render import paint, PAD, ARROW
+                     archive_current, switch_to, write_work)
+from ..render import paint, cli, PAD, STAR, ARROW
 from .cards import (print_current_card, _goto_list, _resolve_goto, _jump,
                     _advance_one)
 
@@ -55,6 +55,22 @@ def cmd_next(puzzles, by_id, prog):
 
 def cmd_skip(puzzles, by_id, prog):
     _advance_one(puzzles, by_id, prog, force=True)    # move on, solved or not
+
+
+def cmd_resume(puzzles, by_id, prog):
+    """Jump to the first puzzle you haven't solved -- "take me back to where I
+    should be". Always allowed (it's earned progress, never a forward skip); if
+    everything is solved it stays put and says so."""
+    done = set(prog["completed"])
+    target = next((p for p in puzzles if p["id"] not in done), None)
+    if target is None:
+        print(paint("  %s  Every puzzle is solved -- nothing to resume."
+                    % STAR, "green", "bold"))
+        print(PAD + paint("revisit any with  " + cli("goto <id>"), "gray"))
+        return
+    switch_to(target, prog, by_id, puzzles, load_answers())
+    print(paint("  %s Resuming at %s." % (ARROW, target["id"]), "cyan", "bold"))
+    print_current_card(prog, target, arriving=True, puzzles=puzzles)
 
 
 def cmd_retry(puzzles, by_id, prog):

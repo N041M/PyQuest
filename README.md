@@ -204,6 +204,8 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py hint` | reveal the next hint (three per puzzle, escalating) |
 | `python3 start.py solution` | show the reference solution and why it works |
 | `python3 start.py map` | show the chapter/puzzle tree with progress |
+| `python3 start.py search <word>` | find a puzzle by a word in its title or concept (`find` alias) |
+| `python3 start.py resume` | jump to the first puzzle you haven't solved yet |
 | `python3 start.py stats` | your numbers: attempts, hints, clean first-try solves, per-chapter completion (`score` alias) |
 | `python3 start.py textbook` | write a syntax & tips markdown file and link you to it — what you've reached (`textbook all` for the whole language; `ref` alias) |
 | `python3 start.py next` | move on to the next puzzle — only once this one is solved |

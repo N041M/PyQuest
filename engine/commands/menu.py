@@ -10,7 +10,8 @@ from ..state import current_puzzle, activate, load_answers, current_user
 from ..render import paint, wordmark, header, pane_open, cli, PAD, OK
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user, cmd_mode
-from .views import cmd_status, cmd_map, cmd_stats, cmd_textbook
+from .views import cmd_status, cmd_map, cmd_search, cmd_stats, cmd_textbook
+from .navigate import cmd_resume
 from .help import cmd_help
 from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 
@@ -69,6 +70,12 @@ def cmd_menu(puzzles, by_id, prog):
                     _jump(target, puzzles, by_id, prog)
             else:
                 _menu_level(puzzles, by_id, prog)
+        elif head in ("resume",):                    # jump to first unsolved, then go
+            cmd_resume(puzzles, by_id, prog)
+            return
+        elif head in ("search", "find"):             # discovery, runs in place
+            print("")
+            cmd_search(puzzles, by_id, prog, arg)
         # -- learn (read-only verbs, run in place) --
         elif head in ("3", "textbook", "ref"):       # "textbook all" reads here too
             print("")

@@ -13,7 +13,7 @@ from ..content import load_hints
 from ..state import (current_puzzle, save_progress, stat, textbook_path,
                      write_textbook, current_user)
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
-                      pane_open, legend, PAD, STAR, ARROW)
+                      pane_open, legend, PAD, OK, STAR, ARROW)
 from .cards import print_current_card, chapter_tree, nav_strip
 
 
@@ -54,6 +54,44 @@ def cmd_map(puzzles, by_id, prog):
     chapter_tree(puzzles, prog, pickable=False)
     print("")
     print(legend())
+    print("")
+    nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
+
+
+def cmd_search(puzzles, by_id, prog, arg=None):
+    """Find a puzzle by a word in its title, concept, or chapter -- a fast way
+    into the course without scrolling the map. A read verb: it lists matches
+    with their ids (ready to `goto`) and changes nothing."""
+    term = (arg or "").strip().lower()
+    if not term:
+        print(PAD + paint("usage:  " + cli("search <word>"), "yellow"))
+        print(PAD + "Find a puzzle by a word in its title or concept.")
+        return
+    done = set(prog["completed"])
+    hits = [p for p in puzzles
+            if term in " ".join((p["meta"].get("title", ""),
+                                 p["meta"].get("concept", ""),
+                                 p["ch_title"])).lower()]
+    print(pane_open("search · %s" % term, prog["mode"],
+                    len(done), len(puzzles)))
+    print("")
+    if not hits:
+        print(PAD + paint("no puzzle matches '%s'." % term, "yellow"))
+        print(PAD + paint("try a broader word, or browse the  " + cli("map"),
+                          "gray"))
+        print("")
+        nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
+        return
+    for p in hits:
+        solved = p["id"] in done
+        print(PAD + " %s  %s  %s"
+              % (paint(OK if solved else "·", "green" if solved else "gray"),
+                 paint(p["id"].ljust(5), "byellow", "bold"),
+                 paint(p["meta"].get("title", ""), "white")))
+    print("")
+    print(PAD + paint("%d match%s -- open one with  %s"
+                      % (len(hits), "" if len(hits) == 1 else "es",
+                         cli("goto <id>")), "gray"))
     print("")
     nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
 

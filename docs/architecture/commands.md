@@ -66,13 +66,13 @@ classDiagram
     }
     class views {
         <<module>>
-        +cmd_status / cmd_map / cmd_stats
+        +cmd_status / cmd_map / cmd_stats / cmd_search
         +cmd_hint / cmd_solution
         +cmd_textbook(...,arg)  "writes textbook.md: reached vs full"
     }
     class navigate {
         <<module>>
-        +cmd_goto / cmd_next / cmd_skip
+        +cmd_goto / cmd_next / cmd_skip / cmd_resume
         +cmd_retry / cmd_restart
     }
     class profiles {
