@@ -103,6 +103,12 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
                               "blue")))
     print(field("edit", paint(rel(work_path()), "blue", "bold")
                 + paint("   (save before checking)", "gray")))
+    note = load_answers().get(cur["id"], {}).get("note")
+    if note:
+        print("")
+        for i, line in enumerate(wrap(note, WIDTH - len(PAD) - 8)):
+            lead = paint("note  ", "magenta", "bold") if i == 0 else " " * 6
+            print(PAD + lead + line)
     if show_pointer:
         hints = load_hints(cur["dir"])
         if hints:

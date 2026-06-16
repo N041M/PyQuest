@@ -10,7 +10,8 @@ from .render import paint, cli, STAR, NO, PAD
 from .checker import cmd_check
 from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
                        cmd_solution, cmd_textbook, cmd_next, cmd_resume,
-                       cmd_goto, cmd_skip, cmd_retry, cmd_restart, cmd_mode,
+                       cmd_note, cmd_goto, cmd_skip, cmd_retry, cmd_restart,
+                       cmd_mode,
                        cmd_theme, cmd_user, cmd_wipe, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall,
                        cmd_menu, cmd_help)
@@ -89,6 +90,9 @@ def main():
         cmd_goto(puzzles, by_id, prog, arg)
     elif cmd == "skip":
         cmd_skip(puzzles, by_id, prog)
+    elif cmd == "note":
+        # whole tail is the note text, so multi-word notes arrive intact
+        cmd_note(puzzles, by_id, prog, " ".join(args[1:]))
     elif cmd == "retry":
         cmd_retry(puzzles, by_id, prog)
     elif cmd == "restart":

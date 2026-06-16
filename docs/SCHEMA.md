@@ -277,13 +277,15 @@ deleted by `wipe profile`. You never edit this by hand.
 
 ```json
 {
-  "1.1": { "solved": true,  "code": "print(\"Hello, output\")\n" },
+  "1.1": { "solved": true,  "code": "print(\"Hello, output\")\n", "note": "sep= matters" },
   "1.2": { "solved": false, "code": "print(\"Counting:\")\n" }
 }
 ```
 
 - `code`: the contents of `work.py` last time this puzzle was the active one.
 - `solved`: whether a `check` has ever passed for it.
+- `note` (optional): the learner's personal note, set by `note <text>` and shown
+  on the puzzle card.
 
 ## hints.md
 

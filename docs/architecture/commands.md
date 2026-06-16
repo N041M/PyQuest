@@ -73,7 +73,7 @@ classDiagram
     class navigate {
         <<module>>
         +cmd_goto / cmd_next / cmd_skip / cmd_resume
-        +cmd_retry / cmd_restart
+        +cmd_note / cmd_retry / cmd_restart
     }
     class profiles {
         <<module>>

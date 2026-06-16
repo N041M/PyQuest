@@ -213,6 +213,7 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py goto 2.4` | jump to a puzzle by id (restores your saved code) |
 | `python3 start.py load 2.4` | same as `goto`, reload a puzzle's saved code |
 | `python3 start.py skip` | give up and move on without solving (not in hard mode) |
+| `python3 start.py note <text>` | jot a personal note on this puzzle (bare `note` shows it, `note clear` removes it); it appears on the card |
 | `python3 start.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
 | `python3 start.py restart` | start this puzzle over: blank code + clear its progress (`retry` keeps it solved) |
 | `python3 start.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |

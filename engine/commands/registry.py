@@ -40,6 +40,8 @@ VERBS = [
      "move on once this puzzle is solved"),
     ("skip",      "skip",         (),                "puzzle",
      "give up and move on without solving (not in hard mode)"),
+    ("note",      "note <text>",  (),                "puzzle",
+     "jot a personal note on this puzzle (bare note shows it, note clear removes it)"),
     ("retry",     "retry",        ("replay",),       "puzzle",
      "blank the workspace to practice again (stays solved)"),
     ("restart",   "restart",      (),                "puzzle",
@@ -79,7 +81,7 @@ NEEDS_PUZZLE = {row[0] for row in VERBS if row[3] == "puzzle"}
 NAV_CLUSTERS = [
     ("learn", ("hint", "solution")),
     ("move",  ("map", "goto", "next", "skip")),
-    ("do",    ("retry", "restart")),
+    ("do",    ("note", "retry", "restart")),
     ("set",   ("mode", "theme", "user")),
 ]
 

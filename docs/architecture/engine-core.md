@@ -78,7 +78,7 @@ classDiagram
 |---|---|
 | status · current · progress | `cmd_status` |
 | check · hint · solution · map · search | `cmd_check` · `cmd_hint` · `cmd_solution` · `cmd_map` · `cmd_search` |
-| next · skip · resume · retry · restart · goto | the navigation verbs (`navigate.py`) |
+| next · skip · resume · note · retry · restart · goto | the navigation verbs (`navigate.py`) |
 | theme · mode · user · wipe | `cmd_theme` · `cmd_mode` · `cmd_user` · `cmd_wipe` |
 | export · import | `cmd_export` · `cmd_import` (portable profile bundle) |
 | menu · setup · uninstall · help | the rest |

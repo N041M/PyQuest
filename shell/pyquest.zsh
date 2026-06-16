@@ -30,7 +30,7 @@ uninstall() {
     echo "  shortcuts cleared from this terminal too."
     unset -f start pq pyquest menu back status help setup textbook ref \
         check hint solution map search find resume stats score next goto load \
-        skip retry replay restart mode theme user users wipe _pyquest \
+        skip note retry replay restart mode theme user users wipe _pyquest \
         uninstall 2>/dev/null
 }
 status()   { _pyquest status "$@"; }
@@ -51,6 +51,7 @@ next()     { _pyquest next "$@"; }
 goto()     { _pyquest goto "$@"; }
 load()     { _pyquest load "$@"; }
 skip()     { _pyquest skip "$@"; }
+note()     { _pyquest note "$@"; }   # jot a personal note on the current puzzle
 retry()    { _pyquest retry "$@"; }
 replay()   { _pyquest replay "$@"; }
 restart()  { _pyquest restart "$@"; }   # start the current puzzle over

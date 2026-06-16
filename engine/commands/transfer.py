@@ -109,8 +109,12 @@ def _sanitize_answers(raw, by_id):
     out = {}
     for pid, entry in (raw if isinstance(raw, dict) else {}).items():
         if pid in by_id and isinstance(entry, dict):
-            out[pid] = {"solved": bool(entry.get("solved")),
-                        "code": str(entry.get("code", ""))}
+            clean = {"solved": bool(entry.get("solved")),
+                     "code": str(entry.get("code", ""))}
+            note = entry.get("note")
+            if isinstance(note, str) and note:       # carry the learner's note
+                clean["note"] = note
+            out[pid] = clean
     return out
 
 

@@ -1,10 +1,10 @@
-"""The navigation + workspace-reset verbs: they change which puzzle is active
-or wipe its work.py. goto/next/skip move you; retry/restart reset the workspace
-(and, for restart, this puzzle's progress). These are the verbs a learner might
-fire at the wrong moment, so most are gated to "needs a puzzle loaded" in the
-registry (app.py redirects them to `menu` otherwise); `goto` is always allowed
-because it loads one. They compose state + content + render via the shared
-`cards` helpers; the dispatcher is app.py.
+"""The navigation + per-puzzle-state verbs: they change which puzzle is active,
+wipe its work.py, or annotate it. goto/next/skip/resume move you; retry/restart
+reset the workspace (and, for restart, this puzzle's progress); note jots a
+personal annotation. The puzzle-state ones are gated to "needs a puzzle loaded"
+in the registry (app.py redirects them to `menu` otherwise); goto/resume are
+always allowed because they load one. They compose state + content + render via
+the shared `cards` helpers; the dispatcher is app.py.
 """
 
 import sys
@@ -12,7 +12,7 @@ import sys
 from ..content import read_starter
 from ..state import (current_puzzle, load_answers, save_answers, save_progress,
                      archive_current, switch_to, write_work)
-from ..render import paint, cli, PAD, STAR, ARROW
+from ..render import paint, cli, PAD, OK, STAR, ARROW
 from .cards import (print_current_card, _goto_list, _resolve_goto, _jump,
                     _advance_one)
 
@@ -55,6 +55,42 @@ def cmd_next(puzzles, by_id, prog):
 
 def cmd_skip(puzzles, by_id, prog):
     _advance_one(puzzles, by_id, prog, force=True)    # move on, solved or not
+
+
+_NOTE_CLEAR = ("clear", "delete", "remove", "-")
+
+
+def cmd_note(puzzles, by_id, prog, arg=None):
+    """Jot or read a personal note on the current puzzle. `note <text>` saves it
+    (in answers.json, beside your code), bare `note` shows it, and `note clear`
+    removes it. The note then appears on the puzzle card."""
+    cur = current_puzzle(prog, by_id, puzzles)
+    if cur is None:
+        print("No current puzzle.")
+        return
+    answers = load_answers()
+    entry = answers.setdefault(cur["id"], {"solved": False, "code": ""})
+    text = (arg or "").strip()
+    if not text:                                  # bare `note`: show it
+        existing = entry.get("note")
+        if existing:
+            print(paint("  note on %s:" % cur["id"], "magenta", "bold"))
+            print(PAD + existing)
+        else:
+            print(PAD + paint("no note on %s yet." % cur["id"], "gray"))
+            print(PAD + paint("add one with  " + cli("note <text>"), "gray"))
+        return
+    if text.lower() in _NOTE_CLEAR:
+        if entry.pop("note", None) is not None:
+            save_answers(answers)
+            print(paint("  %s Note cleared on %s." % (OK, cur["id"]), "green"))
+        else:
+            print(PAD + paint("no note on %s to clear." % cur["id"], "gray"))
+        return
+    entry["note"] = text
+    save_answers(answers)
+    print(paint("  %s Noted on %s." % (OK, cur["id"]), "green", "bold"))
+    print(PAD + paint(text, "gray"))
 
 
 def cmd_resume(puzzles, by_id, prog):
