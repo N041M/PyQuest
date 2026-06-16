@@ -75,10 +75,11 @@ those two files.
    launcher, which is interactive by design (it loops reading a choice)
    and runs before puzzles, and (b) bare `goto`, which shows the puzzle list
    and reads ONE id before exiting. Both degrade to a plain print when stdin
-   is not a terminal, so they never block pipes or tests. The shell-level
-   `reset` confirmation (outside `start.py`) is the only other prompt.
+   is not a terminal, so they never block pipes or tests. The destructive
+   `wipe profile` needs no prompt at all -- its required second word is the
+   confirmation, so it stays a one-shot command.
 9. **Stdlib only.**
-10. **Progress is recoverable.** `reset` is a true reset; saving never silently
+10. **Progress is recoverable.** `wipe profile` is a true reset; saving never silently
     destroys the learner's code without it living in `answers.json`. All JSON
     saves are atomic (temp file + rename), and an unreadable progress/answers
     file is moved aside as `<name>.corrupt`, never overwritten.
@@ -125,7 +126,7 @@ checker.py    orchestrates one check: load tests, build T, run check()/bonus(),
               translate failures into their categories (a missed construct
               check renders its own "so close" screen), render pass/fail.
 commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
-              solution, mode, reset, help), compose state + content + render + checker.
+              solution, mode, wipe, help), compose state + content + render + checker.
               A package split by concern, like toolkit/; internal dependencies
               point down and `__init__.py` re-exports every cmd_* as a facade so
               the import path `engine.commands` and the dispatcher stay frozen:
@@ -148,9 +149,9 @@ commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
                               entry-less puzzles omitted -- and links to it; no
                               separate authoring, never drifts)
                 navigate.py   navigation + workspace reset: goto, next, skip,
-                              retry, revert
+                              retry, restart
                 profiles.py   settings: theme, mode, user (switch/create plus
-                              the delete/rename subcommands), reset
+                              the delete/rename subcommands), wipe
                 transfer.py   export, import: portable profile bundles
                               (serialize + validate against current content)
                 shortcuts.py  the ~/.zshrc shortcuts installer -- the only part

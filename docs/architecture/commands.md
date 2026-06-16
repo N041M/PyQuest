@@ -10,8 +10,8 @@ flowchart TB
     app["app.py «dispatch»"] --> registry["registry «verb table»"]
     app --> init["commands/__init__ «facade»"]
     init --> views["views «status/map/stats/hint/solution/textbook»"]
-    init --> nav["navigate «goto/next/skip/retry/revert»"]
-    init --> profiles["profiles «theme/mode/user/reset»"]
+    init --> nav["navigate «goto/next/skip/retry/restart»"]
+    init --> profiles["profiles «theme/mode/user/wipe»"]
     init --> transfer["transfer «export/import»"]
     init --> shortcuts["shortcuts «installer»"]
     init --> menu["menu «menu»"]
@@ -73,13 +73,13 @@ classDiagram
     class navigate {
         <<module>>
         +cmd_goto / cmd_next / cmd_skip
-        +cmd_retry / cmd_revert
+        +cmd_retry / cmd_restart
     }
     class profiles {
         <<module>>
         +cmd_theme(arg) / cmd_mode(prog, arg)
         +cmd_user(arg,...)  "switch/create · delete · rename"
-        +cmd_reset(puzzles, prog, arg)
+        +cmd_wipe(puzzles, prog, arg)  "needs `wipe profile` to fire"
         -_swatch() / _user_count(...)
         -_user_delete(...) / _user_rename(...)
     }

@@ -10,8 +10,8 @@ from .render import paint, cli, STAR, NO, PAD
 from .checker import cmd_check
 from .commands import (cmd_status, cmd_map, cmd_stats, cmd_hint, cmd_solution,
                        cmd_textbook, cmd_next,
-                       cmd_goto, cmd_skip, cmd_retry, cmd_revert, cmd_mode,
-                       cmd_theme, cmd_user, cmd_reset, cmd_export, cmd_import,
+                       cmd_goto, cmd_skip, cmd_retry, cmd_restart, cmd_mode,
+                       cmd_theme, cmd_user, cmd_wipe, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall,
                        cmd_menu, cmd_help)
 from .commands.registry import canonical, NEEDS_PUZZLE, suggest
@@ -87,8 +87,8 @@ def main():
         cmd_skip(puzzles, by_id, prog)
     elif cmd == "retry":
         cmd_retry(puzzles, by_id, prog)
-    elif cmd == "revert":
-        cmd_revert(puzzles, by_id, prog)
+    elif cmd == "restart":
+        cmd_restart(puzzles, by_id, prog)
     elif cmd == "mode":
         cmd_mode(prog, arg)
     elif cmd == "theme":
@@ -97,8 +97,8 @@ def main():
         # pass the whole tail so `user rename <old> <new>` and `user delete
         # <name>` reach the subcommand parser, not just the first token
         prog = cmd_user(" ".join(args[1:]), puzzles, by_id, prog)
-    elif cmd == "reset":
-        cmd_reset(puzzles, prog, arg)
+    elif cmd == "wipe":
+        cmd_wipe(puzzles, prog, arg)
     elif cmd == "export":
         cmd_export(puzzles, by_id, prog, arg)
     elif cmd == "import":

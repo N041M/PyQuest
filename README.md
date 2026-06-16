@@ -148,7 +148,7 @@ folder, load them into the current terminal:
 ```
 
 Now `check`, `hint`, `map`, `next`, and the rest work, with `pq` as the umbrella
-command (`pq`, `pq check`, `pq reset`). To get them in every new terminal, run
+command (`pq`, `pq check`, `pq wipe profile`). To get them in every new terminal, run
 `Install-PyQuest` once (it adds one line to your PowerShell profile); remove
 them later with `uninstall`. If Windows blocks the script the first time, allow
 local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
@@ -161,13 +161,16 @@ Run `uninstall` (or `python3 start.py uninstall`). It removes the line from
 `~/.zshrc` **and** clears the shortcut functions from the current terminal,
 or just delete the `# PyQuest shell shortcuts` line from `~/.zshrc` yourself.
 
-### The context-aware `reset`
+### Clearing progress
 
-`reset` is also a real terminal command that reinitializes your session, and
-the shortcuts deliberately don't steal it. Inside the PyQuest folder, `reset`
-clears PyQuest progress (after a y/N prompt); anywhere else it falls through
-to the normal terminal reset. You can always be explicit, `start reset` for
-PyQuest, `command reset` for the terminal.
+Two separate verbs, deliberately named so they can't be confused:
+
+- `restart` clears **just the current puzzle** (blank code + drop its progress),
+  so you can solve it fresh. (`retry` is the gentler one: it blanks the
+  workspace but keeps the puzzle marked solved.)
+- `wipe profile` erases the **whole profile** — every completed puzzle, all
+  saved code, the workspace. It is irreversible, so it only fires with that
+  explicit second word; a bare `wipe` just explains what it would do.
 
 ### How PyQuest treats your terminal
 
@@ -209,7 +212,7 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py load 2.4` | same as `goto`, reload a puzzle's saved code |
 | `python3 start.py skip` | give up and move on without solving (not in hard mode) |
 | `python3 start.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
-| `python3 start.py revert` | fully reset this puzzle: blank code + clear its progress |
+| `python3 start.py restart` | start this puzzle over: blank code + clear its progress (`retry` keeps it solved) |
 | `python3 start.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |
 | `python3 start.py theme amber` | switch colour theme (or add your own in `themes/`) |
 | `python3 start.py user alice` | switch or create a profile |
@@ -217,7 +220,7 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py user delete bob` | delete a profile (not the active one — switch away first) |
 | `python3 start.py setup` | enable the short commands (local or persistent) |
 | `python3 start.py uninstall` | remove the persistent shortcuts again |
-| `python3 start.py reset` | wipe progress, saved answers, and workspaces |
+| `python3 start.py wipe profile` | erase this whole profile: progress, saved code, workspace (needs the word `profile` to fire) |
 
 ## Difficulty modes
 
@@ -240,10 +243,11 @@ keyed by puzzle id. Switching puzzles (`next`, `skip`, `goto`) saves the
 current draft and reloads the target puzzle's saved code, nothing is lost,
 and `goto 1.1` brings back exactly what you wrote there. All saves are atomic.
 
-`python3 start.py reset` is the one true wipe: completed puzzles, attempts,
+`python3 start.py wipe profile` is the one true wipe: completed puzzles, attempts,
 hints used (`progress.json`), all saved code (`answers.json`), and the
 workspace files, which are regenerated from their starters. Your difficulty
-mode is preserved. After a reset you are genuinely back to a blank puzzle 1.1.
+mode is preserved. After a wipe you are genuinely back to a blank puzzle 1.1.
+(For one puzzle instead of the whole profile, `restart` clears just that one.)
 
 Each profile is its own folder under `users/`. `user <name>` switches or
 creates one, `user rename <old> <new>` renames a profile keeping its progress,

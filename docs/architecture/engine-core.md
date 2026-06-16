@@ -78,8 +78,8 @@ classDiagram
 |---|---|
 | status · current · progress | `cmd_status` |
 | check · hint · solution · map | `cmd_check` · `cmd_hint` · `cmd_solution` · `cmd_map` |
-| next · skip · retry · revert · goto | the navigation verbs (`navigate.py`) |
-| theme · mode · user · reset | `cmd_theme` · `cmd_mode` · `cmd_user` · `cmd_reset` |
+| next · skip · retry · restart · goto | the navigation verbs (`navigate.py`) |
+| theme · mode · user · wipe | `cmd_theme` · `cmd_mode` · `cmd_user` · `cmd_wipe` |
 | export · import | `cmd_export` · `cmd_import` (portable profile bundle) |
 | menu · setup · uninstall · help | the rest |
 
@@ -193,7 +193,7 @@ stateDiagram-v2
     Seeded --> Edited : learner edits
     Edited --> Archived : check / switch, archive to answers.json
     Archived --> Seeded : switch_to next
-    Archived --> Welcome : reset
+    Archived --> Welcome : wipe profile
 ```
 
 ## checker.py: one check, end to end

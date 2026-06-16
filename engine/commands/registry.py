@@ -38,8 +38,8 @@ VERBS = [
      "give up and move on without solving (not in hard mode)"),
     ("retry",     "retry",        ("replay",),       "puzzle",
      "blank the workspace to practice again (stays solved)"),
-    ("revert",    "revert",       (),                "puzzle",
-     "fully reset this puzzle: blank code + clear its progress"),
+    ("restart",   "restart",      (),                "puzzle",
+     "start this puzzle over: blank code + clear its progress (retry keeps it solved)"),
     ("goto",      "goto <id>",    ("load",),         "always",
      "jump to a puzzle (goto 2.4, or goto 2 for chapter 2; bare opens a picker)"),
     ("mode",      "mode <m>",     (),                "always",
@@ -52,8 +52,8 @@ VERBS = [
      "save this profile's progress to a portable file"),
     ("import",    "import <file>", (),               "always",
      "load a profile from an exported file"),
-    ("reset",     "reset",        (),                "always",
-     "wipe progress, saved answers, and workspaces"),
+    ("wipe",      "wipe profile", (),                "always",
+     "erase this whole profile: progress, saved code, and workspace"),
     ("setup",     "setup",        (),                "always",
      "set up the short commands (offers local or persistent)"),
     ("uninstall", "uninstall",    (),                "always",
@@ -69,13 +69,13 @@ NEEDS_PUZZLE = {row[0] for row in VERBS if row[3] == "puzzle"}
 # Which verbs appear in the shared bottom nav strip, in clusters and order.
 # `check`/`next`/`menu` are not listed: they surface as the highlighted primary
 # chip instead (chosen from state in cards.nav_strip). Verbs omitted entirely
-# (export/import/setup/uninstall/reset) stay discoverable via `help`/`menu`, not
+# (export/import/setup/uninstall/wipe) stay discoverable via `help`/`menu`, not
 # the strip. This keeps the strip the single source of truth for navigation
 # while staying terse. Puzzle-only verbs are filtered out when no puzzle loaded.
 NAV_CLUSTERS = [
     ("learn", ("hint", "solution")),
     ("move",  ("map", "goto", "next", "skip")),
-    ("do",    ("retry", "revert")),
+    ("do",    ("retry", "restart")),
     ("set",   ("mode", "theme", "user")),
 ]
 

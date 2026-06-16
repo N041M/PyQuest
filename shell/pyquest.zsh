@@ -14,7 +14,7 @@ export PYQUEST_ROOT="${${(%):-%x}:A:h:h}"
 # Internal: run start.py with the short-command display turned on.
 _pyquest() { PYQUEST_SHELL=1 python3 "$PYQUEST_ROOT/start.py" "$@"; }
 
-# Umbrella command: `start` (opens the menu), `start check`, `start reset`, etc.
+# Umbrella command: `start` (opens the menu), `start check`, `start wipe profile`, etc.
 start()    { _pyquest "$@"; }
 pq()       { _pyquest "$@"; }   # short alias for `start`
 pyquest()  { _pyquest "$@"; }
@@ -30,7 +30,7 @@ uninstall() {
     echo "  shortcuts cleared from this terminal too."
     unset -f start pq pyquest menu back status help setup textbook ref \
         check hint solution map stats score next goto load skip retry replay \
-        revert mode theme user users reset _pyquest uninstall 2>/dev/null
+        restart mode theme user users wipe _pyquest uninstall 2>/dev/null
 }
 status()   { _pyquest status "$@"; }
 help()     { _pyquest help "$@"; }   # PyQuest's command list (overrides while sourced)
@@ -49,28 +49,13 @@ load()     { _pyquest load "$@"; }
 skip()     { _pyquest skip "$@"; }
 retry()    { _pyquest retry "$@"; }
 replay()   { _pyquest replay "$@"; }
-revert()   { _pyquest revert "$@"; }
+restart()  { _pyquest restart "$@"; }   # start the current puzzle over
 mode()     { _pyquest mode "$@"; }
 theme()    { _pyquest theme "$@"; }
 user()     { _pyquest user "$@"; }
 users()    { _pyquest user "$@"; }
 
-# `reset` is also a real macOS command that reinitializes the terminal. To make
-# the bare word do the obvious thing without losing that, it is context-aware:
-#   - inside the PyQuest folder, `reset` clears PyQuest progress (after a y/N
-#     prompt, since it wipes your code and progress);
-#   - anywhere else, it falls through to the normal terminal reset.
-# You can always reach each one explicitly: `start reset` and `command reset`.
-reset() {
-  case "$PWD/" in
-    "$PYQUEST_ROOT"/*)
-      local ans
-      read -r "ans?Wipe ALL PyQuest progress, saved code and workspaces? [y/N] "
-      case "$ans" in
-        [yY]*) _pyquest reset ;;
-        *) echo "Cancelled.  (For the terminal reset instead: command reset)" ;;
-      esac
-      ;;
-    *) command reset "$@" ;;
-  esac
-}
+# `wipe` erases the whole profile; it needs the explicit word to fire (`wipe
+# profile`), so the bare verb is harmless. No clash with any system command, so
+# unlike the old `reset` it needs no context-aware wrapper.
+wipe()     { _pyquest wipe "$@"; }

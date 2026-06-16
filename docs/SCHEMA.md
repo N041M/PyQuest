@@ -14,7 +14,7 @@ single `users/<name>/work.py` that the engine owns. When a puzzle becomes
 current, the engine seeds `work.py` from that puzzle's `starter.py` (or from the
 learner's previously saved code). `check` validates `work.py`. Every check
 archives the workspace into that user's `answers.json` (see below). This is what
-lets `reset` restore a truly clean slate, it deletes the profile's
+lets `wipe profile` restore a truly clean slate, it deletes the profile's
 `answers.json` and regenerates `work.py`.
 
 So when authoring, the file you write as the starting point is `starter.py`; the
@@ -269,7 +269,7 @@ Created on first run; you normally never edit it.
 ## answers.json
 
 The learner's saved code, one entry per puzzle. Created/updated automatically;
-deleted by `reset`. You never edit this by hand.
+deleted by `wipe profile`. You never edit this by hand.
 
 ```json
 {

@@ -58,20 +58,18 @@ function load      { _pyquest load @args }
 function skip      { _pyquest skip @args }
 function retry     { _pyquest retry @args }
 function replay    { _pyquest replay @args }
-function revert    { _pyquest revert @args }
+function restart   { _pyquest restart @args }
 function mode      { _pyquest mode @args }
 function theme     { _pyquest theme @args }
 function user      { _pyquest user @args }
 function users     { _pyquest user @args }
 
 # `start` is a built-in PowerShell alias (Start-Process), so it is left alone;
-# use `pq` as the umbrella command (`pq`, `pq check`, `pq reset`, ...).
+# use `pq` as the umbrella command (`pq`, `pq check`, `pq wipe profile`, ...).
 
-# `reset` wipes ALL PyQuest progress, so confirm before doing it.
-function reset {
-    $ans = Read-Host 'Wipe ALL PyQuest progress, saved code and workspaces? [y/N]'
-    if ($ans -match '^[yY]') { _pyquest reset } else { 'Cancelled.' }
-}
+# `wipe` erases the whole profile; it needs the explicit word to fire
+# (`wipe profile`), so the bare verb just explains itself -- no prompt needed.
+function wipe      { _pyquest wipe @args }
 
 # --- install / uninstall in the PowerShell profile ---------------------------
 function Install-PyQuest {
@@ -93,7 +91,7 @@ function uninstall {
             Where-Object { $_ -notmatch [regex]::Escape($PyQuestMark) } |
             Set-Content $PROFILE
     }
-    'pq pyquest menu back status help setup textbook ref check hint solution map stats score next goto load skip retry replay revert mode theme user users reset uninstall'.Split(' ') |
+    'pq pyquest menu back status help setup textbook ref check hint solution map stats score next goto load skip retry replay restart mode theme user users wipe uninstall'.Split(' ') |
         ForEach-Object { Remove-Item "Function:$_" -ErrorAction SilentlyContinue }
     'Removed the PyQuest shortcuts (from your profile and this terminal).'
 }

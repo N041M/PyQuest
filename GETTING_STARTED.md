@@ -93,6 +93,7 @@ reference answer with an explanation of why it works.
 - **Themes.** `theme <name>` recolours everything and remembers your choice.
   Make your own by dropping a JSON file in `themes/` (see
   [themes/README.md](themes/README.md)).
-- **Resetting.** `reset` wipes this profile's progress after a `[y/N]` prompt.
-  Note `reset` is also a terminal command, to be explicit, use `start reset`
-  for PyQuest and `command reset` for the terminal.
+- **Clearing.** `restart` clears just the current puzzle (blank code + drop its
+  progress); `retry` blanks the workspace but keeps it solved. To erase the
+  whole profile, `wipe profile` -- the second word is required, so it can't go
+  off by accident.

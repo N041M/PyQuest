@@ -1,5 +1,5 @@
 """Config-ish verbs: theme (colour palette), mode (difficulty), user
-(per-profile progress), and reset (wipe this profile). They compose state +
+(per-profile progress), and wipe (erase this profile). They compose state +
 settings + render.
 
 Profile portability (export/import) is a separate concern -- see transfer.py.
@@ -168,7 +168,22 @@ def _user_rename(old, new, prog):
     return prog
 
 
-def cmd_reset(puzzles, prog, arg=None):
+_WIPE_OK = ("profile", "all", "yes", "confirm")
+
+
+def cmd_wipe(puzzles, prog, arg=None):
+    """Erase the whole active profile. Irreversible, so it requires the explicit
+    second word -- `wipe profile` -- to fire; bare `wipe` only explains. That
+    confirmation gesture is pipe-safe (no prompt to hang a script)."""
+    if (arg or "").strip().lower() not in _WIPE_OK:
+        user = current_user()
+        print(paint("  %s This erases EVERYTHING in profile '%s' --" % (NO, user),
+                    "yellow", "bold"))
+        print("  every completed puzzle, all saved code, and the workspace.")
+        print(PAD + "It cannot be undone. To go ahead:  %s" % cli("wipe profile"))
+        print(PAD + paint("(to clear just the current puzzle instead, use  "
+                          + cli("restart") + ")", "gray"))
+        return
     keep_mode = prog.get("mode", "normal")
     # wipe this user's saved answers and workspace file
     if os.path.exists(answers_path()):
@@ -177,8 +192,8 @@ def cmd_reset(puzzles, prog, arg=None):
     fresh["mode"] = keep_mode
     save_progress(fresh)
     write_work(WELCOME_WORK)                      # back to the puzzle-free default
-    print(paint("  %s Full reset done." % OK, "green", "bold"))
-    print("  Cleared this profile's progress, saved answers, and workspace.")
+    print(paint("  %s Profile wiped." % OK, "green", "bold"))
+    print("  Cleared this profile's progress, saved code, and workspace.")
     print("  Open the menu to start again:  %s" % cli("menu"))
 
 

@@ -1,6 +1,6 @@
 """The navigation + workspace-reset verbs: they change which puzzle is active
-or wipe its work.py. goto/next/skip move you; retry/revert reset the workspace
-(and, for revert, this puzzle's progress). These are the verbs a learner might
+or wipe its work.py. goto/next/skip move you; retry/restart reset the workspace
+(and, for restart, this puzzle's progress). These are the verbs a learner might
 fire at the wrong moment, so most are gated to "needs a puzzle loaded" in the
 registry (app.py redirects them to `menu` otherwise); `goto` is always allowed
 because it loads one. They compose state + content + render via the shared
@@ -78,8 +78,8 @@ def cmd_retry(puzzles, by_id, prog):
     print_current_card(prog, cur, arriving=True, puzzles=puzzles)
 
 
-def cmd_revert(puzzles, by_id, prog):
-    """Fully reset the active question: blank the workspace AND clear this one
+def cmd_restart(puzzles, by_id, prog):
+    """Start the active puzzle over: blank the workspace AND clear this one
     puzzle's progress (unsolve it, drop attempts/hints/saved code). Unlike
     `retry`, it makes the puzzle pristine -- as if you had never attempted it."""
     cur = current_puzzle(prog, by_id, puzzles)
@@ -95,6 +95,6 @@ def cmd_revert(puzzles, by_id, prog):
     prog["active"] = True
     save_progress(prog)
     write_work(read_starter(cur))
-    print(paint("  %s Reverted %s -- blank workspace, progress cleared."
+    print(paint("  %s Restarted %s -- blank workspace, progress cleared."
                 % (ARROW, cur["id"]), "magenta", "bold"))
     print_current_card(prog, cur, arriving=True, puzzles=puzzles)
