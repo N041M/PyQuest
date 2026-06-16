@@ -36,7 +36,7 @@ def cmd_check(puzzles, by_id, prog):
         return
     if not prog.get("active"):
         print(PAD + paint("No puzzle loaded.", "white", "bold"))
-        print(PAD + "Start one first:  " + paint(cli("begin"), "green", "bold"))
+        print(PAD + "Start one first:  " + paint(cli("menu"), "green", "bold"))
         return
     answers = load_answers()
     ensure_workspace(cur, answers, active=True)   # reseed the puzzle, never the

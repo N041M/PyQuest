@@ -30,7 +30,7 @@ def cmd_status(puzzles, by_id, prog):
         print("")
         print(PAD + paint("No puzzle loaded.", "white", "bold"))
         print(PAD + "Open the menu to pick a level and start:  "
-              + paint(cli("begin"), "green", "bold"))
+              + paint(cli("menu"), "green", "bold"))
         print("")
         nav_strip(prog, None, puzzles)
         return

@@ -28,7 +28,7 @@ python3 start.py
 
 `start.py` is the easy way in: it checks your Python, turns on the short
 commands (`check`, `hint`, ...) for this session, and opens the menu. (If you
-would rather not use the shortcuts, `python3 start.py begin` just opens the
+would rather not use the shortcuts, `python3 start.py menu` just opens the
 menu.)
 
 This is the main menu, shown before any puzzles. Pick a number:

@@ -12,7 +12,7 @@ from .commands import (cmd_status, cmd_map, cmd_stats, cmd_hint, cmd_solution,
                        cmd_textbook, cmd_next,
                        cmd_goto, cmd_skip, cmd_retry, cmd_revert, cmd_mode,
                        cmd_theme, cmd_user, cmd_reset, cmd_export, cmd_import,
-                       cmd_setup, cmd_setup_persist, cmd_uninstall, cmd_begin,
+                       cmd_setup, cmd_setup_persist, cmd_uninstall,
                        cmd_menu, cmd_help)
 from .commands.registry import canonical, NEEDS_PUZZLE, suggest
 
@@ -36,7 +36,7 @@ def main():
     # Bare invocation (`start` / `python3 start.py` inside a session) always
     # opens the menu -- the same place a cold launch lands. `status` and every
     # other view stay one explicit word away (`start status`, `status`).
-    raw = args[0].lower() if args else "begin"
+    raw = args[0].lower() if args else "menu"
     cmd = canonical(raw)                 # fold aliases (load->goto, replay->retry)
     arg = args[1] if len(args) > 1 else None
     arg2 = args[2] if len(args) > 2 else None
@@ -47,12 +47,12 @@ def main():
                      prog.get("active"))
 
     # First run: greet the learner wherever a bare launch lands them. That is
-    # the menu now (`begin`), but an explicit `status` should still welcome too.
-    if fresh and cmd in ("status", "begin", "menu"):
+    # the menu now, but an explicit `status` should still welcome too.
+    if fresh and cmd in ("status", "menu"):
         print(paint("  %s  Welcome to PyQuest!" % STAR, "cyan", "bold"))
         if cmd == "status":
             print("  Open the menu to set up and pick a level:  %s\n"
-                  % cli("begin"))
+                  % cli("menu"))
         else:
             print("  Set up and pick a level from the menu below.\n")
 
@@ -62,7 +62,7 @@ def main():
     if cmd in NEEDS_PUZZLE and not prog.get("active"):
         print(paint("  %s  No puzzle loaded yet -- here's the menu." % NO,
                     "yellow"))
-        cmd_begin(puzzles, by_id, prog)
+        cmd_menu(puzzles, by_id, prog)
         return
 
     if cmd == "status":
@@ -103,8 +103,6 @@ def main():
         cmd_export(puzzles, by_id, prog, arg)
     elif cmd == "import":
         cmd_import(puzzles, by_id, prog, arg, arg2, arg3)
-    elif cmd == "begin":
-        cmd_begin(puzzles, by_id, prog)
     elif cmd == "menu":
         cmd_menu(puzzles, by_id, prog)
     elif cmd == "setup":

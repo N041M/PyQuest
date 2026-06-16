@@ -179,7 +179,7 @@ def cmd_reset(puzzles, prog, arg=None):
     write_work(WELCOME_WORK)                      # back to the puzzle-free default
     print(paint("  %s Full reset done." % OK, "green", "bold"))
     print("  Cleared this profile's progress, saved answers, and workspace.")
-    print("  Open the menu to start again:  %s" % cli("begin"))
+    print("  Open the menu to start again:  %s" % cli("menu"))
 
 
 # ---- mode (difficulty) ----------------------------------------------------

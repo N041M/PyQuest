@@ -124,7 +124,7 @@ python3 start.py setup
   else).
 
 After persisting, open a new terminal or re-source that file once (e.g.
-`source ~/.zshrc`). The same setup is also reachable from the `begin` menu
+`source ~/.zshrc`). The same setup is also reachable from the `menu`
 (option **6 settings → shortcuts**).
 
 If you would rather do it by hand, add this line to the end of `~/.zshrc` (or
@@ -176,7 +176,7 @@ PyQuest, `command reset` for the terminal.
   convention is respected.
 - **Frames fit your window.** Boxes and banners size themselves to the live
   terminal width (capped for readability) instead of assuming 80 columns.
-- **Nothing blocks a pipe.** The two interactive moments (`begin` and bare
+- **Nothing blocks a pipe.** The two interactive moments (`menu` and bare
   `goto`) degrade to a plain print when stdin is not a terminal, so scripts
   and tests never hang.
 - **Shell support.** The shortcuts ship for zsh (`shell/pyquest.zsh`, the macOS
@@ -195,8 +195,7 @@ umbrella — `start export` — since the shell owns a bare `export`).
 |---|---|
 | `python3 start.py` | open the menu — every session starts here (bare `start` / `pq` with the shortcuts on); a cold terminal also sets up the session |
 | `python3 start.py status` | show progress and the current puzzle |
-| `python3 start.py begin` | open the main menu (start here) |
-| `python3 start.py menu` | leave a puzzle and return to the main menu (alias `back`) |
+| `python3 start.py menu` | open the main menu — start here, or back out of a puzzle (alias `back`) |
 | `python3 start.py help` | list every command, highlighting the ones available in your current space |
 | `python3 start.py check` | validate your `work.py` against the puzzle |
 | `python3 start.py hint` | reveal the next hint (three per puzzle, escalating) |
@@ -204,11 +203,11 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py map` | show the chapter/puzzle tree with progress |
 | `python3 start.py stats` | your numbers: attempts, hints, clean first-try solves, per-chapter completion (`score` alias) |
 | `python3 start.py textbook` | write a syntax & tips markdown file and link you to it — what you've reached (`textbook all` for the whole language; `ref` alias) |
-| `python3 start.py next` | move on to the next puzzle |
+| `python3 start.py next` | move on to the next puzzle — only once this one is solved |
 | `python3 start.py goto` | pick a puzzle from a list (`goto 2` = first open puzzle of chapter 2) |
 | `python3 start.py goto 2.4` | jump to a puzzle by id (restores your saved code) |
 | `python3 start.py load 2.4` | same as `goto`, reload a puzzle's saved code |
-| `python3 start.py skip` | move on without solving (not in hard mode) |
+| `python3 start.py skip` | give up and move on without solving (not in hard mode) |
 | `python3 start.py retry` | blank the workspace to practice again (stays solved; `replay` is an alias) |
 | `python3 start.py revert` | fully reset this puzzle: blank code + clear its progress |
 | `python3 start.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |
@@ -230,7 +229,8 @@ Set once with `mode <name>`; change it whenever you like.
 | Hints | unlimited, anytime | on demand | only after 3 tries |
 | `solution` | anytime | anytime | only after solving |
 | `textbook` | anytime | anytime | sealed |
-| `next`/`skip` past unsolved | yes | yes | no (must solve) |
+| `next` (needs a solve) | yes | yes | yes |
+| `skip` past unsolved | yes | yes | no (must solve) |
 | `goto` forward (ahead) | yes | back only | back only |
 
 ## How your work is saved

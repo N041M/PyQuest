@@ -32,12 +32,8 @@ from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
 
 
 def cmd_menu(puzzles, by_id, prog):
-    """Reach the main menu from anywhere -- an alias for `begin`, so a learner
-    mid-puzzle can always type `menu` to get back to start/level/theme/etc."""
-    return cmd_begin(puzzles, by_id, prog)
-
-
-def cmd_begin(puzzles, by_id, prog):
+    """Open the main hub -- the one interactive surface. Reachable from anywhere
+    (`menu`, or `back`), and where a cold launch and a bare invocation both land."""
     if not sys.stdin.isatty():
         print(wordmark("cyan"))
         _menu_options(puzzles, by_id, prog)
@@ -110,7 +106,7 @@ def cmd_begin(puzzles, by_id, prog):
             # prompt. The menu picks options 0-6, so point them at where that
             # verb actually runs instead of a dead-end "type a number".
             verb = canonical(head)
-            if verb in CANONICAL and verb not in ("begin", "menu"):
+            if verb in CANONICAL and verb != "menu":
                 if verb in NEEDS_PUZZLE:
                     print(PAD + paint("'%s' runs in your terminal, once a "
                                       "puzzle is open." % verb, "yellow"))

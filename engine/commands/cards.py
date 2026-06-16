@@ -61,7 +61,7 @@ def nav_strip(prog, cur, puzzles=None):
     has_puzzle = bool(prog.get("active")) and cur is not None
     solved = has_puzzle and cur["id"] in prog["completed"]
     if not has_puzzle:
-        primary = "begin"
+        primary = "menu"
     elif not solved:
         primary = "check"
     else:
@@ -169,18 +169,30 @@ def _jump(target, puzzles, by_id, prog):
     return True
 
 
-def _advance_one(puzzles, by_id, prog, verb):
-    """Shared by `next` and `skip`: move to the next puzzle in order."""
+def _advance_one(puzzles, by_id, prog, force):
+    """Move to the next puzzle in order. The two verbs differ on what they
+    require of the current one:
+      `next` (force=False) only advances once it is solved -- it's the "done,
+        move on" verb, and refuses an unsolved puzzle (run check, or skip).
+      `skip` (force=True) is the deliberate give-up: it moves on whether solved
+        or not. Hard mode forbids it -- there you must genuinely solve."""
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
         print("No current puzzle.")
         return
     solved = cur["id"] in prog["completed"]
-    if not solved and prog["mode"] == "hard":
-        print(paint("  %s Hard mode: you must solve %s before moving on."
-                    % (NO, cur["id"]), "red", "bold"))
-        print("  Switch modes if you want to skip:  %s" % cli("mode normal"))
-        return
+    if not solved:
+        if not force:
+            print(paint("  %s %s isn't solved yet." % (NO, cur["id"]),
+                        "yellow", "bold"))
+            print("  Run %s until it passes, or %s to move on without solving."
+                  % (cli("check"), cli("skip")))
+            return
+        if prog["mode"] == "hard":
+            print(paint("  %s Hard mode: you must solve %s before moving on."
+                        % (NO, cur["id"]), "red", "bold"))
+            print("  Switch to an easier mode to skip:  %s" % cli("mode normal"))
+            return
     nxt = next((p for p in puzzles if p["index"] == cur["index"] + 1), None)
     if nxt is None:
         print(paint("  %s  That was the last puzzle in the course." % STAR,

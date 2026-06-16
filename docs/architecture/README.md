@@ -43,7 +43,7 @@ flowchart TB
 
 PyQuest is a **stateless command runner**, not a TUI: every invocation is one
 short `python3 start.py <verb>` that reads content + per‑user state from disk,
-does one thing, prints, and exits. The only interactive surface is the `begin`
+does one thing, prints, and exits. The only interactive surface is the `menu`
 menu. There are **no third‑party dependencies** (Python 3.8+ stdlib only).
 
 ## 2. Containers (C4 level 2)
@@ -148,7 +148,7 @@ flowchart TB
     app --> cinit["commands/__init__ «facade»"]
     cinit --> cviews["views «status/map/hint/solution»"]
     cinit --> cnav["navigate «goto/next/skip/retry/revert»"]
-    cinit --> cmenu["menu «begin/menu»"]
+    cinit --> cmenu["menu «menu»"]
     cinit --> cprof["profiles «theme/mode/user/reset»"]
     cinit --> ctrans["transfer «export/import»"]
     cinit --> cshort["shortcuts «shell installer»"]

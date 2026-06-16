@@ -14,7 +14,7 @@ flowchart TB
     init --> profiles["profiles «theme/mode/user/reset»"]
     init --> transfer["transfer «export/import»"]
     init --> shortcuts["shortcuts «installer»"]
-    init --> menu["menu «begin/menu»"]
+    init --> menu["menu «menu»"]
     init --> help["help"]
     views --> cards["cards «shared card/goto»"]
     nav --> cards
@@ -37,7 +37,7 @@ diagram below); those edges are left off here to keep the verb topology clear.
 owns the toolkit run; everything else verb‑shaped is here.
 
 `app.py` consults `registry` before dispatch: it canonicalizes aliases
-(`load`→`goto`, `back`→`menu`), opens the menu (`begin`) when a puzzle-context
+(`load`→`goto`, `back`→`menu`), opens the menu (`menu`) when a puzzle-context
 verb (`check`, `hint`, `next`, …) is run with no puzzle loaded, and offers a
 "did you mean?" suggestion on an unknown verb. A bare invocation also defaults
 to the menu, so every entry point lands on the same home base. `help` renders its grouped list from the same table, taking
@@ -98,7 +98,7 @@ classDiagram
     }
     class menu {
         <<module>>
-        +cmd_begin / cmd_menu
+        +cmd_menu
         -_menu_options / _menu_level
         -_menu_theme / _menu_users / _menu_shortcuts
     }
@@ -126,14 +126,14 @@ identically from the CLI and the menu. `nav_strip` reads `NAV_CLUSTERS` +
 `NEEDS_PUZZLE` from `registry`, so the strip can never list a verb dispatch
 wouldn't accept.
 
-## The only interactive surface: `begin` / `menu`
+## The only interactive surface: `menu`
 
-Every other verb is one‑shot. `cmd_begin`/`cmd_menu` are the lone read‑loop, and
+Every other verb is one‑shot. `cmd_menu` is the lone read‑loop, and
 they still delegate the real work to the same one‑shot verbs.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Menu : begin / menu
+    [*] --> Menu : menu
     Menu --> Level : pick level (easy/normal/hard)
     Menu --> Theme : pick a colour theme
     Menu --> Users : switch / create profile
@@ -150,7 +150,7 @@ stateDiagram-v2
 ## Difficulty modes gate navigation
 
 `cmd_mode` sets `prog["mode"]`; the navigation helpers in `cards.py` read it to
-decide whether `next`/`skip`/`goto` may move past an unsolved puzzle.
+decide whether `skip`/`goto` may move past an unsolved puzzle (`next` requires a solve).
 
 ```mermaid
 flowchart LR

@@ -23,7 +23,7 @@ def launch_session():
         # No shell we can host the shortcuts in: just open the menu.
         print("Opening the menu. (Couldn't set up the short commands for this\n"
               "shell; you can still run `%s start.py <command>`.)" % _py())
-        return subprocess.call([sys.executable, ENTRY, "begin"])
+        return subprocess.call([sys.executable, ENTRY, "menu"])
 
     print("Starting PyQuest with the short commands on for this session.")
     print("When you're done, type  exit  to leave the PyQuest session.\n")
@@ -31,7 +31,7 @@ def launch_session():
         return _launch(kind, exe)
     except OSError:
         # Spawning the shell failed for some reason; fall back to the menu.
-        return subprocess.call([sys.executable, ENTRY, "begin"])
+        return subprocess.call([sys.executable, ENTRY, "menu"])
 
 
 def _py():
@@ -66,7 +66,7 @@ def _launch(kind, exe):
 
     if kind == "powershell":
         ps1 = os.path.join(sh, "pyquest.ps1")
-        cmd = ". '%s'; & '%s' '%s' begin" % (ps1, py, ENTRY)
+        cmd = ". '%s'; & '%s' '%s' menu" % (ps1, py, ENTRY)
         return subprocess.call([exe, "-NoExit", "-NoProfile", "-Command", cmd])
 
     # zsh / bash: a throwaway startup file that keeps the user's own
@@ -82,7 +82,7 @@ def _launch(kind, exe):
                 '[ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc"\n'
                 'source "%s"\n'
                 'export PYQUEST_SHELL=1\n'
-                '"%s" "%s" begin\n' % (rc_src, py, ENTRY))
+                '"%s" "%s" menu\n' % (rc_src, py, ENTRY))
             with open(os.path.join(tmp, ".zshrc"), "w") as f:
                 f.write(body)
             env = dict(os.environ, ZDOTDIR=tmp)
@@ -93,7 +93,7 @@ def _launch(kind, exe):
             '[ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"\n'
             'source "%s"\n'
             'export PYQUEST_SHELL=1\n'
-            '"%s" "%s" begin\n' % (rc_src, py, ENTRY))
+            '"%s" "%s" menu\n' % (rc_src, py, ENTRY))
         with open(rc, "w") as f:
             f.write(body)
         return subprocess.call([exe, "--rcfile", rc, "-i"])

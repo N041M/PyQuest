@@ -23,7 +23,7 @@ def cmd_help(prog):
         if i:
             print("")                       # blank line between groups, not after
         live = active or ctx == "always"
-        note = "available now" if live else "load a puzzle first (%s)" % cli("begin")
+        note = "available now" if live else "load a puzzle first (%s)" % cli("menu")
         print(PAD + paint(title, "magenta", "bold")
               + paint("   %s" % note, "green" if live else "gray"))
         for _canon, label, _aliases, context, desc in VERBS:

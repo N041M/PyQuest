@@ -138,5 +138,5 @@ def cmd_uninstall():
     print(PAD + paint("New terminals won't load the shortcuts. This terminal "
                       "keeps them until", "gray"))
     print(PAD + paint("you close it -- or run:  %s"
-                      % paint("unset -f begin check start hint next …", "yellow"),
+                      % paint("unset -f menu check start hint next …", "yellow"),
                       "gray"))

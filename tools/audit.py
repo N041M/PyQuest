@@ -799,7 +799,7 @@ def _engine_selftest():
         # the puzzle-context set is exactly the verbs that act on a loaded puzzle
         assert {"check", "hint", "solution", "next", "skip", "retry",
                 "revert"} <= NEEDS_PUZZLE
-        assert not (NEEDS_PUZZLE & {"status", "goto", "begin", "map", "help"})
+        assert not (NEEDS_PUZZLE & {"status", "goto", "menu", "map", "help"})
         assert NEEDS_PUZZLE <= CANONICAL
         # dispatch and registry must not drift: every verb app.main switches on
         # is a registry verb, and every registry verb is dispatched.

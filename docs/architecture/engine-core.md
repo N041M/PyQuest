@@ -37,10 +37,10 @@ that spawns a shell); given a verb it calls `engine.app.main()`. `app.main()`
 is the **only** place argv becomes an action:
 it builds the puzzle list once, loads progress, guarantees `work.py` exists,
 then routes the verb to exactly one command function. A bare run with no verb
-defaults to `begin`, so every entry point — cold launch or warm `start` — lands
+defaults to `menu`, so every entry point — cold launch or warm `start` — lands
 on the menu. Before routing it consults `commands/registry`: canonicalize the
 verb (fold aliases), gate puzzle-context verbs (`check`, `hint`, `next`, … open
-`begin` when no puzzle is loaded), and on an unknown verb suggest the closest
+the `menu` when no puzzle is loaded), and on an unknown verb suggest the closest
 match. Adding a
 verb = one `elif` here + one function in `commands/` + one registry row.
 
@@ -52,7 +52,7 @@ flowchart TB
     s["python3 start.py"] --> q{"a verb, or<br/>PYQUEST_SHELL set?"}
     q -- "no: cold + bare" --> sess["engine.session.launch_session()"]
     sess --> sh["detect shell · load shortcuts<br/>(throwaway rc) · spawn it · export PYQUEST_SHELL"]
-    sh --> beg["start.py begin  (inside the session)"]
+    sh --> beg["start.py menu  (inside the session)"]
     q -- "yes" --> app["engine.app.main()"]
     beg --> app
     app --> reg["registry: canonical · gate · suggest"]
@@ -81,7 +81,7 @@ classDiagram
 | next · skip · retry · revert · goto | the navigation verbs (`navigate.py`) |
 | theme · mode · user · reset | `cmd_theme` · `cmd_mode` · `cmd_user` · `cmd_reset` |
 | export · import | `cmd_export` · `cmd_import` (portable profile bundle) |
-| begin · menu · setup · uninstall · help | the rest |
+| menu · setup · uninstall · help | the rest |
 
 ## config.py: foundation
 
@@ -189,7 +189,7 @@ classDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Welcome : first run
-    Welcome --> Seeded : begin / goto, seed from starter
+    Welcome --> Seeded : menu start / goto, seed from starter
     Seeded --> Edited : learner edits
     Edited --> Archived : check / switch, archive to answers.json
     Archived --> Seeded : switch_to next

@@ -17,7 +17,7 @@ in a workspace file in their own editor, and runs short, stateless commands to
 validate it and progress.
 
 - It is **not** a full interactive TUI. The only interactive surface is the
-  optional `begin` launcher menu (set up shortcuts, pick a level), shown
+  optional `menu` launcher (set up shortcuts, pick a level), shown
   *before* puzzles. The puzzle loop and every other command run once and exit.
 - It validates **behavior**, never source text: with rare, explicit exceptions
   where the lesson *is* a construct (e.g. commenting a line out).
@@ -71,8 +71,8 @@ those two files.
 7. **Fresh load every check.** Re-read/re-import the solution each run so stale
    state can never cause a false pass or fail.
 8. **Stateless commands, with two scoped exceptions.** Every command runs once
-   and exits, no prompts, loops, or live redraw, *except* (a) the `begin`
-   launcher menu, which is interactive by design (it loops reading a choice)
+   and exits, no prompts, loops, or live redraw, *except* (a) the `menu`
+   launcher, which is interactive by design (it loops reading a choice)
    and runs before puzzles, and (b) bare `goto`, which shows the puzzle list
    and reads ONE id before exiting. Both degrade to a plain print when stdin
    is not a terminal, so they never block pipes or tests. The shell-level
@@ -157,7 +157,7 @@ commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
                               that edits the user's environment (setup/persist/
                               uninstall)
                 help.py       the help screen
-                menu.py       the interactive launcher (begin / menu), the one
+                menu.py       the interactive launcher (menu), the one
                               interactive surface (§3 invariant 8a); sits on top
                               of cards + profiles + shortcuts. A grouped hub
                               (play / learn / set up) whose numbered items run

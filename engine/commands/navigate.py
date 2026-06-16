@@ -2,7 +2,7 @@
 or wipe its work.py. goto/next/skip move you; retry/revert reset the workspace
 (and, for revert, this puzzle's progress). These are the verbs a learner might
 fire at the wrong moment, so most are gated to "needs a puzzle loaded" in the
-registry (app.py redirects them to `begin` otherwise); `goto` is always allowed
+registry (app.py redirects them to `menu` otherwise); `goto` is always allowed
 because it loads one. They compose state + content + render via the shared
 `cards` helpers; the dispatcher is app.py.
 """
@@ -27,7 +27,7 @@ def cmd_goto(puzzles, by_id, prog, arg):
         _jump(target, puzzles, by_id, prog)
         return
     # bare `goto`: show the list, and on a terminal let them pick right here
-    # (one prompt, then exit -- the same in-and-out as the begin menu).
+    # (one prompt, then exit -- the same in-and-out as the menu).
     interactive = sys.stdin.isatty()
     _goto_list(puzzles, by_id, prog, footer=not interactive)
     if not interactive:
@@ -50,11 +50,11 @@ def cmd_goto(puzzles, by_id, prog, arg):
 
 
 def cmd_next(puzzles, by_id, prog):
-    _advance_one(puzzles, by_id, prog, "next")
+    _advance_one(puzzles, by_id, prog, force=False)   # only once solved
 
 
 def cmd_skip(puzzles, by_id, prog):
-    _advance_one(puzzles, by_id, prog, "skip")
+    _advance_one(puzzles, by_id, prog, force=True)    # move on, solved or not
 
 
 def cmd_retry(puzzles, by_id, prog):
