@@ -125,7 +125,7 @@ python3 start.py setup
 
 After persisting, open a new terminal or re-source that file once (e.g.
 `source ~/.zshrc`). The same setup is also reachable from the `begin` menu
-(option **5 → shortcuts**).
+(option **9 → shortcuts**).
 
 If you would rather do it by hand, add this line to the end of `~/.zshrc` (or
 `~/.bashrc`, sourcing `shell/pyquest.bash`), replacing the path with wherever

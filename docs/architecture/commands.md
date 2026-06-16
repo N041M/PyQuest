@@ -111,7 +111,7 @@ classDiagram
     menu ..> cards
     menu ..> profiles
     menu ..> shortcuts
-    menu ..> views : run help/status/map/stats inline
+    menu ..> views : numbered textbook/stats/map + status/help inline
     menu ..> help
     menu ..> registry : canonical · gate
     cards ..> registry : NAV_CLUSTERS + NEEDS_PUZZLE

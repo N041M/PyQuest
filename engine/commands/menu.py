@@ -5,21 +5,20 @@ commands; this sits on top of the verbs, composing cards + profiles + shortcuts.
 
 import sys
 
-from ..config import load_settings
+from ..config import load_settings, MODES
 from ..state import current_puzzle, activate, load_answers, current_user
-from ..render import paint, wordmark, header, pane_open, cli, PAD
+from ..render import paint, wordmark, header, pane_open, cli, PAD, OK
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user, cmd_mode
 from .views import cmd_status, cmd_map, cmd_stats, cmd_textbook
 from .help import cmd_help
 from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 
-# Read-only inspection verbs: they only print, so the hub runs them inline
-# rather than kicking the learner out to a terminal.
+# Read-only inspection verbs with no number of their own: typed at the hub, they
+# only print, so it runs them inline rather than kicking the learner to a
+# terminal. (map/stats/textbook have menu numbers; they're dispatched there.)
 _INLINE = {"help": lambda pz, by, pr: cmd_help(pr),
-           "status": lambda pz, by, pr: cmd_status(pz, by, pr),
-           "map": lambda pz, by, pr: cmd_map(pz, by, pr),
-           "stats": lambda pz, by, pr: cmd_stats(pz, by, pr)}
+           "status": lambda pz, by, pr: cmd_status(pz, by, pr)}
 from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
                         cmd_setup_persist, cmd_uninstall)
 
@@ -50,6 +49,7 @@ def cmd_begin(puzzles, by_id, prog):
         parts = raw.split(None, 1)
         head = parts[0].lower() if parts else ""
         arg = parts[1] if len(parts) > 1 else ""
+        # -- play --
         if head in ("1", "start", "continue", "play", ""):
             cur = current_puzzle(prog, by_id, puzzles)
             activate(prog, cur, load_answers())     # load the puzzle into work.py
@@ -65,24 +65,36 @@ def cmd_begin(puzzles, by_id, prog):
                     _jump(target, puzzles, by_id, prog)
             else:
                 _menu_level(puzzles, by_id, prog)
-        elif head in ("3", "theme"):
+        # -- learn (read-only verbs, run in place) --
+        elif head in ("3", "textbook", "ref"):       # "textbook all" reads here too
+            print("")
+            cmd_textbook(puzzles, by_id, prog, arg)
+        elif head in ("4", "stats", "score"):
+            print("")
+            cmd_stats(puzzles, by_id, prog)
+        elif head in ("5", "map"):
+            print("")
+            cmd_map(puzzles, by_id, prog)
+        # -- set up --
+        elif head in ("6", "theme"):
             if arg:                                 # "theme ocean" -- apply now
                 cmd_theme(arg.lower())
             else:
                 _menu_theme()
-        elif head in ("4", "users", "user"):
+        elif head in ("7", "mode"):
+            if arg:                                 # "mode hard" -- set straight
+                cmd_mode(prog, arg)
+            else:
+                _menu_mode(prog)
+        elif head in ("8", "profiles", "profile", "users", "user"):
             if arg:                                 # "user alice" -- switch now
                 prog = cmd_user(arg, puzzles, by_id, prog)
             else:
                 prog = _menu_users(puzzles, by_id, prog)
-        elif head in ("mode",):                     # "mode hard" -- set from the hub
-            cmd_mode(prog, arg)
-        elif head in ("textbook", "ref"):            # "textbook all" reads here too
-            print("")
-            cmd_textbook(puzzles, by_id, prog, arg)
-        elif head in ("5", "shortcuts", "short"):
+        elif head in ("9", "shortcuts", "short"):
             _menu_shortcuts()
-        elif head in ("6", "q", "quit", "exit"):
+        # -- leave --
+        elif head in ("0", "q", "quit", "exit"):
             print(PAD + paint("see you in the terminal -- solve with  "
                               + cli("check"), "gray"))
             return
@@ -91,8 +103,8 @@ def cmd_begin(puzzles, by_id, prog):
             _INLINE[canonical(head)](puzzles, by_id, prog)
         else:
             # A learner often types a real verb (check, hint, next...) at this
-            # prompt. The menu only picks options 1-6, so point them at where
-            # that verb actually runs instead of a dead-end "type a number".
+            # prompt. The menu picks options 0-9, so point them at where that
+            # verb actually runs instead of a dead-end "type a number".
             verb = canonical(head)
             if verb in CANONICAL and verb not in ("begin", "menu"):
                 if verb in NEEDS_PUZZLE:
@@ -105,38 +117,78 @@ def cmd_begin(puzzles, by_id, prog):
                     print(PAD + paint("'%s' is a terminal command, not a menu "
                                       "option." % verb, "yellow"))
                     print(PAD + "Leave the menu (%s) and run  %s"
-                          % (paint("6", "byellow", "bold"),
+                          % (paint("0", "byellow", "bold"),
                              paint(cli(verb), "cyan", "bold")))
             else:
-                print(PAD + paint("type a number 1-6.", "yellow"))
+                print(PAD + paint("type a number 0-9, or a command.", "yellow"))
         print("")
 
 
 def _menu_options(puzzles, by_id, prog):
     done, total = len(prog["completed"]), len(puzzles)
     cur = current_puzzle(prog, by_id, puzzles)
+    hard = prog["mode"] == "hard"
     print("")
     # at-a-glance progress belongs on the hub itself (same opener every pane
     # uses), not in a tab of its own
     print(pane_open("main menu", prog["mode"], done, total))
     print("")
 
+    def group(title):
+        print(PAD + paint(title, "magenta", "bold"))
+
     def item(n, lbl, note=""):
         print(PAD + paint(" %s " % n, "byellow", "bold") + "  "
-              + paint(lbl.ljust(15), "white", "bold") + paint(note, "gray"))
+              + paint(lbl.ljust(13), "white", "bold") + paint(note, "gray"))
 
     where = ("%s · %s" % (cur["id"], cur["meta"].get("title", ""))
              if cur else "-")
+    group("play")
     item("1", "start", where)
     item("2", "select level", "jump to any puzzle")
-    item("3", "theme", load_settings().get("theme", "neon"))
-    item("4", "users", current_user())
-    item("5", "shortcuts", "persistent: %s"
-         % ("on" if _is_persistent() else "off"))
-    item("6", "quit")
     print("")
-    print(PAD + paint("pick a number, or type a command "
-                      "(help · textbook · map · stats · mode hard)", "gray"))
+    group("learn")
+    item("3", "textbook", "sealed in hard mode" if hard
+         else "syntax & tips so far")
+    item("4", "stats", "attempts · hints · pace")
+    item("5", "map", "the chapter / puzzle tree")
+    print("")
+    group("set up")
+    item("6", "theme", load_settings().get("theme", "neon"))
+    item("7", "mode", prog["mode"])
+    item("8", "profiles", current_user())
+    item("9", "shortcuts", "persistent: %s"
+         % ("on" if _is_persistent() else "off"))
+    print("")
+    item("0", "quit")
+    print("")
+    print(PAD + paint("pick a number, type a verb, or  help", "gray"))
+
+
+def _menu_mode(prog):
+    # Pick a difficulty; blank line cancels. Mirrors the theme/users panes.
+    while True:
+        print("")
+        print(header("difficulty", "cyan"))
+        print("")
+        for m in MODES:
+            on = m == prog.get("mode")
+            print(PAD + " %s  %s"
+                  % (paint(OK if on else "·", "green" if on else "gray"),
+                     paint(m.ljust(7), "byellow" if on else "white", "bold")))
+        print("")
+        try:
+            c = input(PAD + paint("easy / normal / hard (blank = back) > ",
+                                  "cyan", "bold")).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            return
+        if not c:
+            return
+        if c.startswith("mode "):                   # forgive "mode hard"
+            c = c[5:].strip()
+        cmd_mode(prog, c)                           # sets + persists, or reprints
+        if c in MODES:
+            return
 
 
 def _menu_level(puzzles, by_id, prog):
