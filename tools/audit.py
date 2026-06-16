@@ -261,7 +261,11 @@ def conformance_issues(p):
     meta = p["meta"]
     if meta.get("id") != p["id"]:
         issues.append("meta id %r != folder id %r" % (meta.get("id"), p["id"]))
-    for key in ("title", "concept", "mode", "why"):
+    # title + mode are structural (used everywhere / drives checking), so they
+    # are required. concept + why are optional: a puzzle that teaches no new
+    # syntax (a drill or capstone) simply omits them and stays out of the
+    # textbook -- not every puzzle has to carry an entry.
+    for key in ("title", "mode"):
         if not meta.get(key):
             issues.append("meta missing %r" % key)
     if meta.get("mode") not in ("script", "import"):
@@ -749,6 +753,36 @@ def _engine_selftest():
             import shutil
             shutil.rmtree(os.path.join(CHAPTERS_DIR, "98_selftest_tmp"))
 
+    def t_textbook_omits_empty():
+        # Not every puzzle earns a textbook entry: one with neither a concept
+        # nor a why is left out, a chapter with nothing to teach drops entirely,
+        # and a section (Syntax/Tips) appears only when it has content.
+        from engine.commands.views import _textbook_md, _has_entry
+
+        def P(ch, title, concept=None, why=None):
+            m = {"title": title}
+            if concept:
+                m["concept"] = concept
+            if why:
+                m["why"] = why
+            return {"ch_num": ch, "ch_title": "Ch%d" % ch, "meta": m}
+
+        assert _has_entry(P(1, "x", concept="c"))
+        assert _has_entry(P(1, "x", why="w"))
+        assert not _has_entry(P(1, "x"))          # neither -> no entry
+
+        shown = [P(1, "Has syntax", concept="syn"),
+                 P(1, "Drill only"),              # no entry -> omitted
+                 P(2, "Cap A"), P(2, "Cap B"),    # whole chapter empty -> gone
+                 P(3, "Tip only", why="tip")]
+        md = _textbook_md(shown, full=False, total=2)
+        assert "Has syntax" in md and "syn" in md
+        assert "Drill only" not in md             # entry-less puzzle omitted
+        assert "Cap A" not in md and "Ch2" not in md  # empty chapter dropped
+        assert md.count("### Tips") == 1          # only ch3 carries a tip
+        assert "2 of 2 topics" in md              # count is entries, not puzzles
+        assert not md.rstrip().endswith("---")    # no rule left dangling
+
     def t_command_registry():
         from engine.commands.registry import (canonical, suggest,
                                               NEEDS_PUZZLE, CANONICAL)
@@ -833,7 +867,7 @@ def _engine_selftest():
                t_structural_checks,
                t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
                t_username_validation, t_user_lifecycle,
-               t_discover_tolerates_bad_meta,
+               t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize):
         case(fn.__name__[2:], fn)
 

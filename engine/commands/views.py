@@ -206,7 +206,10 @@ def cmd_textbook(puzzles, by_id, prog, arg=None):
         return started and (p["id"] == cur or p["index"] <= highest)
 
     shown = puzzles if full else [p for p in puzzles if reached(p)]
-    write_textbook(_textbook_md(shown, full, total))
+    # Not every puzzle contributes an entry: the count is topics that actually
+    # have something to teach (a concept or a tip), not the raw puzzle total.
+    total_entries = sum(1 for p in puzzles if _has_entry(p))
+    write_textbook(_textbook_md(shown, full, total_entries))
     where = ("the full reference" if full
              else "what you've reached -- %d of %d" % (len(shown), total)
              if shown else "nothing reached yet")
@@ -221,23 +224,64 @@ def cmd_textbook(puzzles, by_id, prog, arg=None):
                       "gray"))
 
 
+def _has_entry(p):
+    """A puzzle earns a textbook entry only if it has something to teach -- a
+    `concept` (the syntax line) or a `why` (the tip). Puzzles with neither (a
+    pure practice/capstone drill, say) simply don't appear."""
+    return bool(p["meta"].get("concept") or p["meta"].get("why"))
+
+
 def _textbook_md(shown, full, total):
     """Render the textbook as structured markdown: per chapter, all the syntax
     bundled together, then all the tips. `concept` supplies the syntax line, the
     optional `why` the tip -- so it needs no separate authoring and never drifts.
 
+    Not every puzzle carries an entry: those with neither a concept nor a tip
+    are skipped, and a chapter with nothing to show drops out entirely -- the
+    textbook mirrors the course's real content, not one row per puzzle.
+
     Built as a list, not a table: a `concept` can carry a literal `|` (e.g. the
     set-union operator), which a markdown table would split into a stray column.
     A list also reads cleanly raw, before any markdown renderer touches it."""
+    chapters = {}
+    for p in shown:
+        chapters.setdefault(p["ch_num"], []).append(p)
+
+    body, covered = [], 0
+    for ch in sorted(chapters):
+        items = chapters[ch]
+        syntax = [p for p in items if p["meta"].get("concept")]
+        tips = [p for p in items if p["meta"].get("why")]
+        if not syntax and not tips:
+            continue                       # nothing to teach here -- skip it
+        covered += sum(1 for p in items if _has_entry(p))
+        # A rule before each chapter -- it parts the preamble from the body and
+        # the chapters from one another, with none left dangling at the end.
+        body += ["---", "", "## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
+        # Syntax bundle: a definition list, each topic by name (no puzzle ids --
+        # this reads as a textbook, not a pointer back into the course).
+        if syntax:
+            body += ["### Syntax", ""]
+            body += ["- **%s** — %s" % (p["meta"].get("title", ""),
+                                        p["meta"]["concept"]) for p in syntax]
+            body.append("")
+        # Tips bundle: the deeper `why` for each topic that carries one, named
+        # the same way so the two sections read independently.
+        if tips:
+            body += ["### Tips", ""]
+            body += ["- **%s** — %s" % (p["meta"].get("title", ""),
+                                        p["meta"]["why"]) for p in tips]
+            body.append("")
+
     out = ["# PyQuest Textbook", ""]
     if full:
         out += ["*The whole language PyQuest covers -- every chapter, all %d "
                 "topics.*" % total,
                 "*Run `textbook` to come back to just the chapters you've "
                 "reached.*"]
-    elif shown:
+    elif body:
         out += ["*The syntax and tips you've covered so far -- %d of %d "
-                "topics.*" % (len(shown), total),
+                "topics.*" % (covered, total),
                 "*Run `textbook all` for the whole language; `textbook` brings "
                 "you back here.*"]
     else:
@@ -245,34 +289,4 @@ def _textbook_md(shown, full, total):
                 "`textbook all` to preview the whole language.*"]
     out.append("")
 
-    chapters = {}
-    for p in shown:
-        chapters.setdefault(p["ch_num"], []).append(p)
-
-    for ch in sorted(chapters):
-        items = chapters[ch]
-        # A rule before each chapter -- it parts the preamble from the body and
-        # the chapters from one another, with none left dangling at the end.
-        out += ["---", "", "## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
-
-        # Syntax bundle: a definition list, each topic by name (no puzzle ids --
-        # this reads as a textbook, not a pointer back into the course).
-        out += ["### Syntax", ""]
-        for p in items:
-            concept = p["meta"].get("concept", "")
-            if concept:
-                out.append("- **%s** — %s"
-                           % (p["meta"].get("title", ""), concept))
-        out.append("")
-
-        # Tips bundle: the deeper `why` for each topic that carries one, named
-        # the same way so the two sections read independently.
-        tips = [p for p in items if p["meta"].get("why")]
-        if tips:
-            out += ["### Tips", ""]
-            for p in tips:
-                out.append("- **%s** — %s"
-                           % (p["meta"].get("title", ""), p["meta"]["why"]))
-            out.append("")
-
-    return "\n".join(out).rstrip() + "\n"
+    return "\n".join(out + body).rstrip() + "\n"

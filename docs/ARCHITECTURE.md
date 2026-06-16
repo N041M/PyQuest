@@ -143,9 +143,10 @@ commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
                               map, stats (per-chapter completion + attempts/
                               hints/clean-solves read back from progress.json),
                               hint, solution, textbook (writes a per-user
-                              syntax/tips markdown file from each puzzle's
-                              `concept` -- reached vs full -- and links to it;
-                              no separate authoring, never drifts)
+                              syntax/tips markdown file from the `concept`/`why`
+                              of puzzles that carry them -- reached vs full,
+                              entry-less puzzles omitted -- and links to it; no
+                              separate authoring, never drifts)
                 navigate.py   navigation + workspace reset: goto, next, skip,
                               retry, revert
                 profiles.py   settings: theme, mode, user (switch/create plus

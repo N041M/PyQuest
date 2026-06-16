@@ -37,7 +37,13 @@ learner sees its contents in `work.py`.
   - `script`: run the workspace `work.py` as a subprocess, compare stdout.
   - `import`: import the workspace `work.py` and call its functions, assert on returns.
 - `id` must match the folder numbers: chapter `01_` + puzzle `01_` → `"1.1"`.
-- `why` is printed by `start.py solution` under "Why it works".
+- `title` and `mode` are required; `concept` and `why` are optional.
+- `concept` is the one-line syntax idea; it becomes the puzzle's **Syntax**
+  entry in `start.py textbook`.
+- `why` is printed by `start.py solution` under "Why it works", and becomes the
+  puzzle's **Tip** entry in the textbook.
+- A puzzle with neither `concept` nor `why` (a pure drill or capstone) earns no
+  textbook entry and is left out of it — not every puzzle has to carry one.
 
 ## tests.py
 
