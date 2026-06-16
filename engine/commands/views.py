@@ -7,11 +7,12 @@ bumps its own counter). They compose state + content + render via the shared
 
 import os
 
-from ..config import WIDTH
+from ..config import WIDTH, rel
 from ..content import load_hints
-from ..state import current_puzzle, save_progress, stat
-from ..render import (paint, wordmark, bar, header, indent, wrap, cli,
-                      pane_open, legend, PAD, STAR)
+from ..state import (current_puzzle, save_progress, stat, lexicon_path,
+                     write_lexicon)
+from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
+                      pane_open, legend, PAD, STAR, ARROW)
 from .cards import print_current_card, chapter_tree, nav_strip
 
 
@@ -117,3 +118,68 @@ def cmd_solution(puzzles, by_id, prog):
             print(PAD + line)
     print("")
     nav_strip(prog, cur, puzzles)
+
+
+def cmd_lexicon(puzzles, by_id, prog, arg=None):
+    """Summon the syntax/tips reference as a markdown file you open via a link.
+    Two states: bare `lexicon` writes only what the learner has reached;
+    `lexicon all` writes the whole language the course covers. Built from each
+    puzzle's `concept`, so it needs no separate authoring and never drifts."""
+    full = (arg or "").strip().lower() in ("all", "full", "everything", "a", "*")
+    total = len(puzzles)
+    highest, cur = prog.get("highest", 0), prog.get("current")
+    # A puzzle counts as reached once solved, or once the learner is actually in
+    # the course (active / has solves) and has got to it. Before that -- a fresh
+    # or just-reset profile -- nothing is reached, so the reached view is empty
+    # rather than pretending 1.1 (index 0 <= highest 0) was seen.
+    started = bool(prog.get("active")) or bool(prog["completed"])
+
+    def reached(p):
+        if p["id"] in prog["completed"]:
+            return True
+        return started and (p["id"] == cur or p["index"] <= highest)
+
+    shown = puzzles if full else [p for p in puzzles if reached(p)]
+    write_lexicon(_lexicon_md(shown, full, total))
+    where = ("the full reference" if full
+             else "what you've reached -- %d of %d" % (len(shown), total)
+             if shown else "nothing reached yet")
+    print(paint("  %s Lexicon ready: %s." % (ARROW, where), "magenta", "bold"))
+    print(field("read", paint(rel(lexicon_path()), "blue", "bold")
+                + paint("   open it in your editor", "gray")))
+    print(PAD + paint(("for just what you've reached:  " + cli("lexicon"))
+                      if full else
+                      ("for the whole language:  " + cli("lexicon all")),
+                      "gray"))
+
+
+def _lexicon_md(shown, full, total):
+    """Render the lexicon entries as a markdown document. The `concept` is the
+    syntax+tip line; the optional `why` becomes a blockquote for depth."""
+    out = ["# PyQuest Lexicon", ""]
+    if full:
+        out.append("_The full reference -- every syntax idea the course "
+                   "covers._")
+    elif shown:
+        out.append("_Syntax & tips you've reached so far (%d of %d). "
+                   "Run `lexicon all` for the full reference._"
+                   % (len(shown), total))
+    else:
+        out.append("_Nothing reached yet -- solve a few puzzles, or run "
+                   "`lexicon all` for the full reference._")
+    out.append("")
+    chapters = {}
+    for p in shown:
+        chapters.setdefault(p["ch_num"], []).append(p)
+    for ch in sorted(chapters):
+        items = chapters[ch]
+        out += ["## %d · %s" % (ch, items[0]["ch_title"]), ""]
+        for p in items:
+            out += ["### %s -- %s" % (p["id"], p["meta"].get("title", "")), ""]
+            concept = p["meta"].get("concept", "")
+            if concept:
+                out += [concept, ""]
+            why = p["meta"].get("why")
+            if why:
+                out += ["> %s" % why, ""]
+    return "\n".join(out).rstrip() + "\n"

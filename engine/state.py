@@ -12,7 +12,8 @@ import sys
 import json
 import shutil
 
-from .config import USERS_DIR, ROOT, WORK_FILENAME, load_settings, write_json, now
+from .config import (USERS_DIR, ROOT, WORK_FILENAME, LEXICON_FILENAME,
+                     load_settings, write_json, now)
 from .content import read_starter
 
 
@@ -181,6 +182,18 @@ def write_work(code):
     ensure_user()
     with open(work_path(), "w") as f:
         f.write(code)
+
+
+def lexicon_path():
+    return os.path.join(user_dir(), LEXICON_FILENAME)
+
+
+def write_lexicon(text):
+    """(Re)generate the per-user lexicon markdown the learner opens via a link.
+    Owned by the engine like work.py -- regenerated on each summon."""
+    ensure_user()
+    with open(lexicon_path(), "w") as f:
+        f.write(text)
 
 
 def archive_work(puzzle, answers, solved=None):

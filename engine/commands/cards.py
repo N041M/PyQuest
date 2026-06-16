@@ -74,7 +74,7 @@ def nav_strip(prog, cur, puzzles=None):
                   if v != primary and (has_puzzle or v not in NEEDS_PUZZLE)]
         if labels:
             clusters.append(labels)
-    clusters.append([v for v in ("menu", "help") if v != primary])
+    clusters.append([v for v in ("lexicon", "menu", "help") if v != primary])
     print(nav_row(primary, clusters))
 
 

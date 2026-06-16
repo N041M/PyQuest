@@ -5,7 +5,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
                 (always / needs a puzzle), and help. app.py + help read it.
   cards.py      shared composition: the puzzle card, status marker, goto helpers
   views.py      read verbs (show, don't change position): status, map, hint,
-                solution
+                solution, lexicon
   navigate.py   navigation + workspace reset: goto, next, skip, retry, revert
   profiles.py   settings: theme, mode, user, reset
   transfer.py   export, import (portable profile bundles)
@@ -16,7 +16,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
 `check` lives in checker.py; the dispatcher is app.py. See docs/ARCHITECTURE.md sec 4.
 """
 
-from .views import cmd_status, cmd_map, cmd_hint, cmd_solution
+from .views import cmd_status, cmd_map, cmd_hint, cmd_solution, cmd_lexicon
 from .navigate import cmd_goto, cmd_next, cmd_skip, cmd_retry, cmd_revert
 from .profiles import cmd_theme, cmd_mode, cmd_user, cmd_reset
 from .transfer import cmd_export, cmd_import
@@ -25,7 +25,8 @@ from .menu import cmd_begin, cmd_menu
 from .help import cmd_help
 
 __all__ = [
-    "cmd_status", "cmd_map", "cmd_hint", "cmd_solution", "cmd_goto",
+    "cmd_status", "cmd_map", "cmd_hint", "cmd_solution", "cmd_lexicon",
+    "cmd_goto",
     "cmd_next", "cmd_skip", "cmd_retry", "cmd_revert", "cmd_mode",
     "cmd_theme", "cmd_user", "cmd_reset", "cmd_export", "cmd_import",
     "cmd_setup", "cmd_setup_persist", "cmd_uninstall",

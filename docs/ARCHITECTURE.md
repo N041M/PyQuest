@@ -140,7 +140,10 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                               goto/advance helpers (the layer the loop verbs and
                               the menu both build on)
                 views.py      the read verbs (show, never move you): status,
-                              map, hint, solution
+                              map, hint, solution, lexicon (writes a per-user
+                              syntax/tips markdown file from each puzzle's
+                              `concept` -- reached vs full -- and links to it;
+                              no separate authoring, never drifts)
                 navigate.py   navigation + workspace reset: goto, next, skip,
                               retry, revert
                 profiles.py   settings: theme, mode, user, reset

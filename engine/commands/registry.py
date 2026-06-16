@@ -24,6 +24,8 @@ VERBS = [
      "show progress and the current puzzle"),
     ("map",       "map",          (),                "always",
      "show the chapter/puzzle tree"),
+    ("lexicon",   "lexicon",      ("ref",),          "always",
+     "syntax & tips you've reached (lexicon all for the full reference)"),
     ("check",     "check",        (),                "puzzle",
      "validate your work.py"),
     ("hint",      "hint",         (),                "puzzle",

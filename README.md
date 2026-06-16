@@ -202,6 +202,7 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py hint` | reveal the next hint (three per puzzle, escalating) |
 | `python3 start.py solution` | show the reference solution and why it works |
 | `python3 start.py map` | show the chapter/puzzle tree with progress |
+| `python3 start.py lexicon` | write a syntax & tips markdown file and link you to it — what you've reached (`lexicon all` for the whole language; `ref` alias) |
 | `python3 start.py next` | move on to the next puzzle |
 | `python3 start.py goto` | pick a puzzle from a list (`goto 2` = first open puzzle of chapter 2) |
 | `python3 start.py goto 2.4` | jump to a puzzle by id (restores your saved code) |

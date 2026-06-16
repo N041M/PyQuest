@@ -10,7 +10,7 @@ from ..state import current_puzzle, activate, load_answers, current_user
 from ..render import paint, wordmark, header, pane_open, cli, PAD
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user, cmd_mode
-from .views import cmd_status, cmd_map
+from .views import cmd_status, cmd_map, cmd_lexicon
 from .help import cmd_help
 from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 
@@ -76,6 +76,9 @@ def cmd_begin(puzzles, by_id, prog):
                 prog = _menu_users(puzzles, by_id, prog)
         elif head in ("mode",):                     # "mode hard" -- set from the hub
             cmd_mode(prog, arg)
+        elif head in ("lexicon", "ref"):            # "lexicon all" reads here too
+            print("")
+            cmd_lexicon(puzzles, by_id, prog, arg)
         elif head in ("5", "shortcuts", "short"):
             _menu_shortcuts()
         elif head in ("6", "q", "quit", "exit"):
@@ -132,7 +135,7 @@ def _menu_options(puzzles, by_id, prog):
     item("6", "quit")
     print("")
     print(PAD + paint("pick a number, or type a command "
-                      "(help · map · status · mode hard)", "gray"))
+                      "(help · lexicon · map · mode hard)", "gray"))
 
 
 def _menu_level(puzzles, by_id, prog):

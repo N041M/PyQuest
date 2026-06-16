@@ -29,13 +29,15 @@ back()     { _pyquest menu "$@"; }   # leave a puzzle, return to the menu
 uninstall() {
     _pyquest uninstall "$@"
     echo "  shortcuts cleared from this terminal too."
-    unset -f start pq pyquest begin menu back status help setup check hint \
-        solution map next goto load skip retry replay revert mode theme user \
-        users reset _pyquest uninstall 2>/dev/null
+    unset -f start pq pyquest begin menu back status help setup lexicon ref \
+        check hint solution map next goto load skip retry replay revert mode \
+        theme user users reset _pyquest uninstall 2>/dev/null
 }
 status()   { _pyquest status "$@"; }
 help()     { _pyquest help "$@"; }   # PyQuest's command list (overrides while sourced)
 setup()    { _pyquest setup "$@"; }
+lexicon()  { _pyquest lexicon "$@"; }   # syntax & tips; `lexicon all` for everything
+ref()      { _pyquest lexicon "$@"; }
 check()    { _pyquest check "$@"; }
 hint()     { _pyquest hint "$@"; }
 solution() { _pyquest solution "$@"; }

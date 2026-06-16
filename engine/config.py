@@ -15,6 +15,7 @@ THEMES_DIR = os.path.join(ROOT, "themes")          # user-made JSON theme preset
 SETTINGS_PATH = os.path.join(USERS_DIR, "settings.json")  # current user + theme
 _LEGACY_SETTINGS = os.path.join(ROOT, "settings.json")    # pre-move location
 WORK_FILENAME = "work.py"
+LEXICON_FILENAME = "lexicon.md"        # the summonable syntax/tips reference
 PY = sys.executable
 TIMEOUT = 10
 MODES = ("easy", "normal", "hard")
