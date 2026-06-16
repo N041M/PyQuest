@@ -23,4 +23,11 @@ DODGES = [
      '    yield 1\n'
      'def running_total(nums):\n'
      '    return (t for t in accumulate(nums))\n'),
+    # The forbidden genexpr in disguise: `yield from (genexpr over accumulate)`
+    # carries no state variable of its own, behind a yield-from token.
+    # Defeated by uses_yield(name) rejecting yield-from of a comprehension.
+    ("yield from a genexpr over accumulate (genexpr in disguise)",
+     'from itertools import accumulate\n'
+     'def running_total(nums):\n'
+     '    yield from (t for t in accumulate(nums))\n'),
 ]

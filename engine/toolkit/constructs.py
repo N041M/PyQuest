@@ -348,19 +348,31 @@ class ConstructsMixin:
         self._require_live(what, "no such class was defined",
                            self._find(ok), "stmt", because)
 
-    @staticmethod
-    def _yields_directly(fnode):
-        """True if `fnode`'s OWN body contains a yield / yield from -- not one
-        buried in a nested def/lambda (a different scope), and not a generator
-        expression (which is its own scope and holds no ast.Yield at all)."""
+    # The comprehension forms that are "a generator expression in disguise":
+    # `yield from (g for g in ...)` (or a list/set/dict comp) just re-emits a
+    # comprehension the briefs forbid, so it must NOT satisfy uses_yield(name).
+    _COMPREHENSIONS = (ast.GeneratorExp, ast.ListComp, ast.SetComp, ast.DictComp)
+
+    @classmethod
+    def _yields_directly(cls, fnode):
+        """True if `fnode`'s OWN body contains a real yield / yield from -- not
+        one buried in a nested def/lambda (a different scope), and not a generator
+        expression (its own scope, no ast.Yield at all). A `yield from` that only
+        delegates to a comprehension/generator expression does NOT count: that is
+        the forbidden genexpr wrapped in `yield from`, not the function producing
+        the stream itself (cf. each Ch10 dodges.py)."""
         stack = list(ast.iter_child_nodes(fnode))
         while stack:
             node = stack.pop()
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
                                  ast.Lambda)):
                 continue                 # a different scope -- not fnode's yields
-            if isinstance(node, (ast.Yield, ast.YieldFrom)):
+            if isinstance(node, ast.Yield):
                 return True
+            if isinstance(node, ast.YieldFrom):
+                if not isinstance(node.value, cls._COMPREHENSIONS):
+                    return True
+                continue                 # disguised genexpr -- not the lesson
             stack.extend(ast.iter_child_nodes(node))
         return False
 
@@ -375,7 +387,9 @@ class ConstructsMixin:
         function. So for a generator puzzle, pin yield to the lesson's role:
         `uses_yield("fn")` requires `fn`'s OWN body to yield -- a genexpr or a
         yield stashed elsewhere no longer counts (mirrors uses_class(name) /
-        uses_default_param(name))."""
+        uses_default_param(name)). A `yield from` over a comprehension/generator
+        expression also no longer counts: that is the forbidden genexpr in
+        disguise, not `fn` producing the stream itself."""
         if name is None:
             if not self._has(ast.Yield, ast.YieldFrom):
                 raise LessonNotUsedError("a yield statement",

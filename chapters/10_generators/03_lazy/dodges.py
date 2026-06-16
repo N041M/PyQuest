@@ -18,4 +18,10 @@ DODGES = [
      '    yield 1\n'
      'def naturals():\n'
      '    return (i for i in count())\n'),
+    # A FINITE generator sized to the checker's small take-counts -- yields the
+    # right values for the first handful but runs out, so it is NOT endless.
+    # Defeated by the large-offset endlessness probe in tests.py.
+    ("finite generator sized to the take-counts, not endless",
+     'def naturals():\n'
+     '    yield from range(15)\n'),
 ]

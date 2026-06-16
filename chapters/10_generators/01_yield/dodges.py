@@ -17,4 +17,10 @@ DODGES = [
      '    yield 1\n'
      'def count_down(n):\n'
      '    return (i for i in range(n, 0, -1))\n'),
+    # The forbidden genexpr in disguise: `yield from (genexpr)` re-emits the
+    # very comprehension the brief rules out, behind a yield-from token.
+    # Defeated by uses_yield(name) rejecting yield-from of a comprehension.
+    ("yield from a generator expression (genexpr in disguise)",
+     'def count_down(n):\n'
+     '    yield from (i for i in range(n, 0, -1))\n'),
 ]

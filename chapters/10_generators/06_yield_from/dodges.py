@@ -13,4 +13,11 @@ DODGES = [
      '    yield 1\n'
      'def chain(a, b):\n'
      '    return (x for x in list(a) + list(b))\n'),
+    # The forbidden genexpr in disguise: `yield from (genexpr over a + b)` joins
+    # the lists in a comprehension instead of forwarding each stream with its
+    # own yield from. Defeated by uses_yield(name) rejecting yield-from of a
+    # comprehension (a plain `yield from a; yield from b` still passes).
+    ("yield from a genexpr over the joined list (genexpr in disguise)",
+     'def chain(a, b):\n'
+     '    yield from (x for x in list(a) + list(b))\n'),
 ]

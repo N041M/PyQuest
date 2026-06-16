@@ -15,4 +15,10 @@ DODGES = [
      '    yield 1\n'
      'def evens(nums):\n'
      '    return (n for n in nums if n % 2 == 0)\n'),
+    # The forbidden genexpr in disguise: `yield from (filtering genexpr)` hides
+    # the guarded yield inside a comprehension, behind a yield-from token.
+    # Defeated by uses_yield(name) rejecting yield-from of a comprehension.
+    ("yield from a filtering generator expression (genexpr in disguise)",
+     'def evens(nums):\n'
+     '    yield from (n for n in nums if n % 2 == 0)\n'),
 ]

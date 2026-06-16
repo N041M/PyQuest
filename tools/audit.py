@@ -522,6 +522,16 @@ def _engine_selftest():
         path, T = learner("def gen(n):\n    yield from range(n)\n")
         T.uses_yield("gen")
         os.unlink(path)
+        # but a yield from delegating to a COMPREHENSION is the forbidden genexpr
+        # in disguise -- it must NOT satisfy the scoped check
+        path, T = learner("def gen(n):\n    yield from (i for i in range(n))\n")
+        try:
+            T.uses_yield("gen")
+        except LessonNotUsedError:
+            os.unlink(path)
+        else:
+            os.unlink(path)
+            raise AssertionError("yield from a genexpr satisfied uses_yield('gen')")
         # genexpr target + a decoy yield in an UNRELATED function: file-level
         # uses_yield() is fooled, scoped uses_yield("gen") is not
         dodge = ("def _decoy():\n    yield 1\n"

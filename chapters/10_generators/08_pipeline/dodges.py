@@ -36,4 +36,14 @@ DODGES = [
      'def labelled(stream):\n'
      '    for x in stream:\n'
      '        yield f"#{x}"\n'),
+    # The forbidden genexpr in disguise: every stage delegates to a comprehension
+    # behind `yield from`, so no stage is a real yield-driven generator of its
+    # own. Defeated by uses_yield(name) rejecting yield-from of a comprehension.
+    ("every stage a yield-from genexpr (genexpr in disguise)",
+     'def numbers(n):\n'
+     '    yield from (i for i in range(n))\n'
+     'def keep_even(stream):\n'
+     '    yield from (x for x in stream if x % 2 == 0)\n'
+     'def labelled(stream):\n'
+     '    yield from ("#%d" % x for x in stream)\n'),
 ]
