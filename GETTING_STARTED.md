@@ -47,7 +47,7 @@ done with short, one-shot commands.
 
 ## 3. Enable the short commands (recommended)
 
-In the menu choose **9 → shortcuts**, then pick:
+In the menu choose **6 settings → shortcuts**, then pick:
 
 - **local**: works in this terminal only, nothing saved (run the `source …`
   line it shows you), or

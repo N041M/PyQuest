@@ -161,9 +161,10 @@ commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
                               interactive surface (§3 invariant 8a); sits on top
                               of cards + profiles + shortcuts. A grouped hub
                               (play / learn / set up) whose numbered items run
-                              the read verbs (textbook/stats/map) and settings
-                              panes (theme/mode/profiles/shortcuts) in place;
-                              typed status/help run inline too
+                              the read verbs (textbook/stats/map) in place and
+                              fold theme/mode/profiles/shortcuts behind one
+                              `settings` sub-pane; typed status/help run inline
+                              too. Every pane obeys one rule: `0` backs out.
 app.py        argv dispatch + main().
 session.py    cold-start launcher: detect the shell, host a session with the
               shortcuts loaded, open the menu. The one place that spawns a

@@ -19,6 +19,14 @@ from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 # terminal. (map/stats/textbook have menu numbers; they're dispatched there.)
 _INLINE = {"help": lambda pz, by, pr: cmd_help(pr),
            "status": lambda pz, by, pr: cmd_status(pz, by, pr)}
+
+# The rule, applied in every pane: 0 (and its words) always backs out. A blank
+# line cancels too. `_leaving` keeps the check identical everywhere.
+_BACK = ("0", "back", "quit", "exit")
+
+
+def _leaving(answer):
+    return not answer or answer.strip().lower() in _BACK
 from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
                         cmd_setup_persist, cmd_uninstall)
 
@@ -75,26 +83,22 @@ def cmd_begin(puzzles, by_id, prog):
         elif head in ("5", "map"):
             print("")
             cmd_map(puzzles, by_id, prog)
-        # -- set up --
-        elif head in ("6", "theme"):
-            if arg:                                 # "theme ocean" -- apply now
-                cmd_theme(arg.lower())
-            else:
-                _menu_theme()
-        elif head in ("7", "mode"):
-            if arg:                                 # "mode hard" -- set straight
-                cmd_mode(prog, arg)
-            else:
-                _menu_mode(prog)
-        elif head in ("8", "profiles", "profile", "users", "user"):
-            if arg:                                 # "user alice" -- switch now
-                prog = cmd_user(arg, puzzles, by_id, prog)
-            else:
-                prog = _menu_users(puzzles, by_id, prog)
-        elif head in ("9", "shortcuts", "short"):
+        # -- set up (folded into one submenu) --
+        elif head in ("6", "set", "setup", "settings"):
+            prog = _menu_setup(puzzles, by_id, prog)
+        # The settings verbs still work typed straight at the hub, with an arg,
+        # for anyone who knows them -- they're just no longer numbered up front.
+        elif head in ("theme",):
+            cmd_theme(arg.lower()) if arg else _menu_theme()
+        elif head in ("mode",):
+            cmd_mode(prog, arg) if arg else _menu_mode(prog)
+        elif head in ("profiles", "profile", "users", "user"):
+            prog = (cmd_user(arg, puzzles, by_id, prog) if arg
+                    else _menu_users(puzzles, by_id, prog))
+        elif head in ("shortcuts", "short"):
             _menu_shortcuts()
-        # -- leave --
-        elif head in ("0", "q", "quit", "exit"):
+        # -- leave (the rule: 0 always backs out / quits) --
+        elif head in _BACK or head == "q":
             print(PAD + paint("see you in the terminal -- solve with  "
                               + cli("check"), "gray"))
             return
@@ -103,7 +107,7 @@ def cmd_begin(puzzles, by_id, prog):
             _INLINE[canonical(head)](puzzles, by_id, prog)
         else:
             # A learner often types a real verb (check, hint, next...) at this
-            # prompt. The menu picks options 0-9, so point them at where that
+            # prompt. The menu picks options 0-6, so point them at where that
             # verb actually runs instead of a dead-end "type a number".
             verb = canonical(head)
             if verb in CANONICAL and verb not in ("begin", "menu"):
@@ -120,7 +124,7 @@ def cmd_begin(puzzles, by_id, prog):
                           % (paint("0", "byellow", "bold"),
                              paint(cli(verb), "cyan", "bold")))
             else:
-                print(PAD + paint("type a number 0-9, or a command.", "yellow"))
+                print(PAD + paint("type a number 0-6, or a command.", "yellow"))
         print("")
 
 
@@ -154,15 +158,53 @@ def _menu_options(puzzles, by_id, prog):
     item("5", "map", "the chapter / puzzle tree")
     print("")
     group("set up")
-    item("6", "theme", load_settings().get("theme", "neon"))
-    item("7", "mode", prog["mode"])
-    item("8", "profiles", current_user())
-    item("9", "shortcuts", "persistent: %s"
-         % ("on" if _is_persistent() else "off"))
+    item("6", "settings", "theme · mode · profiles · shortcuts")
     print("")
     item("0", "quit")
     print("")
     print(PAD + paint("pick a number, type a verb, or  help", "gray"))
+
+
+def _menu_setup(puzzles, by_id, prog):
+    """The folded set-up pane: theme, mode, profiles, shortcuts behind one menu
+    entry. Stays open until 0/back. Returns prog (the profile pane can swap it)."""
+    while True:
+        print("")
+        print(header("settings", "cyan"))
+        print("")
+
+        def item(n, lbl, note=""):
+            print(PAD + paint(" %s " % n, "byellow", "bold") + "  "
+                  + paint(lbl.ljust(11), "white", "bold") + paint(note, "gray"))
+
+        item("1", "theme", load_settings().get("theme", "neon"))
+        item("2", "mode", prog["mode"])
+        item("3", "profiles", current_user())
+        item("4", "shortcuts", "persistent: %s"
+             % ("on" if _is_persistent() else "off"))
+        print("")
+        item("0", "back")
+        print("")
+        try:
+            raw = input(PAD + paint("> ", "cyan", "bold")).strip()
+        except (EOFError, KeyboardInterrupt):
+            return prog
+        if _leaving(raw):
+            return prog
+        parts = raw.split(None, 1)
+        head = parts[0].lower()
+        arg = parts[1] if len(parts) > 1 else ""
+        if head in ("1", "theme"):
+            cmd_theme(arg.lower()) if arg else _menu_theme()
+        elif head in ("2", "mode"):
+            cmd_mode(prog, arg) if arg else _menu_mode(prog)
+        elif head in ("3", "profiles", "profile", "users", "user"):
+            prog = (cmd_user(arg, puzzles, by_id, prog) if arg
+                    else _menu_users(puzzles, by_id, prog))
+        elif head in ("4", "shortcuts", "short"):
+            _menu_shortcuts()
+        else:
+            print(PAD + paint("type 1-4, or 0 to go back.", "yellow"))
 
 
 def _menu_mode(prog):
@@ -178,11 +220,11 @@ def _menu_mode(prog):
                      paint(m.ljust(7), "byellow" if on else "white", "bold")))
         print("")
         try:
-            c = input(PAD + paint("easy / normal / hard (blank = back) > ",
+            c = input(PAD + paint("easy / normal / hard  (0 = back) > ",
                                   "cyan", "bold")).strip().lower()
         except (EOFError, KeyboardInterrupt):
             return
-        if not c:
+        if _leaving(c):
             return
         if c.startswith("mode "):                   # forgive "mode hard"
             c = c[5:].strip()
@@ -194,10 +236,10 @@ def _menu_mode(prog):
 def _menu_level(puzzles, by_id, prog):
     _goto_list(puzzles, by_id, prog, footer=False)
     try:
-        pid = input(PAD + paint("id (blank = cancel) > ", "cyan", "bold")).strip()
+        pid = input(PAD + paint("id  (0 = back) > ", "cyan", "bold")).strip()
     except (EOFError, KeyboardInterrupt):
         return
-    if not pid:
+    if _leaving(pid):
         return
     target = _resolve_goto(pid, puzzles, by_id, prog)
     if target is None:
@@ -208,15 +250,15 @@ def _menu_level(puzzles, by_id, prog):
 
 
 def _menu_theme():
-    # Stay in the theme menu until the user enters a blank line (cancel).
+    # Stay in the theme picker until 0/back (the rule) or a blank line.
     while True:
         cmd_theme("")                               # show the picker
         try:
-            c = input(PAD + paint("theme name (blank = back) > ", "cyan",
+            c = input(PAD + paint("theme name  (0 = back) > ", "cyan",
                                   "bold")).strip().lower()
         except (EOFError, KeyboardInterrupt):
             return
-        if not c:
+        if _leaving(c):
             return
         if c.startswith("theme "):                  # forgive "theme ocean"
             c = c[6:].strip()
@@ -224,16 +266,16 @@ def _menu_theme():
 
 
 def _menu_users(puzzles, by_id, prog):
-    # Stay in the users menu until a blank line (cancel).
+    # Stay in the profiles pane until 0/back (the rule) or a blank line.
     while True:
         cmd_user("", puzzles, by_id, prog)          # list users + management help
         try:
             c = input(PAD + paint("name to switch · 'rename a b' · "
-                                  "'delete a' (blank = back) > ", "cyan",
+                                  "'delete a'  (0 = back) > ", "cyan",
                                   "bold")).strip()
         except (EOFError, KeyboardInterrupt):
             return prog
-        if not c:
+        if _leaving(c):
             return prog
         if c.lower().startswith("user "):           # forgive "user alice"
             c = c[5:].strip()
@@ -254,10 +296,12 @@ def _menu_shortcuts():
           + "  install persistently (one line in your startup file)")
     print(PAD + paint(" 3 ", "byellow", "bold")
           + "  uninstall (remove the persistent line)")
-    print(PAD + paint(" 4 ", "byellow", "bold") + "  back")
+    print(PAD + paint(" 0 ", "byellow", "bold") + "  back")
     try:
         c = input(PAD + paint("> ", "cyan", "bold")).strip().lower()
     except (EOFError, KeyboardInterrupt):
+        return
+    if _leaving(c):
         return
     if c in ("1", "local"):
         print(PAD + paint("Run this yourself (a program can't source into your "
