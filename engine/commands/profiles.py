@@ -194,7 +194,8 @@ def cmd_mode(prog, arg):
     desc = {
         "easy": "Pointers shown, hints/solution always available, free jumps.",
         "normal": "Hints on demand, skip forward allowed.",
-        "hard": "No skips, hints only after 3 tries, solution after solving.",
+        "hard": "No skips; hints after 3 tries; solution after solving; "
+                "textbook sealed.",
     }[arg]
     print(paint("  %s Mode set to '%s'." % (OK, arg), "magenta", "bold"))
     print("  " + desc)

@@ -191,6 +191,11 @@ def cmd_textbook(puzzles, by_id, prog, arg=None):
     Two states: bare `textbook` writes only what the learner has reached;
     `textbook all` writes the whole language the course covers. Built from each
     puzzle's `concept`, so it needs no separate authoring and never drifts."""
+    # Hard mode withholds the syntax/tips crib, just as it gates hints and the
+    # solution -- the learner works from the brief and their own notes alone.
+    if prog.get("mode") == "hard":
+        print("Hard mode: the textbook is sealed -- work from the brief.")
+        return
     full = (arg or "").strip().lower() in ("all", "full", "everything", "a", "*")
     total = len(puzzles)
     highest, cur = prog.get("highest", 0), prog.get("current")

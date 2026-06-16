@@ -229,6 +229,7 @@ Set once with `mode <name>`; change it whenever you like.
 | Pointer shown automatically | yes | no | no |
 | Hints | unlimited, anytime | on demand | only after 3 tries |
 | `solution` | anytime | anytime | only after solving |
+| `textbook` | anytime | anytime | sealed |
 | `next`/`skip` past unsolved | yes | yes | no (must solve) |
 | `goto` forward (ahead) | yes | back only | back only |
 
