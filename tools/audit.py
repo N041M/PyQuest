@@ -506,6 +506,48 @@ def _engine_selftest():
         os.unlink(path)
         raise AssertionError("uses_yield must reject a bare genexpr")
 
+    def t_uses_yield_scoped():
+        """uses_yield(name) pins yield to the lesson's role: the named function's
+        OWN body must yield. A genexpr target with a decoy yield parked in
+        another function (or a dead yield in a nested inner function) passes the
+        file-level uses_yield() but must fail the scoped uses_yield(name) -- the
+        Ch10 generator hole found by the sidestep playbook."""
+        from engine.toolkit import LessonNotUsedError
+        # a real yield in the named function passes both forms
+        path, T = learner("def gen(n):\n    for i in range(n):\n        yield i\n")
+        T.uses_yield()
+        T.uses_yield("gen")
+        os.unlink(path)
+        # yield from in the named function also counts
+        path, T = learner("def gen(n):\n    yield from range(n)\n")
+        T.uses_yield("gen")
+        os.unlink(path)
+        # genexpr target + a decoy yield in an UNRELATED function: file-level
+        # uses_yield() is fooled, scoped uses_yield("gen") is not
+        dodge = ("def _decoy():\n    yield 1\n"
+                 "def gen(n):\n    return (i for i in range(n))\n")
+        path, T = learner(dodge)
+        T.uses_yield()                          # fooled by the decoy
+        try:
+            T.uses_yield("gen")
+        except LessonNotUsedError:
+            pass
+        else:
+            os.unlink(path)
+            raise AssertionError("decoy yield satisfied uses_yield('gen')")
+        os.unlink(path)
+        # a DEAD yield buried in a nested inner function is a different scope
+        nested = ("def gen(n):\n    def _unused():\n        yield\n"
+                  "    return (i for i in range(n))\n")
+        path, T = learner(nested)
+        try:
+            T.uses_yield("gen")
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        os.unlink(path)
+        raise AssertionError("a nested-function yield satisfied uses_yield('gen')")
+
     def t_with_open_construct():
         """uses_with_open demands the FILE be opened with `with`. A live
         `with io.StringIO()` wrapping a print satisfies the generic uses_with
@@ -861,7 +903,7 @@ def _engine_selftest():
                t_classes, t_uses_class_named,
                t_does_not_mutate, t_does_not_mutate_uncopyable,
                t_eq_case_sensitive, t_deep_approx, t_new_constructs,
-               t_generator_backstop, t_with_open_construct,
+               t_generator_backstop, t_uses_yield_scoped, t_with_open_construct,
                t_raises_still_works, t_liveness_dead_chaff,
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,

@@ -1,0 +1,8 @@
+{
+  "id": "10.7",
+  "title": "stop early",
+  "chapter": "Generators",
+  "concept": "A bare return (or the function ending) stops a generator, so it can finish before the input runs out",
+  "mode": "import",
+  "why": "Reaching return ends the generator immediately, so until_zero emits items only up to the first 0 and never produces the rest."
+}

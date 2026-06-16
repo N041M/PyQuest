@@ -1,0 +1,8 @@
+{
+  "id": "10.1",
+  "title": "yield: a function that pauses",
+  "chapter": "Generators",
+  "concept": "yield hands back one value and pauses; calling the function returns a generator you loop over",
+  "mode": "import",
+  "why": "Each yield produces a single value and suspends the function until the next is requested, so count_down streams its numbers one at a time instead of returning a finished list."
+}

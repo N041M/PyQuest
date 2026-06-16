@@ -1,0 +1,8 @@
+{
+  "id": "10.3",
+  "title": "generators are lazy",
+  "chapter": "Generators",
+  "concept": "A generator computes on demand, so it can be endless -- it only does work as you pull items",
+  "mode": "import",
+  "why": "Because each yield waits until the next value is requested, a while True generator never hangs; it produces only the items the caller actually takes."
+}

@@ -348,13 +348,48 @@ class ConstructsMixin:
         self._require_live(what, "no such class was defined",
                            self._find(ok), "stmt", because)
 
-    def uses_yield(self, because=""):
+    @staticmethod
+    def _yields_directly(fnode):
+        """True if `fnode`'s OWN body contains a yield / yield from -- not one
+        buried in a nested def/lambda (a different scope), and not a generator
+        expression (which is its own scope and holds no ast.Yield at all)."""
+        stack = list(ast.iter_child_nodes(fnode))
+        while stack:
+            node = stack.pop()
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                 ast.Lambda)):
+                continue                 # a different scope -- not fnode's yields
+            if isinstance(node, (ast.Yield, ast.YieldFrom)):
+                return True
+            stack.extend(ast.iter_child_nodes(node))
+        return False
+
+    def uses_yield(self, name=None, because=""):
         """yield / yield from (the generators chapter). AST-only: substituting
         a yield flips the function's generator-ness, which crashes callers and
-        would make a LEGIT yield look dead under the clean-run rule."""
-        if not self._has(ast.Yield, ast.YieldFrom):
-            raise LessonNotUsedError("a yield statement",
-                                   "yield wasn't used", because)
+        would make a LEGIT yield look dead under the clean-run rule.
+
+        Bare `uses_yield()` asks only that SOME function yields. Because that is
+        file-level, a genexpr-returning solution (which still passes
+        is_generator) can satisfy it with a decoy yield parked in an unrelated
+        function. So for a generator puzzle, pin yield to the lesson's role:
+        `uses_yield("fn")` requires `fn`'s OWN body to yield -- a genexpr or a
+        yield stashed elsewhere no longer counts (mirrors uses_class(name) /
+        uses_default_param(name))."""
+        if name is None:
+            if not self._has(ast.Yield, ast.YieldFrom):
+                raise LessonNotUsedError("a yield statement",
+                                       "yield wasn't used", because)
+            return
+        defs = [n for n in ast.walk(self.tree())
+                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and n.name == name]
+        if not any(self._yields_directly(d) for d in defs):
+            raise LessonNotUsedError(
+                "a yield inside %s itself" % name,
+                "%s reaches its result without yield in its own body (a "
+                "generator expression, or a yield parked in another function, "
+                "isn't the lesson)" % name, because)
 
     def uses_lambda(self, because=""):
         """A lambda expression. AST-only: a lambda's sentinel stand-in is not

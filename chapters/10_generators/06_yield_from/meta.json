@@ -1,0 +1,8 @@
+{
+  "id": "10.6",
+  "title": "yield from: pass a whole stream along",
+  "chapter": "Generators",
+  "concept": "yield from <iterable> re-emits every item that iterable produces, one at a time",
+  "mode": "import",
+  "why": "yield from is shorthand for a for-loop that yields each item, so chain forwards all of a then all of b without writing the inner loops by hand."
+}

@@ -7,9 +7,10 @@ explanation, write a few lines of code in your own editor, and run one command
 to check your answer. Get it right, and the next puzzle unlocks.
 
 It starts at the very beginning, `print("hello")`, and builds up gently
-through **90 puzzles in 9 chapters**: the basics, text, decisions and loops,
-lists and dictionaries, functions, handling errors, files, and classes. Each
-puzzle adds just one new idea, so you're never thrown in the deep end.
+through **98 puzzles in 10 chapters**: the basics, text, decisions and loops,
+lists and dictionaries, functions, handling errors, files, classes, and
+generators. Each puzzle adds just one new idea, so you're never thrown in the
+deep end.
 
 There's nothing to install and no complicated setup. If you have Python 3, or
 just a web browser (see **Run in a Codespace** below), you're ready, even if
@@ -21,8 +22,8 @@ you've never written code before.
 
 ## What you get
 
-- **90 bite-sized puzzles, one idea each**: from `print` all the way to
-  classes, in small steps you can actually keep up with.
+- **98 bite-sized puzzles, one idea each**: from `print` all the way to
+  generators, in small steps you can actually keep up with.
 - **Friendly, plain-English feedback**: when something's wrong, you get a
   clear note about *what* went wrong, not a wall of scary red error text.
 - **You can't fake it**: the checker runs your code and changes the numbers
@@ -299,12 +300,13 @@ pyquest/
 
 ## Roadmap
 
-The course currently ends at Chapter 9 (classes & objects). The engine was
-built ahead of the content, so the groundwork for what comes next is already in
+The course currently ends at Chapter 10 (generators). The engine was built
+ahead of the content, so the groundwork for what comes next is already in
 place:
 
-- **Generators, lambdas, and the standard library.** Construct checks for
-  `yield`, `lambda`, and per-module `import` are staged for these chapters.
+- **Lambdas and the standard library.** Construct checks for `lambda` and
+  per-module `import` are staged for these chapters (generators shipped in
+  Chapter 10, pairing `uses_yield` with the `is_generator` behavioral backstop).
 - **Randomized inputs everywhere.** The structured `Case` provider flow
   (see [ARCHITECTURE.md §8](docs/ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
   remaining fixed-input puzzles will migrate to it where it strengthens the

@@ -149,12 +149,18 @@ chain, an `elif` is AST-identical to `else: if`), `uses_default_param("greet")`
 generator-ness and crashes; a lambda's stand-in isn't callable). Alone they are
 sidesteppable, so back them with behavior:
 
-- **Generators** (`yield`): pair `uses_yield` with `T.is_generator(T.call(...))`
-  — the return value must be a live generator, not a pre-built list. A list with
-  a dead `yield` fails `is_generator`; a bare generator expression passes
-  `is_generator` but fails `uses_yield`; together they force a real
-  yield-driven generator. If the lesson is *laziness*, probe it (e.g. `islice`
-  an effectively endless source) rather than materializing the whole thing.
+- **Generators** (`yield`): pair `uses_yield("fn")` with
+  `T.is_generator(T.call(...))` — the return value must be a live generator, not
+  a pre-built list. A list with a dead `yield` fails `is_generator`; a bare
+  generator expression passes `is_generator` but fails `uses_yield`; together
+  they force a real yield-driven generator. **Pass the function name**:
+  `uses_yield("fn")` requires the yield in *that function's own body*, because
+  bare `uses_yield()` is file-level — a genexpr-returning solution can satisfy
+  it with a decoy `yield` parked in an unrelated (or nested) function and still
+  pass `is_generator` (the Ch10 hole the sidestep playbook found; pinned by the
+  per-puzzle `dodges.py` and the `uses_yield_scoped` engine self-test). If the
+  lesson is *laziness*, probe it (e.g. `islice` an effectively endless source)
+  rather than materializing the whole thing.
 - **Lambdas** (`lambda`): a lambda and a `def` compile to identical callables,
   so there is no behavioral tell — pin the *context* instead. Require it where
   the inline form is the point (`sorted(xs, key=lambda ...)`) via `uses_lambda`

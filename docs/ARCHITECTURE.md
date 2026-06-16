@@ -277,7 +277,8 @@ code and raises *translated* failures, so messages stay friendly.
   opened by the `with`, not merely some live `with` elsewhere),
   `T.uses_import(module)`, `T.uses_class(name)` (name the class the tests
   instantiate; AST-only for object puzzles, which have no tape, see runners.py),
-  `T.uses_yield`, `T.uses_lambda` (`yield`/`lambda` staged for later chapters),
+  `T.uses_yield` (live in Chapter 10, generators), `T.uses_lambda` (`lambda`
+  staged for a later chapter),
   `T.source()`. Require the *kind* of construct, not one exact spelling, so
   legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s,
   and `uses_boolop()` accepts a De Morgan `not(a or b)` for an `and`). The
@@ -307,13 +308,18 @@ code and raises *translated* failures, so messages stay friendly.
   crashes callers), `uses_lambda` (a sentinel stand-in isn't callable), and
   `uses_default_param` (a default may legitimately go unexercised). For these,
   "dead-code chaff defeats it", a never-called function containing a lambda /
-  yield / default would satisfy the AST scan. The backstop is the sidestep
-  audit plus behavioral traps, but that can only catch a real hole once a
-  Ch8+ puzzle actually uses one of these. So when you write the first puzzle
-  on generators, lambdas, or default params, do **not** lean on the construct
-  check alone: pair it with behavior that forces the construct to run (call the
-  generator and assert it streams; call the default-using function both ways)
-  and pin a `dodges.py` chaff entry.
+  yield / default would satisfy a *file-level* AST scan. Two backstops: (a)
+  **scope the check to the lesson's function** -- `uses_yield(name)`,
+  `uses_class(name)`, `uses_default_param(name)` require the construct in *that*
+  function's own body, so a decoy parked in an unrelated (or nested) function no
+  longer counts; and (b) the sidestep audit plus behavioral traps. So when you
+  write a puzzle on generators, lambdas, or default params, do **not** lean on a
+  bare construct check: scope it by name, pair it with behavior that forces the
+  construct to run (call the generator and assert it streams via
+  `is_generator`; call the default-using function both ways), and pin a
+  `dodges.py` chaff entry. Ch10 (generators) does exactly this -- the file-level
+  `uses_yield()` was breachable by a genexpr target plus a decoy yield, closed
+  by `uses_yield("fn")` and pinned dodges (the `uses_yield_scoped` self-test).
 - **Prescribed expressions (fixed-output puzzles):** a puzzle with no input
   can never randomize, and liveness can't tell `print(7*2)` from
   `print(2+3*4)`, both compute. Where the lesson IS a specific expression,

@@ -1,0 +1,8 @@
+{
+  "id": "10.5",
+  "title": "filter while you yield",
+  "chapter": "Generators",
+  "concept": "Put yield behind an if to filter a stream as it flows, emitting only the items that match",
+  "mode": "import",
+  "why": "The loop visits every item but the guarded yield only fires when the condition holds, so evens streams just the matching values without building an intermediate list."
+}
