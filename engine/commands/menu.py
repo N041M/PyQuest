@@ -25,6 +25,12 @@ _INLINE = {"help": lambda pz, by, pr: cmd_help(pr),
 # line cancels too. `_leaving` keeps the check identical everywhere.
 _BACK = ("0", "back", "quit", "exit")
 
+# Settings verbs the hub accepts typed by name (numbers 1-6 are claimed by the
+# hub's own menu, so only the settings PANE passes the 1-4 aliases that
+# _settings_action also understands).
+_SETTINGS_VERBS = ("theme", "mode", "profiles", "profile", "users", "user",
+                   "shortcuts", "short")
+
 
 def _leaving(answer):
     return not answer or answer.strip().lower() in _BACK
@@ -91,15 +97,8 @@ def cmd_menu(puzzles, by_id, prog):
             prog = _menu_setup(puzzles, by_id, prog)
         # The settings verbs still work typed straight at the hub, with an arg,
         # for anyone who knows them -- they're just no longer numbered up front.
-        elif head in ("theme",):
-            cmd_theme(arg.lower()) if arg else _menu_theme()
-        elif head in ("mode",):
-            cmd_mode(prog, arg) if arg else _menu_mode(prog)
-        elif head in ("profiles", "profile", "users", "user"):
-            prog = (cmd_user(arg, puzzles, by_id, prog) if arg
-                    else _menu_users(puzzles, by_id, prog))
-        elif head in ("shortcuts", "short"):
-            _menu_shortcuts()
+        elif head in _SETTINGS_VERBS:
+            _, prog = _settings_action(head, arg, puzzles, by_id, prog)
         # -- leave (the rule: 0 always backs out / quits) --
         elif head in _BACK or head == "q":
             print(PAD + paint("see you in the terminal -- solve with  "
@@ -168,6 +167,28 @@ def _menu_options(puzzles, by_id, prog):
     print(PAD + paint("pick a number, type a verb, or  help", "gray"))
 
 
+def _settings_action(head, arg, puzzles, by_id, prog):
+    """Run one settings verb -- theme / mode / profiles / shortcuts -- with an
+    optional arg, falling back to that verb's picker when no arg is given.
+
+    The single dispatch shared by the hub (where the verbs are typed by name)
+    and the settings pane (where they're picked by number), so the mapping lives
+    in one place instead of two that can drift. Returns (handled, prog); handled
+    is False when `head` names no settings verb."""
+    if head in ("1", "theme"):
+        cmd_theme(arg.lower()) if arg else _menu_theme()
+    elif head in ("2", "mode"):
+        cmd_mode(prog, arg) if arg else _menu_mode(prog)
+    elif head in ("3", "profiles", "profile", "users", "user"):
+        prog = (cmd_user(arg, puzzles, by_id, prog) if arg
+                else _menu_users(puzzles, by_id, prog))
+    elif head in ("4", "shortcuts", "short"):
+        _menu_shortcuts()
+    else:
+        return False, prog
+    return True, prog
+
+
 def _menu_setup(puzzles, by_id, prog):
     """The folded set-up pane: theme, mode, profiles, shortcuts behind one menu
     entry. Stays open until 0/back. Returns prog (the profile pane can swap it)."""
@@ -197,16 +218,8 @@ def _menu_setup(puzzles, by_id, prog):
         parts = raw.split(None, 1)
         head = parts[0].lower()
         arg = parts[1] if len(parts) > 1 else ""
-        if head in ("1", "theme"):
-            cmd_theme(arg.lower()) if arg else _menu_theme()
-        elif head in ("2", "mode"):
-            cmd_mode(prog, arg) if arg else _menu_mode(prog)
-        elif head in ("3", "profiles", "profile", "users", "user"):
-            prog = (cmd_user(arg, puzzles, by_id, prog) if arg
-                    else _menu_users(puzzles, by_id, prog))
-        elif head in ("4", "shortcuts", "short"):
-            _menu_shortcuts()
-        else:
+        handled, prog = _settings_action(head, arg, puzzles, by_id, prog)
+        if not handled:
             print(PAD + paint("type 1-4, or 0 to go back.", "yellow"))
 
 
