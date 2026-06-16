@@ -64,3 +64,22 @@ users()    { _pyquest user "$@"; }
 # profile`), so the bare verb is harmless. No clash with any system command, so
 # unlike the old `reset` it needs no context-aware wrapper.
 wipe()     { _pyquest wipe "$@"; }
+
+# --- tab completion ----------------------------------------------------------
+# Candidate lists come from `start.py __complete`, so they never drift. Only
+# wires up if zsh's completion system is loaded (compdef present).
+if whence compdef >/dev/null 2>&1; then
+    _pq_complete() {
+        local prev="${words[CURRENT-1]}"
+        local -a cands
+        case "$prev" in
+            goto|load)  cands=(${(f)"$(_pyquest __complete ids)"}) ;;
+            theme)      cands=(${(f)"$(_pyquest __complete themes)"}) ;;
+            user|users) cands=(delete rename ${(f)"$(_pyquest __complete users)"}) ;;
+            wipe)       cands=(profile) ;;
+            *)          cands=(${(f)"$(_pyquest __complete verbs)"}) ;;
+        esac
+        compadd -- $cands
+    }
+    compdef _pq_complete pq start pyquest goto load theme user users wipe
+fi

@@ -100,4 +100,21 @@ function uninstall {
     'Removed the PyQuest shortcuts (from your profile and this terminal).'
 }
 
+# --- tab completion ----------------------------------------------------------
+# Candidate lists come from `start.py __complete`, so they never drift.
+$PyQuestCompleter = {
+    param($wordToComplete, $commandAst, $cursorPosition)
+    $name = $commandAst.CommandElements[0].Value
+    switch ($name) {
+        { $_ -in 'goto', 'load' }  { $items = @(_pyquest __complete ids) }
+        'theme'                    { $items = @(_pyquest __complete themes) }
+        { $_ -in 'user', 'users' } { $items = @('delete', 'rename') + @(_pyquest __complete users) }
+        'wipe'                     { $items = @('profile') }
+        default                    { $items = @(_pyquest __complete verbs) }
+    }
+    $items | Where-Object { $_ -and $_ -like "$wordToComplete*" } |
+        ForEach-Object { [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_) }
+}
+Register-ArgumentCompleter -CommandName pq, pyquest, start, goto, load, theme, user, users, wipe -ScriptBlock $PyQuestCompleter
+
 Write-Host 'PyQuest shortcuts loaded. Try:  pq   (or check, hint, map, next, ...)'

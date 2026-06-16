@@ -138,6 +138,11 @@ the folder actually lives:
 The shortcuts file resolves its own location, so once that line points at it
 you can move or rename the PyQuest folder without editing anything inside it.
 
+Once the shortcuts are loaded, **Tab completion** comes with them: `goto <Tab>`
+lists puzzle ids, `theme <Tab>` the themes, `user <Tab>` your profiles, and a
+bare `pq <Tab>` (or `start <Tab>`) the verbs. The candidate lists are generated
+from the live course, so they never go stale.
+
 ### Windows (PowerShell)
 
 On Windows the same shortcuts ship as a PowerShell script. From the PyQuest

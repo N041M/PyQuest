@@ -15,7 +15,25 @@ from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
                        cmd_theme, cmd_user, cmd_wipe, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall,
                        cmd_menu, cmd_help)
-from .commands.registry import canonical, NEEDS_PUZZLE, suggest
+from .commands.registry import canonical, NEEDS_PUZZLE, suggest, _all_names
+
+
+def _emit_completions(what, puzzles):
+    """Print one candidate per line for shell tab-completion. Sourced by the
+    completion functions in shell/, so the candidate lists never drift from the
+    real verbs/ids/themes/profiles. A hidden helper -- not a learner command."""
+    kind = what[0] if what else "verbs"
+    if kind == "ids":
+        items = [p["id"] for p in puzzles]
+    elif kind == "themes":
+        from .theme import THEME_NAMES
+        items = list(THEME_NAMES)
+    elif kind == "users":
+        from .state import list_users
+        items = list_users()
+    else:
+        items = sorted(set(_all_names()))
+    print("\n".join(items))
 
 
 def main():
@@ -24,6 +42,11 @@ def main():
         print("No puzzles found under %s" % rel(CHAPTERS_DIR))
         return
     by_id = {p["id"]: p for p in puzzles}
+    # Hidden shell-completion hook: emit candidates and exit before any side
+    # effects (no workspace seeding, no greeting). Never a learner-facing verb.
+    if sys.argv[1:2] == ["__complete"]:
+        _emit_completions(sys.argv[2:], puzzles)
+        return
     migrate_legacy()                 # seed users/ and move any legacy root files
     prog, fresh = load_progress(puzzles)
     prog.setdefault("mode", "normal")

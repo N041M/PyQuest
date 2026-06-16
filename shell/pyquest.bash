@@ -63,3 +63,16 @@ users()    { _pyquest user "$@"; }
 # profile`), so the bare verb is harmless. No clash with any system command, so
 # unlike the old `reset` it needs no context-aware wrapper.
 wipe()     { _pyquest wipe "$@"; }
+
+# --- tab completion ----------------------------------------------------------
+# Candidate lists come from `start.py __complete` so they never drift from the
+# real verbs / puzzle ids / themes / profiles.
+_pq_verbs()  { COMPREPLY=($(compgen -W "$(_pyquest __complete verbs)"  -- "${COMP_WORDS[COMP_CWORD]}")); }
+_pq_ids()    { COMPREPLY=($(compgen -W "$(_pyquest __complete ids)"    -- "${COMP_WORDS[COMP_CWORD]}")); }
+_pq_themes() { COMPREPLY=($(compgen -W "$(_pyquest __complete themes)" -- "${COMP_WORDS[COMP_CWORD]}")); }
+_pq_users()  { COMPREPLY=($(compgen -W "delete rename $(_pyquest __complete users)" -- "${COMP_WORDS[COMP_CWORD]}")); }
+complete -F _pq_verbs  pq start pyquest
+complete -F _pq_ids    goto load
+complete -F _pq_themes theme
+complete -F _pq_users  user users
+complete -W profile    wipe

@@ -44,6 +44,11 @@ the `menu` when no puzzle is loaded), and on an unknown verb suggest the closest
 match. Adding a
 verb = one `elif` here + one function in `commands/` + one registry row.
 
+One hidden hook short-circuits before all of this: `__complete <kind>` prints
+candidate verbs/ids/themes/profiles, one per line, and exits with no side
+effects. It is not a learner verb (not in the registry); the shell completion
+functions call it so their lists never drift from the live course.
+
 The two ways in -- a cold bare launch versus running a verb -- and how a
 session folds back into dispatch:
 
