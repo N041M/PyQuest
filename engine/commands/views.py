@@ -6,11 +6,12 @@ bumps its own counter). They compose state + content + render via the shared
 """
 
 import os
+import datetime
 
 from ..config import WIDTH, rel
 from ..content import load_hints
 from ..state import (current_puzzle, save_progress, stat, lexicon_path,
-                     write_lexicon)
+                     write_lexicon, current_user)
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
                       pane_open, legend, PAD, STAR, ARROW)
 from .cards import print_current_card, chapter_tree, nav_strip
@@ -53,6 +54,71 @@ def cmd_map(puzzles, by_id, prog):
     chapter_tree(puzzles, prog, pickable=False)
     print("")
     print(legend())
+    print("")
+    nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
+
+
+def _parse_iso(value):
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.datetime.fromisoformat(value)
+    except ValueError:
+        return None
+
+
+def _when(value):
+    """A human date for a stored ISO timestamp, with a relative tail. Falls back
+    to a dash when the field was never set (a fresh profile's last_seen)."""
+    dt = _parse_iso(value)
+    if dt is None:
+        return paint("--", "gray")
+    days = (datetime.datetime.now() - dt).days
+    rel = "today" if days <= 0 else "yesterday" if days == 1 else "%d days ago" % days
+    return paint(dt.strftime("%Y-%m-%d"), "white") + paint("   %s" % rel, "gray")
+
+
+def cmd_stats(puzzles, by_id, prog):
+    """The numbers already kept per puzzle, surfaced: attempts, hints, clean
+    first-try solves, and per-chapter completion. A read verb -- it touches
+    nothing, just reflects progress.json back to the learner."""
+    done = len(prog["completed"])
+    total = len(puzzles)
+    st = prog.get("stats", {})
+    attempts = sum(s.get("attempts", 0) for s in st.values())
+    hints = sum(s.get("hints_used", 0) for s in st.values())
+    clean = sum(1 for pid in prog["completed"]
+                if st.get(pid, {}).get("attempts", 0) <= 1
+                and st.get(pid, {}).get("hints_used", 0) == 0)
+
+    print(pane_open("stats · %s" % current_user(), prog["mode"], done, total))
+    print("")
+    print(field("since", _when(prog.get("created_at"))))
+    print(field("active", _when(prog.get("last_seen"))))
+    print(field("solved", paint("%d of %d" % (done, total), "bcyan", "bold")))
+    print(field("tries", paint(str(attempts), "white")
+                + paint("   check runs across all puzzles", "gray")))
+    print(field("hints", paint(str(hints), "white")
+                + paint("   hints revealed", "gray")))
+    if done:
+        print(field("clean", paint(str(clean), "green", "bold")
+                    + paint("   solved first try, no hints", "gray")))
+    print("")
+    print(header("by chapter", "cyan"))
+    print("")
+    chs = {}
+    for p in puzzles:
+        c = chs.setdefault(p["ch_num"],
+                           {"title": p["ch_title"], "done": 0, "total": 0})
+        c["total"] += 1
+        if p["id"] in prog["completed"]:
+            c["done"] += 1
+    for ch in sorted(chs):
+        c = chs[ch]
+        print(PAD + " %s  %s   %s"
+              % (paint("%d" % ch, "byellow", "bold"),
+                 bar(c["done"], c["total"], 16),
+                 paint(c["title"], "white")))
     print("")
     nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
 

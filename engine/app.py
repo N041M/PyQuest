@@ -8,8 +8,8 @@ from .state import (load_progress, current_puzzle, ensure_workspace,
                     load_answers, migrate_legacy)
 from .render import paint, cli, STAR, NO, PAD
 from .checker import cmd_check
-from .commands import (cmd_status, cmd_map, cmd_hint, cmd_solution, cmd_lexicon,
-                       cmd_next,
+from .commands import (cmd_status, cmd_map, cmd_stats, cmd_hint, cmd_solution,
+                       cmd_lexicon, cmd_next,
                        cmd_goto, cmd_skip, cmd_retry, cmd_revert, cmd_mode,
                        cmd_theme, cmd_user, cmd_reset, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall, cmd_begin,
@@ -75,6 +75,8 @@ def main():
         cmd_solution(puzzles, by_id, prog)
     elif cmd == "map":
         cmd_map(puzzles, by_id, prog)
+    elif cmd == "stats":
+        cmd_stats(puzzles, by_id, prog)
     elif cmd == "lexicon":
         cmd_lexicon(puzzles, by_id, prog, arg)
     elif cmd == "next":
@@ -92,7 +94,9 @@ def main():
     elif cmd == "theme":
         cmd_theme(arg)
     elif cmd == "user":
-        prog = cmd_user(arg, puzzles, by_id, prog)
+        # pass the whole tail so `user rename <old> <new>` and `user delete
+        # <name>` reach the subcommand parser, not just the first token
+        prog = cmd_user(" ".join(args[1:]), puzzles, by_id, prog)
     elif cmd == "reset":
         cmd_reset(puzzles, prog, arg)
     elif cmd == "export":

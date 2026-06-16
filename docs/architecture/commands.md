@@ -9,7 +9,7 @@ they go through [render/theme](visuals.md). ← [overview](README.md)
 flowchart TB
     app["app.py «dispatch»"] --> registry["registry «verb table»"]
     app --> init["commands/__init__ «facade»"]
-    init --> views["views «status/map/hint/solution/lexicon»"]
+    init --> views["views «status/map/stats/hint/solution/lexicon»"]
     init --> nav["navigate «goto/next/skip/retry/revert»"]
     init --> profiles["profiles «theme/mode/user/reset»"]
     init --> transfer["transfer «export/import»"]
@@ -27,7 +27,7 @@ flowchart TB
     help --> registry
 ```
 
-The hub runs the read‑only inspection verbs (`help`/`status`/`map`) and `mode`
+The hub runs the read‑only inspection verbs (`help`/`status`/`map`/`stats`) and `mode`
 in place, hence `menu → views`/`help`; the puzzle‑solving verbs still route the
 learner to "pick 1 to start".
 
@@ -66,7 +66,7 @@ classDiagram
     }
     class views {
         <<module>>
-        +cmd_status / cmd_map
+        +cmd_status / cmd_map / cmd_stats
         +cmd_hint / cmd_solution
         +cmd_lexicon(...,arg)  "writes lexicon.md: reached vs full"
     }
@@ -78,9 +78,10 @@ classDiagram
     class profiles {
         <<module>>
         +cmd_theme(arg) / cmd_mode(prog, arg)
-        +cmd_user(arg, puzzles, by_id, prog)
+        +cmd_user(arg,...)  "switch/create · delete · rename"
         +cmd_reset(puzzles, prog, arg)
         -_swatch() / _user_count(...)
+        -_user_delete(...) / _user_rename(...)
     }
     class transfer {
         <<module>>
@@ -110,7 +111,7 @@ classDiagram
     menu ..> cards
     menu ..> profiles
     menu ..> shortcuts
-    menu ..> views : run help/status/map inline
+    menu ..> views : run help/status/map/stats inline
     menu ..> help
     menu ..> registry : canonical · gate
     cards ..> registry : NAV_CLUSTERS + NEEDS_PUZZLE

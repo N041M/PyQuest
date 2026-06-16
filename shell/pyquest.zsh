@@ -30,8 +30,8 @@ uninstall() {
     _pyquest uninstall "$@"
     echo "  shortcuts cleared from this terminal too."
     unset -f start pq pyquest begin menu back status help setup lexicon ref \
-        check hint solution map next goto load skip retry replay revert mode \
-        theme user users reset _pyquest uninstall 2>/dev/null
+        check hint solution map stats score next goto load skip retry replay \
+        revert mode theme user users reset _pyquest uninstall 2>/dev/null
 }
 status()   { _pyquest status "$@"; }
 help()     { _pyquest help "$@"; }   # PyQuest's command list (overrides while sourced)
@@ -42,6 +42,8 @@ check()    { _pyquest check "$@"; }
 hint()     { _pyquest hint "$@"; }
 solution() { _pyquest solution "$@"; }
 map()      { _pyquest map "$@"; }
+stats()    { _pyquest stats "$@"; }   # your attempts, hints, per-chapter progress
+score()    { _pyquest stats "$@"; }
 next()     { _pyquest next "$@"; }
 goto()     { _pyquest goto "$@"; }
 load()     { _pyquest load "$@"; }

@@ -701,6 +701,33 @@ def _engine_selftest():
         for bad in ("../evil", "/tmp/x", "a b", "", ".", "x" * 33, "a.b"):
             assert not valid_username(bad), "%r should be rejected" % bad
 
+    def t_user_lifecycle():
+        # delete/rename move whole profile folders; pin both, plus their
+        # refusals (missing source, occupied target). Uses clearly-namespaced
+        # throwaway profiles and cleans up, so it never touches real users.
+        import shutil
+        from engine.state import (delete_user, rename_user, list_users,
+                                  ensure_user, user_dir)
+        a, b = "_selftest_a", "_selftest_b"
+        for n in (a, b):
+            if os.path.isdir(user_dir(n)):
+                shutil.rmtree(user_dir(n))
+        try:
+            ensure_user(a)
+            assert a in list_users()
+            assert rename_user(a, b)                  # a -> b
+            assert b in list_users() and a not in list_users()
+            assert not rename_user("_nope_", a)       # missing source refused
+            ensure_user(a)
+            assert not rename_user(b, a)              # occupied target refused
+            assert delete_user(a) and delete_user(b)
+            assert a not in list_users() and b not in list_users()
+            assert not delete_user(b)                 # already gone
+        finally:
+            for n in (a, b):
+                if os.path.isdir(user_dir(n)):
+                    shutil.rmtree(user_dir(n))
+
     def t_discover_tolerates_bad_meta():
         from engine.config import CHAPTERS_DIR
         from engine.content import discover
@@ -805,7 +832,8 @@ def _engine_selftest():
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,
                t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
-               t_username_validation, t_discover_tolerates_bad_meta,
+               t_username_validation, t_user_lifecycle,
+               t_discover_tolerates_bad_meta,
                t_command_registry, t_transfer_sanitize):
         case(fn.__name__[2:], fn)
 

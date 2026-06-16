@@ -51,6 +51,8 @@ function check     { _pyquest check @args }
 function hint      { _pyquest hint @args }
 function solution  { _pyquest solution @args }
 function map       { _pyquest map @args }
+function stats     { _pyquest stats @args }
+function score     { _pyquest stats @args }
 function next      { _pyquest next @args }
 function goto      { _pyquest goto @args }
 function load      { _pyquest load @args }
@@ -92,7 +94,7 @@ function uninstall {
             Where-Object { $_ -notmatch [regex]::Escape($PyQuestMark) } |
             Set-Content $PROFILE
     }
-    'pq pyquest begin menu back status help setup lexicon ref check hint solution map next goto load skip retry replay revert mode theme user users reset uninstall'.Split(' ') |
+    'pq pyquest begin menu back status help setup lexicon ref check hint solution map stats score next goto load skip retry replay revert mode theme user users reset uninstall'.Split(' ') |
         ForEach-Object { Remove-Item "Function:$_" -ErrorAction SilentlyContinue }
     'Removed the PyQuest shortcuts (from your profile and this terminal).'
 }

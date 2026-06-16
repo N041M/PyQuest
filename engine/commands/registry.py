@@ -24,6 +24,8 @@ VERBS = [
      "show progress and the current puzzle"),
     ("map",       "map",          (),                "always",
      "show the chapter/puzzle tree"),
+    ("stats",     "stats",        ("score",),        "always",
+     "your numbers: attempts, hints, per-chapter completion"),
     ("lexicon",   "lexicon",      ("ref",),          "always",
      "syntax & tips you've reached (lexicon all for the full reference)"),
     ("check",     "check",        (),                "puzzle",

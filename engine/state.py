@@ -75,6 +75,29 @@ def ensure_user(user=None):
     os.makedirs(user_dir(user), exist_ok=True)
 
 
+def delete_user(name):
+    """Remove a profile's folder and everything in it (progress, answers, the
+    workspace, the lexicon). Returns True if a directory was removed. The caller
+    validates the name and guards against deleting the active profile."""
+    d = user_dir(name)
+    if not os.path.isdir(d):
+        return False
+    shutil.rmtree(d)
+    return True
+
+
+def rename_user(old, new):
+    """Rename a profile folder old -> new, preserving everything inside.
+    Returns True on success. The caller validates both names and that `new`
+    does not already exist; repointing settings.json at the active user is the
+    caller's job too."""
+    src, dst = user_dir(old), user_dir(new)
+    if not os.path.isdir(src) or os.path.exists(dst):
+        return False
+    os.rename(src, dst)
+    return True
+
+
 def migrate_legacy():
     """One-time: seed users/ and move any legacy root files into users/default/."""
     if os.path.isdir(USERS_DIR):
@@ -98,6 +121,7 @@ def default_progress(puzzles):
         "stats": {},
         "active": False,            # no puzzle is loaded into work.py yet
         "created_at": now(),
+        "last_seen": None,          # stamped when a puzzle is loaded (activate)
     }
 
 
@@ -235,6 +259,7 @@ def ensure_workspace(puzzle, answers, active=False):
 def activate(prog, puzzle, answers):
     """Load `puzzle` into work.py and mark the session active (a puzzle loaded)."""
     prog["active"] = True
+    prog["last_seen"] = now()       # "last sat down to work" -- read by stats
     if puzzle is not None:
         saved = answers.get(puzzle["id"], {}).get("code")
         write_work(saved if saved else read_starter(puzzle))
@@ -253,6 +278,7 @@ def switch_to(target, prog, by_id, puzzles, answers, unlock=False):
         archive_work(cur, answers)        # don't archive the welcome placeholder
     prog["current"] = target["id"]
     prog["active"] = True
+    prog["last_seen"] = now()
     if unlock and target["index"] > prog["highest"]:
         prog["highest"] = target["index"]
     saved = answers.get(target["id"], {}).get("code")

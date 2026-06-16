@@ -124,8 +124,8 @@ toolkit/      the T object handed to each tests.py. "The tester." A package
 checker.py    orchestrates one check: load tests, build T, run check()/bonus(),
               translate failures into their categories (a missed construct
               check renders its own "so close" screen), render pass/fail.
-commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
-              mode, reset, help), compose state + content + render + checker.
+commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
+              solution, mode, reset, help), compose state + content + render + checker.
               A package split by concern, like toolkit/; internal dependencies
               point down and `__init__.py` re-exports every cmd_* as a facade so
               the import path `engine.commands` and the dispatcher stay frozen:
@@ -140,13 +140,16 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                               goto/advance helpers (the layer the loop verbs and
                               the menu both build on)
                 views.py      the read verbs (show, never move you): status,
-                              map, hint, solution, lexicon (writes a per-user
+                              map, stats (per-chapter completion + attempts/
+                              hints/clean-solves read back from progress.json),
+                              hint, solution, lexicon (writes a per-user
                               syntax/tips markdown file from each puzzle's
                               `concept` -- reached vs full -- and links to it;
                               no separate authoring, never drifts)
                 navigate.py   navigation + workspace reset: goto, next, skip,
                               retry, revert
-                profiles.py   settings: theme, mode, user, reset
+                profiles.py   settings: theme, mode, user (switch/create plus
+                              the delete/rename subcommands), reset
                 transfer.py   export, import: portable profile bundles
                               (serialize + validate against current content)
                 shortcuts.py  the ~/.zshrc shortcuts installer -- the only part
@@ -156,8 +159,8 @@ commands/     the verbs (status, map, goto, next, skip, retry, hint, solution,
                 menu.py       the interactive launcher (begin / menu), the one
                               interactive surface (§3 invariant 8a); sits on top
                               of cards + profiles + shortcuts, and runs the
-                              read-only inspection verbs (help/status/map) +
-                              mode inline via views + help
+                              read-only inspection verbs (help/status/map/stats)
+                              + mode inline via views + help
 app.py        argv dispatch + main().
 session.py    cold-start launcher: detect the shell, host a session with the
               shortcuts loaded, open the menu. The one place that spawns a

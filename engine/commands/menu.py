@@ -10,7 +10,7 @@ from ..state import current_puzzle, activate, load_answers, current_user
 from ..render import paint, wordmark, header, pane_open, cli, PAD
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user, cmd_mode
-from .views import cmd_status, cmd_map, cmd_lexicon
+from .views import cmd_status, cmd_map, cmd_stats, cmd_lexicon
 from .help import cmd_help
 from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 
@@ -18,7 +18,8 @@ from .registry import canonical, CANONICAL, NEEDS_PUZZLE
 # rather than kicking the learner out to a terminal.
 _INLINE = {"help": lambda pz, by, pr: cmd_help(pr),
            "status": lambda pz, by, pr: cmd_status(pz, by, pr),
-           "map": lambda pz, by, pr: cmd_map(pz, by, pr)}
+           "map": lambda pz, by, pr: cmd_map(pz, by, pr),
+           "stats": lambda pz, by, pr: cmd_stats(pz, by, pr)}
 from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
                         cmd_setup_persist, cmd_uninstall)
 
@@ -135,7 +136,7 @@ def _menu_options(puzzles, by_id, prog):
     item("6", "quit")
     print("")
     print(PAD + paint("pick a number, or type a command "
-                      "(help · lexicon · map · mode hard)", "gray"))
+                      "(help · lexicon · map · stats · mode hard)", "gray"))
 
 
 def _menu_level(puzzles, by_id, prog):
@@ -173,9 +174,10 @@ def _menu_theme():
 def _menu_users(puzzles, by_id, prog):
     # Stay in the users menu until a blank line (cancel).
     while True:
-        cmd_user("", puzzles, by_id, prog)          # list users
+        cmd_user("", puzzles, by_id, prog)          # list users + management help
         try:
-            c = input(PAD + paint("user name (blank = back) > ", "cyan",
+            c = input(PAD + paint("name to switch · 'rename a b' · "
+                                  "'delete a' (blank = back) > ", "cyan",
                                   "bold")).strip()
         except (EOFError, KeyboardInterrupt):
             return prog
@@ -183,6 +185,8 @@ def _menu_users(puzzles, by_id, prog):
             return prog
         if c.lower().startswith("user "):           # forgive "user alice"
             c = c[5:].strip()
+        # cmd_user parses bare names plus the delete/rename subcommands, so the
+        # raw line goes straight through -- the pane is a full profile manager.
         prog = cmd_user(c, puzzles, by_id, prog)
 
 

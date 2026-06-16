@@ -202,6 +202,7 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py hint` | reveal the next hint (three per puzzle, escalating) |
 | `python3 start.py solution` | show the reference solution and why it works |
 | `python3 start.py map` | show the chapter/puzzle tree with progress |
+| `python3 start.py stats` | your numbers: attempts, hints, clean first-try solves, per-chapter completion (`score` alias) |
 | `python3 start.py lexicon` | write a syntax & tips markdown file and link you to it — what you've reached (`lexicon all` for the whole language; `ref` alias) |
 | `python3 start.py next` | move on to the next puzzle |
 | `python3 start.py goto` | pick a puzzle from a list (`goto 2` = first open puzzle of chapter 2) |
@@ -213,6 +214,8 @@ umbrella — `start export` — since the shell owns a bare `export`).
 | `python3 start.py mode easy` | set difficulty: `easy` \| `normal` \| `hard` |
 | `python3 start.py theme amber` | switch colour theme (or add your own in `themes/`) |
 | `python3 start.py user alice` | switch or create a profile |
+| `python3 start.py user rename alice bob` | rename a profile, keeping its progress |
+| `python3 start.py user delete bob` | delete a profile (not the active one — switch away first) |
 | `python3 start.py setup` | enable the short commands (local or persistent) |
 | `python3 start.py uninstall` | remove the persistent shortcuts again |
 | `python3 start.py reset` | wipe progress, saved answers, and workspaces |
@@ -240,6 +243,12 @@ and `goto 1.1` brings back exactly what you wrote there. All saves are atomic.
 hints used (`progress.json`), all saved code (`answers.json`), and the
 workspace files, which are regenerated from their starters. Your difficulty
 mode is preserved. After a reset you are genuinely back to a blank puzzle 1.1.
+
+Each profile is its own folder under `users/`. `user <name>` switches or
+creates one, `user rename <old> <new>` renames a profile keeping its progress,
+and `user delete <name>` removes one (the active profile is protected — switch
+away first). `stats` reflects any profile's numbers back at you: attempts,
+hints, clean first-try solves, and per-chapter completion.
 
 ## Project layout
 

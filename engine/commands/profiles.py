@@ -14,8 +14,8 @@ from ..state import (current_puzzle, load_answers, archive_current,
                      save_progress, load_progress, default_progress,
                      ensure_workspace, answers_path, progress_path,
                      list_users, current_user, ensure_user, valid_username,
-                     write_work, WELCOME_WORK)
-from ..render import paint, header, cli, PAD, OK, ARROW
+                     delete_user, rename_user, write_work, WELCOME_WORK)
+from ..render import paint, header, cli, PAD, OK, NO, ARROW
 
 
 # ---- themes ---------------------------------------------------------------
@@ -62,7 +62,8 @@ def _user_count(user, puzzles):
 
 def cmd_user(arg, puzzles, by_id, prog):
     cur = current_user()
-    if not arg:
+    tokens = (arg or "").split()
+    if not tokens:
         print(header("users", "cyan"))
         print("")
         for u in (list_users() or [cur]):
@@ -75,8 +76,27 @@ def cmd_user(arg, puzzles, by_id, prog):
         print("")
         print(PAD + paint("switch or create with  " + cli("user <name>"),
                           "gray"))
+        print(PAD + paint("rename  " + cli("user rename <old> <new>")
+                          + "      delete  " + cli("user delete <name>"),
+                          "gray"))
         return prog
-    name = arg.strip()
+    # `delete`/`rename` are management subcommands, not profile names (names
+    # never contain spaces, so a multi-token arg is always one of these or a
+    # typo). A profile literally named "delete"/"rename" is the price of the
+    # keywords -- a deliberate, documented trade.
+    sub = tokens[0].lower()
+    if sub in ("delete", "remove", "rm"):
+        return _user_delete(tokens[1] if len(tokens) > 1 else "", prog)
+    if sub in ("rename", "mv"):
+        return _user_rename(tokens[1] if len(tokens) > 1 else "",
+                            tokens[2] if len(tokens) > 2 else "", prog)
+    if len(tokens) > 1:
+        print(PAD + paint("'%s' can't be a profile name (no spaces)." % arg,
+                          "yellow"))
+        print(PAD + "To manage profiles:  %s  ·  %s"
+              % (cli("user rename <old> <new>"), cli("user delete <name>")))
+        return prog
+    name = tokens[0]
     if not valid_username(name):
         print(PAD + paint("'%s' can't be a profile name." % name, "yellow"))
         print(PAD + "Names become folders under users/, so use only letters,")
@@ -98,6 +118,54 @@ def cmd_user(arg, puzzles, by_id, prog):
     word = "created and switched to" if creating else "switched to"
     print(paint("  %s %s '%s'." % (ARROW, word, name), "cyan", "bold"))
     return newprog
+
+
+def _user_delete(name, prog):
+    """Remove a profile and all its files. Refuses the active profile (switch
+    away first) so the engine is never left pointing at a folder that's gone."""
+    cur = current_user()
+    if not name:
+        print(PAD + paint("usage:  " + cli("user delete <name>"), "yellow"))
+        return prog
+    if not valid_username(name) or name not in list_users():
+        print(paint("  %s No profile '%s'." % (NO, name), "yellow"))
+        return prog
+    if name == cur:
+        print(paint("  %s '%s' is the active profile." % (NO, name), "yellow"))
+        print(PAD + "Switch to another first:  %s" % cli("user <other>"))
+        return prog
+    delete_user(name)
+    print(paint("  %s Deleted profile '%s' and all its progress." % (OK, name),
+                "green", "bold"))
+    return prog
+
+
+def _user_rename(old, new, prog):
+    """Rename a profile, keeping its progress/answers. If it's the active one,
+    repoint settings.json so the learner stays put under the new name."""
+    if not old or not new:
+        print(PAD + paint("usage:  " + cli("user rename <old> <new>"),
+                          "yellow"))
+        return prog
+    if not valid_username(old) or old not in list_users():
+        print(paint("  %s No profile '%s'." % (NO, old), "yellow"))
+        return prog
+    if not valid_username(new):
+        print(PAD + paint("'%s' can't be a profile name." % new, "yellow"))
+        print(PAD + "Use only letters, digits, dashes, or underscores "
+              "(up to 32 characters).")
+        return prog
+    if new == old:
+        print(PAD + paint("'%s' is already its name." % old, "gray"))
+        return prog
+    if new in list_users():
+        print(paint("  %s Profile '%s' already exists." % (NO, new), "yellow"))
+        return prog
+    rename_user(old, new)
+    if old == current_user():
+        set_setting("user", new)
+    print(paint("  %s Renamed '%s' to '%s'." % (OK, old, new), "green", "bold"))
+    return prog
 
 
 def cmd_reset(puzzles, prog, arg=None):
