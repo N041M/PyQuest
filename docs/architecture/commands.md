@@ -9,7 +9,7 @@ they go through [render/theme](visuals.md). ← [overview](README.md)
 flowchart TB
     app["app.py «dispatch»"] --> registry["registry «verb table»"]
     app --> init["commands/__init__ «facade»"]
-    init --> views["views «status/map/stats/hint/solution/lexicon»"]
+    init --> views["views «status/map/stats/hint/solution/textbook»"]
     init --> nav["navigate «goto/next/skip/retry/revert»"]
     init --> profiles["profiles «theme/mode/user/reset»"]
     init --> transfer["transfer «export/import»"]
@@ -68,7 +68,7 @@ classDiagram
         <<module>>
         +cmd_status / cmd_map / cmd_stats
         +cmd_hint / cmd_solution
-        +cmd_lexicon(...,arg)  "writes lexicon.md: reached vs full"
+        +cmd_textbook(...,arg)  "writes textbook.md: reached vs full"
     }
     class navigate {
         <<module>>

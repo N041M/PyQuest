@@ -142,7 +142,7 @@ commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
                 views.py      the read verbs (show, never move you): status,
                               map, stats (per-chapter completion + attempts/
                               hints/clean-solves read back from progress.json),
-                              hint, solution, lexicon (writes a per-user
+                              hint, solution, textbook (writes a per-user
                               syntax/tips markdown file from each puzzle's
                               `concept` -- reached vs full -- and links to it;
                               no separate authoring, never drifts)

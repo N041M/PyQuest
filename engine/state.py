@@ -12,7 +12,7 @@ import sys
 import json
 import shutil
 
-from .config import (USERS_DIR, ROOT, WORK_FILENAME, LEXICON_FILENAME,
+from .config import (USERS_DIR, ROOT, WORK_FILENAME, TEXTBOOK_FILENAME,
                      load_settings, write_json, now)
 from .content import read_starter
 
@@ -77,7 +77,7 @@ def ensure_user(user=None):
 
 def delete_user(name):
     """Remove a profile's folder and everything in it (progress, answers, the
-    workspace, the lexicon). Returns True if a directory was removed. The caller
+    workspace, the textbook). Returns True if a directory was removed. The caller
     validates the name and guards against deleting the active profile."""
     d = user_dir(name)
     if not os.path.isdir(d):
@@ -208,15 +208,15 @@ def write_work(code):
         f.write(code)
 
 
-def lexicon_path():
-    return os.path.join(user_dir(), LEXICON_FILENAME)
+def textbook_path():
+    return os.path.join(user_dir(), TEXTBOOK_FILENAME)
 
 
-def write_lexicon(text):
-    """(Re)generate the per-user lexicon markdown the learner opens via a link.
+def write_textbook(text):
+    """(Re)generate the per-user textbook markdown the learner opens via a link.
     Owned by the engine like work.py -- regenerated on each summon."""
     ensure_user()
-    with open(lexicon_path(), "w") as f:
+    with open(textbook_path(), "w") as f:
         f.write(text)
 
 

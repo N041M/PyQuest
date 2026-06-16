@@ -10,8 +10,8 @@ import datetime
 
 from ..config import WIDTH, rel
 from ..content import load_hints
-from ..state import (current_puzzle, save_progress, stat, lexicon_path,
-                     write_lexicon, current_user)
+from ..state import (current_puzzle, save_progress, stat, textbook_path,
+                     write_textbook, current_user)
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
                       pane_open, legend, PAD, STAR, ARROW)
 from .cards import print_current_card, chapter_tree, nav_strip
@@ -186,10 +186,10 @@ def cmd_solution(puzzles, by_id, prog):
     nav_strip(prog, cur, puzzles)
 
 
-def cmd_lexicon(puzzles, by_id, prog, arg=None):
+def cmd_textbook(puzzles, by_id, prog, arg=None):
     """Summon the syntax/tips reference as a markdown file you open via a link.
-    Two states: bare `lexicon` writes only what the learner has reached;
-    `lexicon all` writes the whole language the course covers. Built from each
+    Two states: bare `textbook` writes only what the learner has reached;
+    `textbook all` writes the whole language the course covers. Built from each
     puzzle's `concept`, so it needs no separate authoring and never drifts."""
     full = (arg or "").strip().lower() in ("all", "full", "everything", "a", "*")
     total = len(puzzles)
@@ -206,42 +206,43 @@ def cmd_lexicon(puzzles, by_id, prog, arg=None):
         return started and (p["id"] == cur or p["index"] <= highest)
 
     shown = puzzles if full else [p for p in puzzles if reached(p)]
-    write_lexicon(_lexicon_md(shown, full, total))
+    write_textbook(_textbook_md(shown, full, total))
     where = ("the full reference" if full
              else "what you've reached -- %d of %d" % (len(shown), total)
              if shown else "nothing reached yet")
-    print(paint("  %s Lexicon ready: %s." % (ARROW, where), "magenta", "bold"))
-    print(field("read", paint(rel(lexicon_path()), "blue", "bold")
+    print(paint("  %s Textbook ready: %s." % (ARROW, where), "magenta", "bold"))
+    print(field("read", paint(rel(textbook_path()), "blue", "bold")
                 + paint("   open it in your editor", "gray")))
-    # `lexicon all` and `lexicon` write the same file, so the pair is a toggle:
+    # `textbook all` and `textbook` write the same file, so the pair is a toggle:
     # expand to the whole language, then revert to just what you've reached.
-    print(PAD + paint(("revert to just what you've reached:  " + cli("lexicon"))
+    print(PAD + paint(("revert to just what you've reached:  " + cli("textbook"))
                       if full else
-                      ("see the whole language:  " + cli("lexicon all")),
+                      ("see the whole language:  " + cli("textbook all")),
                       "gray"))
 
 
-def _lexicon_md(shown, full, total):
-    """Render the lexicon as structured markdown: per chapter, all the syntax
+def _textbook_md(shown, full, total):
+    """Render the textbook as structured markdown: per chapter, all the syntax
     bundled together, then all the tips. `concept` supplies the syntax line, the
     optional `why` the tip -- so it needs no separate authoring and never drifts.
 
     Built as a list, not a table: a `concept` can carry a literal `|` (e.g. the
     set-union operator), which a markdown table would split into a stray column.
     A list also reads cleanly raw, before any markdown renderer touches it."""
-    out = ["# PyQuest Lexicon", ""]
+    out = ["# PyQuest Textbook", ""]
     if full:
         out += ["*The whole language PyQuest covers -- every chapter, all %d "
-                "puzzles.*" % total,
-                "*Run `lexicon` to come back to just what you've reached.*"]
+                "topics.*" % total,
+                "*Run `textbook` to come back to just the chapters you've "
+                "reached.*"]
     elif shown:
-        out += ["*The syntax & tips you've reached so far -- %d of %d puzzles.*"
-                % (len(shown), total),
-                "*Run `lexicon all` for the whole language; `lexicon` brings "
+        out += ["*The syntax and tips you've covered so far -- %d of %d "
+                "topics.*" % (len(shown), total),
+                "*Run `textbook all` for the whole language; `textbook` brings "
                 "you back here.*"]
     else:
-        out += ["*Nothing reached yet -- solve a few puzzles, or run "
-                "`lexicon all` to preview the whole language.*"]
+        out += ["*Nothing covered yet -- work through a few topics, or run "
+                "`textbook all` to preview the whole language.*"]
     out.append("")
 
     chapters = {}
@@ -250,24 +251,28 @@ def _lexicon_md(shown, full, total):
 
     for ch in sorted(chapters):
         items = chapters[ch]
+        # A rule before each chapter -- it parts the preamble from the body and
+        # the chapters from one another, with none left dangling at the end.
         out += ["---", "", "## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
 
-        # syntax bundle: one scannable line per puzzle, id + title + the idea
+        # Syntax bundle: a definition list, each topic by name (no puzzle ids --
+        # this reads as a textbook, not a pointer back into the course).
         out += ["### Syntax", ""]
         for p in items:
             concept = p["meta"].get("concept", "")
             if concept:
-                out.append("- **%s · %s** — %s"
-                           % (p["id"], p["meta"].get("title", ""), concept))
+                out.append("- **%s** — %s"
+                           % (p["meta"].get("title", ""), concept))
         out.append("")
 
-        # tips bundle: only the puzzles that carry a `why`, keyed by id so they
-        # cross-reference the syntax list above without repeating the title
+        # Tips bundle: the deeper `why` for each topic that carries one, named
+        # the same way so the two sections read independently.
         tips = [p for p in items if p["meta"].get("why")]
         if tips:
             out += ["### Tips", ""]
             for p in tips:
-                out.append("- **%s** — %s" % (p["id"], p["meta"]["why"]))
+                out.append("- **%s** — %s"
+                           % (p["meta"].get("title", ""), p["meta"]["why"]))
             out.append("")
 
     return "\n".join(out).rstrip() + "\n"
