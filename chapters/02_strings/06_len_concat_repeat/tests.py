@@ -13,5 +13,7 @@ def check(T):
         T.eq(T.run(stdin=w + "\n"), expected(w),
              because="For %r: length, then %r, then it three times."
                      % (w, w + "!"))
-    # (no construct check: s*3 and s+s+s are comparable for three repeats, and
-    #  the brief doesn't frame one as the "wrong" way -- accept both.)
+    # Pin len(): counting characters is the lesson, so a hand-rolled
+    # sum(1 for _ in s) can't stand in for it. Repeat stays open on purpose --
+    # s*3 and s+s+s are comparable, and the brief frames neither as wrong.
+    T.uses_call("len", because="Count the characters with len(), not by hand.")

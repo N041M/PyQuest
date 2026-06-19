@@ -14,3 +14,8 @@ def check(T):
         T.eq(T.run(stdin=padded + "\n"), w.upper(), match_case=True,
              because="Stripped and uppercased, %r becomes %r."
                      % (padded, w.upper()))
+    # The lesson IS the string methods: pin them so a hand-rolled trim/upcase
+    # (slice off spaces, ord-math the case) can't pass without them. Liveness
+    # keeps these honest -- both methods change the recorded output.
+    T.uses_call("strip", because="Trim the ends with .strip(), not by hand.")
+    T.uses_call("upper", because="Upper-case with .upper(), not ord() math.")
