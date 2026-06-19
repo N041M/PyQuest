@@ -7,6 +7,8 @@
     python3 tools/audit.py --prove-checks  prove each construct check is load-bearing
                                        (a pinned dodge must slip past once it is gone)
     python3 tools/audit.py --engine    self-test the execution guard & toolkit APIs
+    python3 tools/audit.py --keys      self-test engine/keys.py + the arrow surfaces
+                                       over a pseudo-terminal (POSIX; clean skip else)
 
 The sidestep audit is mutation testing aimed at the GRADER: intentionally
 wrong programs must fail. Four generic adversaries attack every puzzle:
@@ -66,6 +68,7 @@ from engine.content import discover, load_tests, load_hints
 from engine.toolkit import (Toolkit, PuzzleSyntaxError, MissingSymbolError,
                             WrongResultError, PuzzleCrashError)
 from audit_selftest import _engine_selftest
+from audit_keys import keys_selftest
 
 # Puzzles where a passing impostor is the accepted ceiling: the cheapest
 # program that passes IS a legitimate answer to the lesson.
@@ -540,6 +543,8 @@ def _prove_report(puzzles):
 def main():
     if "--engine" in sys.argv:
         return _engine_selftest()
+    if "--keys" in sys.argv:
+        return keys_selftest()
     puzzles = discover()
     if "--lessons" in sys.argv:
         return _lessons_report(puzzles)
