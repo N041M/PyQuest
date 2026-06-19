@@ -4,6 +4,7 @@ build their screens from these, so they live one layer below both.
 """
 
 import os
+import sys
 
 from ..config import WIDTH, rel
 from ..content import load_hints
@@ -11,6 +12,27 @@ from ..state import current_puzzle, load_answers, switch_to, work_path
 from ..render import (paint, id_banner, header, field, wrap, cli, nav_row,
                       pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
 from .registry import NAV_CLUSTERS, NEEDS_PUZZLE
+from .. import keys
+
+# Play-cockpit state. When the session is an interactive TTY with key support,
+# `_COCKPIT` is on: the card omits its static bottom row, and the cockpit loop
+# (app._play) renders that row interactively via nav_select instead. `_SHOWN`
+# lets the entry point tell whether the command actually drew a card, so the
+# cockpit opens only when there is one. Off -> the unchanged print + typed flow.
+_COCKPIT = [False]
+_SHOWN = [False]
+
+
+def set_cockpit(on):
+    _COCKPIT[0] = bool(on)
+
+
+def reset_card_shown():
+    _SHOWN[0] = False
+
+
+def card_shown():
+    return _SHOWN[0]
 
 
 def status_marker(prog, pid, current_id):
@@ -48,16 +70,15 @@ def chapter_tree(puzzles, prog, pickable=False):
                   % (PAD, mark, paint("%-5s" % p["id"], "gray"), title, tail))
 
 
-def nav_strip(prog, cur, puzzles=None):
-    """The shared bottom navigation, derived from the registry so it can't drift
-    from what dispatch accepts. Highlights the primary next action as a chip,
-    groups the rest by cluster, hides puzzle-only verbs when none is loaded, and
-    always offers menu/help as the escape hatch.
+def _nav_verbs(prog, cur, puzzles=None):
+    """The bottom navigation as (primary, clusters), derived from the registry so
+    it can't drift from what dispatch accepts. The primary is the next action
+    chip; clusters group the rest, hiding puzzle-only verbs when none is loaded
+    and always offering menu/help as the escape hatch.
 
     Pass `puzzles` so the primary chip is honest on the last puzzle: a solved
     final puzzle has nowhere to advance, so the chip becomes `menu` rather than
-    a `next` that would only report 'that was the last puzzle'. Without
-    `puzzles` it can't tell, so it assumes a next exists (the old behaviour)."""
+    a `next` that would only report 'that was the last puzzle'."""
     has_puzzle = bool(prog.get("active")) and cur is not None
     solved = has_puzzle and cur["id"] in prog["completed"]
     if not has_puzzle:
@@ -75,7 +96,63 @@ def nav_strip(prog, cur, puzzles=None):
         if labels:
             clusters.append(labels)
     clusters.append([v for v in ("textbook", "menu", "help") if v != primary])
+    return primary, clusters
+
+
+def nav_strip(prog, cur, puzzles=None):
+    primary, clusters = _nav_verbs(prog, cur, puzzles)
     print(nav_row(primary, clusters))
+
+
+def _term_cols():
+    try:
+        return os.get_terminal_size(sys.stdout.fileno()).columns
+    except OSError:
+        return WIDTH
+
+
+def nav_select(prog, cur, puzzles=None):
+    """The interactive version of the bottom row -- the play cockpit. Arrow
+    across the verbs (the primary chip first), Enter runs the highlighted one,
+    type a verb (`goto 2.4`) for anything off the row, Esc/Ctrl-C drops to the
+    shell (to edit work.py and run check there, the same as always). Returns the
+    chosen command string, or None to leave. The row packs onto one line when it
+    fits and stacks the clusters when it doesn't, so nothing is ever cut off --
+    and only the row repaints, so the card above stays put."""
+    primary, clusters = _nav_verbs(prog, cur, puzzles)
+    verbs = [primary] + [v for cl in clusters for v in cl]
+
+    def render(idx, buf):
+        if buf:
+            rows = [PAD + paint("> ", "cyan", "bold") + buf]
+        else:
+            chip = paint("[ %s ]" % primary, "bcyan" if idx == 0 else "byellow",
+                         "bold")
+            groups, plains, i = [], [], 1
+            for cl in clusters:
+                labels = []
+                for v in cl:
+                    labels.append(paint(v, "bcyan", "bold") if i == idx
+                                  else paint(v, "gray"))
+                    i += 1
+                groups.append(" · ".join(labels))
+                plains.append(" · ".join(cl))
+            one = "[ %s ]   %s" % (primary, "   ".join(plains))   # plain width
+            if len(PAD) + len(one) <= _term_cols():
+                rows = [PAD + "   ".join([chip] + groups)]        # fits one line
+            else:
+                rows = [PAD + chip] + [PAD + g for g in groups]   # stack to fit
+        hint = PAD + paint("arrows move · Enter runs it · type a verb · "
+                           "Esc to the shell", "gray")
+        return rows + [hint]
+
+    try:
+        res = keys.navigate(render, len(verbs), index=0, allow_typing=True)
+    except KeyboardInterrupt:
+        return None
+    if res is None:
+        return None
+    return verbs[res] if isinstance(res, int) else res
 
 
 def print_current_card(prog, cur, arriving=False, puzzles=None):
@@ -117,7 +194,9 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
                 lead = paint("hint  ", "yellow", "bold") if i == 0 else " " * 6
                 print(PAD + lead + line)
     print("")
-    nav_strip(prog, cur, puzzles)
+    _SHOWN[0] = True               # a card was drawn -> the cockpit may open
+    if not _COCKPIT[0]:            # in the cockpit, app._play renders the row
+        nav_strip(prog, cur, puzzles)
 
 
 def _goto_list(puzzles, by_id, prog, note=None, footer=True):

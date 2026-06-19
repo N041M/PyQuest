@@ -1,13 +1,17 @@
-"""The interactive launcher menu -- the one allowed interactive surface (see
-docs/ARCHITECTURE.md sec 3, invariant 8a). The puzzle-solving loop stays single-shot
-commands; this sits on top of the verbs, composing cards + profiles + shortcuts.
+"""The interactive launcher menu -- one of two opt-in interactive surfaces (the
+other is the play cockpit, cards.nav_select / app._play; see docs/ARCHITECTURE.md
+sec 3, invariant 8). The puzzle-solving loop stays single-shot commands; this
+sits on top of the verbs, composing cards + profiles + shortcuts.
 """
 
 import sys
+import os
 
-from ..config import load_settings, MODES
-from ..state import current_puzzle, activate, load_answers, current_user
-from ..render import paint, wordmark, header, pane_open, cli, PAD, OK
+from ..config import load_settings, MODES, WIDTH
+from ..state import (current_puzzle, activate, load_answers, current_user,
+                     list_users)
+from ..render import paint, wordmark, header, pane_open, cli, PAD, OK, CUR
+from .. import keys
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user, cmd_mode
 from .views import cmd_status, cmd_map, cmd_search, cmd_stats, cmd_textbook
@@ -39,8 +43,9 @@ from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
 
 
 def cmd_menu(puzzles, by_id, prog):
-    """Open the main hub -- the one interactive surface. Reachable from anywhere
-    (`menu`, or `back`), and where a cold launch and a bare invocation both land."""
+    """Open the main hub -- the launcher's interactive surface. Reachable from
+    anywhere (`menu`, or `back`), and where a cold launch and a bare invocation
+    both land."""
     if not sys.stdin.isatty():
         print(wordmark("cyan"))
         _menu_options(puzzles, by_id, prog)
@@ -48,10 +53,8 @@ def cmd_menu(puzzles, by_id, prog):
         return
     print(wordmark("cyan"))
     while True:
-        _menu_options(puzzles, by_id, prog)
-        try:
-            raw = input(PAD + paint("> ", "cyan", "bold")).strip()
-        except (EOFError, KeyboardInterrupt):
+        raw = _menu_input(puzzles, by_id, prog)
+        if raw is None:                          # Ctrl-C / EOF -> leave the hub
             print("")
             return
         # Split into a verb + the rest, so "goto 2.4", "theme ocean" and
@@ -130,41 +133,98 @@ def cmd_menu(puzzles, by_id, prog):
         print("")
 
 
-def _menu_options(puzzles, by_id, prog):
+# The hub items the arrow-navigator steps through, top to bottom.
+_NAV = ("1", "2", "3", "4", "5", "6", "0")
+
+
+def _menu_lines(puzzles, by_id, prog, sel=None):
+    """The hub body as a flat list of single visual lines, highlighting the item
+    whose number == `sel` (None highlights nothing). Returns rather than prints,
+    so the arrow-navigator can repaint it in place; `_menu_options` prints it."""
     done, total = len(prog["completed"]), len(puzzles)
     cur = current_puzzle(prog, by_id, puzzles)
     hard = prog["mode"] == "hard"
-    print("")
+    L = [""]
     # at-a-glance progress belongs on the hub itself (same opener every pane
-    # uses), not in a tab of its own
-    print(pane_open("main menu", prog["mode"], done, total))
-    print("")
+    # uses); pane_open is multi-line, so split it into single rows for repaint
+    L += pane_open("main menu", prog["mode"], done, total).split("\n")
+    L.append("")
 
     def group(title):
-        print(PAD + paint(title, "magenta", "bold"))
+        L.append(PAD + paint(title, "magenta", "bold"))
 
     def item(n, lbl, note=""):
-        print(PAD + paint(" %s " % n, "byellow", "bold") + "  "
-              + paint(lbl.ljust(13), "white", "bold") + paint(note, "gray"))
+        on = n == sel
+        mark = paint(CUR, "bcyan", "bold") if on else " "
+        chip = paint(" %s " % n, "bgreen" if on else "byellow", "bold")
+        L.append(PAD + mark + " " + chip + " "
+                 + paint(lbl.ljust(13), "bgreen" if on else "white", "bold")
+                 + paint(note, "gray"))
 
-    where = ("%s · %s" % (cur["id"], cur["meta"].get("title", ""))
-             if cur else "-")
+    title = cur["meta"].get("title", "") if cur else ""
+    where = ("%s · %s" % (cur["id"], title[:40]) if cur else "-")
     group("play")
     item("1", "start", where)
     item("2", "select level", "jump to any puzzle")
-    print("")
+    L.append("")
     group("learn")
     item("3", "textbook", "sealed in hard mode" if hard
          else "syntax & tips so far")
     item("4", "stats", "attempts · hints · pace")
     item("5", "map", "the chapter / puzzle tree")
-    print("")
+    L.append("")
     group("set up")
     item("6", "settings", "theme · mode · profiles · shortcuts")
-    print("")
+    L.append("")
     item("0", "quit")
-    print("")
-    print(PAD + paint("pick a number, type a verb, or  help", "gray"))
+    L.append("")
+    L.append(PAD + paint("arrows move · Enter chooses · type a verb · help",
+                         "gray"))
+    return L
+
+
+def _menu_options(puzzles, by_id, prog):
+    print("\n".join(_menu_lines(puzzles, by_id, prog)))
+
+
+def _fits(n_lines):
+    """Is the terminal wide and tall enough to repaint a block of n_lines in
+    place? If not, the navigator would wrap/scroll and corrupt -- fall back to
+    the typed prompt instead. Uses the real ioctl size (os.get_terminal_size),
+    not shutil's, which prefers possibly-stale COLUMNS/LINES env vars and made
+    the hub fall back on perfectly good terminals. The block only needs to FIT
+    (lines >= n_lines); demanding spare rows wrongly rejected short windows."""
+    try:
+        size = os.get_terminal_size(sys.stdout.fileno())
+    except OSError:
+        return True             # size unknowable -> assume it fits (like the cockpit)
+    return size.columns >= WIDTH and size.lines >= n_lines
+
+
+def _menu_input(puzzles, by_id, prog):
+    """Read one hub command: arrow-navigate the items where the terminal
+    supports it AND the menu fits, otherwise the typed prompt. Returns the
+    command string (a chosen number or a typed line), or None to leave the hub
+    (Ctrl-C / EOF). Esc is ignored at the hub -- 0/quit is the explicit exit."""
+    body = _menu_lines(puzzles, by_id, prog)
+    if keys.supported() and _fits(len(body) + 1):
+        def render(index, buf):
+            sel = None if buf else _NAV[index]
+            return (_menu_lines(puzzles, by_id, prog, sel=sel)
+                    + [PAD + paint("> ", "cyan", "bold") + buf])
+        try:
+            res = keys.navigate(render, len(_NAV), index=0,
+                                allow_typing=True, esc_cancels=False)
+        except KeyboardInterrupt:
+            return None
+        if res is None:                         # EOF (esc is ignored here)
+            return None
+        return (res if isinstance(res, str) else _NAV[res]).strip()
+    print("\n".join(body))
+    try:
+        return input(PAD + paint("> ", "cyan", "bold")).strip()
+    except (EOFError, KeyboardInterrupt):
+        return None
 
 
 def _settings_action(head, arg, puzzles, by_id, prog):
@@ -192,20 +252,39 @@ def _settings_action(head, arg, puzzles, by_id, prog):
 def _menu_setup(puzzles, by_id, prog):
     """The folded set-up pane: theme, mode, profiles, shortcuts behind one menu
     entry. Stays open until 0/back. Returns prog (the profile pane can swap it)."""
+    labels = ("theme", "mode", "profiles", "shortcuts")
     while True:
         print("")
         print(header("settings", "cyan"))
         print("")
+        notes = (load_settings().get("theme", "neon"), prog["mode"],
+                 current_user(),
+                 "persistent: %s" % ("on" if _is_persistent() else "off"))
+        if keys.supported():
+            opts = ["%s   %s" % (l.ljust(11), n) for l, n in zip(labels, notes)]
+            res = keys.pick("settings", opts, allow_typing=True)
+            if res is None:
+                return prog
+            if isinstance(res, int):
+                _, prog = _settings_action(str(res + 1), "", puzzles, by_id, prog)
+            elif _leaving(res):
+                return prog
+            else:
+                parts = res.split(None, 1)
+                arg = parts[1] if len(parts) > 1 else ""
+                handled, prog = _settings_action(parts[0].lower(), arg,
+                                                 puzzles, by_id, prog)
+                if not handled:
+                    print(PAD + paint("type theme / mode / profiles / "
+                                      "shortcuts, or Esc.", "yellow"))
+            continue
 
         def item(n, lbl, note=""):
             print(PAD + paint(" %s " % n, "byellow", "bold") + "  "
                   + paint(lbl.ljust(11), "white", "bold") + paint(note, "gray"))
 
-        item("1", "theme", load_settings().get("theme", "neon"))
-        item("2", "mode", prog["mode"])
-        item("3", "profiles", current_user())
-        item("4", "shortcuts", "persistent: %s"
-             % ("on" if _is_persistent() else "off"))
+        for i, lbl in enumerate(labels):
+            item(str(i + 1), lbl, notes[i])
         print("")
         item("0", "back")
         print("")
@@ -224,11 +303,20 @@ def _menu_setup(puzzles, by_id, prog):
 
 
 def _menu_mode(prog):
-    # Pick a difficulty; blank line cancels. Mirrors the theme/users panes.
+    # Pick a difficulty: arrow-keys + Enter where the terminal supports raw
+    # input (keys.pick), else the typed prompt. Blank line / 0 / ESC cancels.
+    # Mirrors the theme/users panes.
     while True:
         print("")
         print(header("difficulty", "cyan"))
         print("")
+        if keys.supported():
+            cur = prog.get("mode")
+            start = MODES.index(cur) if cur in MODES else 0
+            i = keys.pick("difficulty", list(MODES), index=start)
+            if i is not None:                       # ESC / q / Ctrl-C -> back
+                cmd_mode(prog, MODES[i])            # sets + persists
+            return
         for m in MODES:
             on = m == prog.get("mode")
             print(PAD + " %s  %s"
@@ -250,6 +338,28 @@ def _menu_mode(prog):
 
 
 def _menu_level(puzzles, by_id, prog):
+    # same lock rules as goto either way -- the menu must not be a side door
+    if keys.supported():
+        labels = ["%s · %s" % (p["id"], p["meta"].get("title", ""))
+                  for p in puzzles]
+        cur = current_puzzle(prog, by_id, puzzles)
+        start = next((i for i, p in enumerate(puzzles)
+                      if cur and p["id"] == cur["id"]), 0)
+        print("")
+        print(header("select level", "cyan"))
+        res = keys.pick("level", labels, index=start, allow_typing=True,
+                        max_rows=12)
+        if res is None:
+            return
+        if isinstance(res, int):
+            _jump(puzzles[res], puzzles, by_id, prog)
+            return
+        target = _resolve_goto(res, puzzles, by_id, prog)
+        if target is None:
+            print(PAD + paint("no puzzle '%s'." % res, "yellow"))
+        else:
+            _jump(target, puzzles, by_id, prog)
+        return
     _goto_list(puzzles, by_id, prog, footer=False)
     try:
         pid = input(PAD + paint("id  (0 = back) > ", "cyan", "bold")).strip()
@@ -261,11 +371,23 @@ def _menu_level(puzzles, by_id, prog):
     if target is None:
         print(PAD + paint("no puzzle '%s'." % pid, "yellow"))
         return
-    # same lock rules as goto -- the menu must not be a side door
     _jump(target, puzzles, by_id, prog)
 
 
 def _menu_theme():
+    if keys.supported():
+        from ..theme import THEMES, load_presets
+        names = list(THEMES) + [p for p in load_presets() if p not in THEMES]
+        cur = load_settings().get("theme", "neon")
+        print("")
+        print(header("theme", "cyan"))
+        res = keys.pick("theme", names,
+                        index=names.index(cur) if cur in names else 0,
+                        allow_typing=True)
+        if res is None:
+            return
+        cmd_theme(names[res] if isinstance(res, int) else res.lower())
+        return
     # Stay in the theme picker until 0/back (the rule) or a blank line.
     while True:
         cmd_theme("")                               # show the picker
@@ -282,8 +404,26 @@ def _menu_theme():
 
 
 def _menu_users(puzzles, by_id, prog):
-    # Stay in the profiles pane until 0/back (the rule) or a blank line.
+    # Stay in the profiles pane until 0/back (the rule), Esc, or a blank line.
     while True:
+        if keys.supported():
+            names = list_users()
+            cur = current_user()
+            print("")
+            print(header("profiles", "cyan"))
+            print(PAD + paint("arrow to a name to switch · or type "
+                              "'rename a b' / 'delete a'", "gray"))
+            res = keys.pick("profiles", names,
+                            index=names.index(cur) if cur in names else 0,
+                            allow_typing=True)
+            if res is None:
+                return prog
+            choice = names[res] if isinstance(res, int) else res
+            if choice.lower().startswith("user "):
+                choice = choice[5:].strip()
+            # cmd_user parses bare names plus delete/rename subcommands.
+            prog = cmd_user(choice, puzzles, by_id, prog)
+            continue
         cmd_user("", puzzles, by_id, prog)          # list users + management help
         try:
             c = input(PAD + paint("name to switch · 'rename a b' · "
@@ -295,8 +435,6 @@ def _menu_users(puzzles, by_id, prog):
             return prog
         if c.lower().startswith("user "):           # forgive "user alice"
             c = c[5:].strip()
-        # cmd_user parses bare names plus the delete/rename subcommands, so the
-        # raw line goes straight through -- the pane is a full profile manager.
         prog = cmd_user(c, puzzles, by_id, prog)
 
 

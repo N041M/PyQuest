@@ -17,6 +17,30 @@ def _supports_color():
 COLOR = _supports_color()
 
 
+# Cursor control: in-place repaints WITHOUT the curses alternate screen. These
+# emit ANSI movement only on a real terminal, so they vanish in pipes and the
+# audit. engine/keys.py's pick() uses them to redraw a selection list in place,
+# which preserves scrollback -- the thing curses throws away by seizing the
+# whole screen. Movement works regardless of NO_COLOR, so it gates on isatty
+# directly rather than on COLOR.
+def cursor_up(n=1):
+    return "\033[%dA" % n if sys.stdout.isatty() else ""
+
+
+def clear_below():
+    """Erase from the cursor to the end of the screen -- wipes a repaint's old
+    rows in one shot, so a redraw leaves no stragglers. Empty off a TTY."""
+    return "\033[0J" if sys.stdout.isatty() else ""
+
+
+def autowrap(on):
+    """Toggle the terminal's auto-wrap (DECAWM). Held OFF during an in-place
+    repaint so a line wider than the terminal truncates to ONE row instead of
+    wrapping to several -- which keeps the repaint's row math exact and immune to
+    the terminal's wrap-at-the-edge behaviour. Empty off a TTY."""
+    return ("\033[?7h" if on else "\033[?7l") if sys.stdout.isatty() else ""
+
+
 def _fg(n):
     return "\033[38;5;%dm" % n
 

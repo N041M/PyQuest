@@ -16,9 +16,12 @@ PyQuest is a terminal-run Python course. The learner reads a brief, writes code
 in a workspace file in their own editor, and runs short, stateless commands to
 validate it and progress.
 
-- It is **not** a full interactive TUI. The only interactive surface is the
-  optional `menu` launcher (set up shortcuts, pick a level), shown
-  *before* puzzles. The puzzle loop and every other command run once and exit.
+- It is **not** a full interactive TUI. Interactivity is confined to two
+  opt-in surfaces that only engage on a key-capable TTY and otherwise degrade
+  to the same typed commands: the `menu` launcher (set up shortcuts, pick a
+  level), and the **play cockpit** -- the puzzle card's bottom nav row made
+  arrow-selectable (engine/keys.py). Underneath, every command still runs once
+  and exits; the cockpit is a thin selector that dispatches those same verbs.
 - It validates **behavior**, never source text: with rare, explicit exceptions
   where the lesson *is* a construct (e.g. commenting a line out).
 - Standard library only. No third-party dependencies. Runs on a fresh Python 3.
@@ -70,14 +73,16 @@ those two files.
    concept. Never dump a raw traceback.
 7. **Fresh load every check.** Re-read/re-import the solution each run so stale
    state can never cause a false pass or fail.
-8. **Stateless commands, with two scoped exceptions.** Every command runs once
-   and exits, no prompts, loops, or live redraw, *except* (a) the `menu`
-   launcher, which is interactive by design (it loops reading a choice)
-   and runs before puzzles, and (b) bare `goto`, which shows the puzzle list
-   and reads ONE id before exiting. Both degrade to a plain print when stdin
-   is not a terminal, so they never block pipes or tests. The destructive
-   `wipe profile` needs no prompt at all -- its required second word is the
-   confirmation, so it stays a one-shot command.
+8. **Stateless commands, with scoped, opt-in interactive surfaces.** Every
+   command runs once and exits, no prompts, loops, or live redraw, *except*
+   (a) the `menu` launcher, which loops reading a choice and runs before
+   puzzles; (b) bare `goto`, which shows the puzzle list and reads ONE id; and
+   (c) the **play cockpit** (app._play), which makes the puzzle card's bottom
+   nav row arrow-selectable, dispatching the same verbs in place until Esc.
+   All three engage only on a key-capable TTY (engine/keys.py) and degrade to a
+   plain print + the typed commands when stdin is not a terminal, so they never
+   block pipes or tests. The destructive `wipe profile` needs no prompt at all
+   -- its required second word is the confirmation, so it stays a one-shot.
 9. **Stdlib only.**
 10. **Progress is recoverable.** `wipe profile` is a true reset; saving never silently
     destroys the learner's code without it living in `answers.json`. All JSON
@@ -158,9 +163,10 @@ commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
                               that edits the user's environment (setup/persist/
                               uninstall)
                 help.py       the help screen
-                menu.py       the interactive launcher (menu), the one
-                              interactive surface (§3 invariant 8a); sits on top
-                              of cards + profiles + shortcuts. A grouped hub
+                menu.py       the interactive launcher (menu), one of two
+                              interactive surfaces (§3 invariant 8; the other is
+                              the play cockpit in cards.nav_select / app._play);
+                              sits on top of cards + profiles + shortcuts. A hub
                               (play / learn / set up) whose numbered items run
                               the read verbs (textbook/stats/map) in place and
                               fold theme/mode/profiles/shortcuts behind one
@@ -390,10 +396,37 @@ answer (1.1: the lesson is printing one fixed literal). Run the sidestep
 audit whenever a puzzle or toolkit check changes; plain `python3 tools/audit.py`
 (conformance only) is the quick pass.
 
+**Two static meta-audits cover the adversaries' blind spot.** The generic
+adversaries cannot model the bottom row of the table above — *solving with a
+different tool* — on a **varying-output** puzzle: `synth` only fires on
+fixed-output scripts, so a program that computes the right answer with the
+wrong construct sails past. That gap used to be hunted by hand; it is now two
+mechanical checks read from each `tests.py` source (`--sidestep` runs the first;
+`--lessons` / `--prove-checks` are the standalone reports):
+
+- **lesson-guard** flags any puzzle that teaches a construct (has a `concept`),
+  varies its output, and pins *no* construct check — it is unguarded against the
+  alternative-construct class. Acceptable residuals are whitelisted in
+  `GUARDED_OK` with a written reason (mirroring `ALLOWED`): 3.1 (a varying
+  boolean is unobtainable without *some* comparison, and `<`/`>`/`>=` are all
+  valid, so there is nothing single to pin), and 6.1/6.2/6.3/6.5 (import mode —
+  the grader calls the function by name, so `def`/params/`return` are forced and
+  there is no *internal* construct to pin). Anything else is a hard failure.
+- **prove-checks** is the converse: for every puzzle with both a construct check
+  and a `dodges.py`, it strips the construct layer and confirms a pinned dodge
+  then slips through — proving the *check*, not some behavioral assert, is what
+  stops that dodge. A dodge caught behaviorally is surfaced (informational), not
+  failed; it remains a valid hardcode/replay regression.
+
+`check_inventory`, `lesson_guard`, and the AST construct-stripper are themselves
+pinned by the `meta_audit` engine self-test, so the audit's own reasoning can't
+silently rot.
+
 **Known residual risks** (accepted, documented): liveness proves a construct
 *matters*, not that it's idiomatic, an `if True:` wrapped around a trick
 expression, or an executed-but-pointless decoy dict (containers are judged
-by reachability, see §7), still passes the generic checks. These require a
+by reachability, see §7), still passes the generic checks. The `GUARDED_OK`
+entries above are the lesson-guard's documented residuals. These require a
 learner to deliberately out-engineer the grader rather than stumble past it;
 pin any that show up in the wild as `dodges.py` entries backed by a narrower
 test, and remember the audit is fail-open by design, if liveness ever

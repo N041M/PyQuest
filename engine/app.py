@@ -15,7 +15,9 @@ from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
                        cmd_theme, cmd_user, cmd_wipe, cmd_export, cmd_import,
                        cmd_setup, cmd_setup_persist, cmd_uninstall,
                        cmd_menu, cmd_help)
+from .commands import cards
 from .commands.registry import canonical, NEEDS_PUZZLE, suggest, _all_names
+from . import keys
 
 
 def _emit_completions(what, puzzles):
@@ -36,59 +38,15 @@ def _emit_completions(what, puzzles):
     print("\n".join(items))
 
 
-def main():
-    puzzles = discover()
-    if not puzzles:
-        print("No puzzles found under %s" % rel(CHAPTERS_DIR))
-        return
-    by_id = {p["id"]: p for p in puzzles}
-    # Hidden shell-completion hook: emit candidates and exit before any side
-    # effects (no workspace seeding, no greeting). Never a learner-facing verb.
-    if sys.argv[1:2] == ["__complete"]:
-        _emit_completions(sys.argv[2:], puzzles)
-        return
-    migrate_legacy()                 # seed users/ and move any legacy root files
-    prog, fresh = load_progress(puzzles)
-    prog.setdefault("mode", "normal")
-    prog.setdefault("completed", [])
-    prog.setdefault("stats", {})
-    prog.setdefault("highest", 0)
-    # existing learners (already have progress) count as active
-    prog.setdefault("active", len(prog.get("completed", [])) > 0)
-
-    args = sys.argv[1:]
-    # Bare invocation (`start` / `python3 start.py` inside a session) always
-    # opens the menu -- the same place a cold launch lands. `status` and every
-    # other view stay one explicit word away (`start status`, `status`).
+def dispatch(args, puzzles, by_id, prog):
+    """Run one verb from `args` (a [verb, *rest] list) and return prog (only
+    `user`/`import` can replace it). Shared by the one-shot CLI in main() and the
+    interactive play cockpit (_play), so both route through exactly one mapping."""
     raw = args[0].lower() if args else "menu"
     cmd = canonical(raw)                 # fold aliases (load->goto, replay->retry)
     arg = args[1] if len(args) > 1 else None
     arg2 = args[2] if len(args) > 2 else None
     arg3 = args[3] if len(args) > 3 else None
-
-    # make sure work.py exists (welcome placeholder until a puzzle is loaded)
-    ensure_workspace(current_puzzle(prog, by_id, puzzles), load_answers(),
-                     prog.get("active"))
-
-    # First run: greet the learner wherever a bare launch lands them. That is
-    # the menu now, but an explicit `status` should still welcome too.
-    if fresh and cmd in ("status", "menu"):
-        print(paint("  %s  Welcome to PyQuest!" % STAR, "cyan", "bold"))
-        if cmd == "status":
-            print("  Open the menu to set up and pick a level:  %s\n"
-                  % cli("menu"))
-        else:
-            print("  Set up and pick a level from the menu below.\n")
-
-    # Context gate: the puzzle-logic verbs only mean something with a puzzle
-    # loaded. Without one the learner is between the two command sets, so route
-    # them to the menu (the home base) rather than dead-ending on a message.
-    if cmd in NEEDS_PUZZLE and not prog.get("active"):
-        print(paint("  %s  No puzzle loaded yet -- here's the menu." % NO,
-                    "yellow"))
-        cmd_menu(puzzles, by_id, prog)
-        return
-
     if cmd == "status":
         cmd_status(puzzles, by_id, prog)
     elif cmd == "check":
@@ -155,3 +113,84 @@ def main():
         else:
             print(paint("  Unknown command '%s'." % raw, "yellow"))
             cmd_help(prog)
+    return prog
+
+
+def _play(puzzles, by_id, prog):
+    """The play cockpit: the card's bottom row made interactive (the one allowed
+    on the puzzle screen, alongside the launcher menu). Arrow across the verbs
+    and Enter runs one in place; type a verb for anything off the row; Esc drops
+    to the shell to edit work.py and run check there, the same as always. Entered
+    only when a card was just drawn in an interactive, key-capable terminal."""
+    while True:
+        cur = current_puzzle(prog, by_id, puzzles)
+        if not (prog.get("active") and cur):
+            break
+        choice = cards.nav_select(prog, cur, puzzles)
+        if choice is None:                   # Esc / Ctrl-C -> back to the shell
+            break
+        print("")
+        prog = dispatch(choice.split(), puzzles, by_id, prog)
+
+
+def main():
+    puzzles = discover()
+    if not puzzles:
+        print("No puzzles found under %s" % rel(CHAPTERS_DIR))
+        return
+    by_id = {p["id"]: p for p in puzzles}
+    # Hidden shell-completion hook: emit candidates and exit before any side
+    # effects (no workspace seeding, no greeting). Never a learner-facing verb.
+    if sys.argv[1:2] == ["__complete"]:
+        _emit_completions(sys.argv[2:], puzzles)
+        return
+    migrate_legacy()                 # seed users/ and move any legacy root files
+    prog, fresh = load_progress(puzzles)
+    prog.setdefault("mode", "normal")
+    prog.setdefault("completed", [])
+    prog.setdefault("stats", {})
+    prog.setdefault("highest", 0)
+    # existing learners (already have progress) count as active
+    prog.setdefault("active", len(prog.get("completed", [])) > 0)
+
+    args = sys.argv[1:]
+    # Bare invocation (`start` / `python3 start.py` inside a session) always
+    # opens the menu -- the same place a cold launch lands. `status` and every
+    # other view stay one explicit word away (`start status`, `status`).
+    raw = args[0].lower() if args else "menu"
+    cmd = canonical(raw)
+
+    # make sure work.py exists (welcome placeholder until a puzzle is loaded)
+    ensure_workspace(current_puzzle(prog, by_id, puzzles), load_answers(),
+                     prog.get("active"))
+
+    # The play cockpit (interactive bottom row) needs a key-capable TTY; without
+    # one every card keeps its static row and the learner types verbs as before.
+    interactive = sys.stdin.isatty() and keys.supported()
+    cards.set_cockpit(interactive)
+
+    # First run: greet the learner wherever a bare launch lands them. That is
+    # the menu now, but an explicit `status` should still welcome too.
+    if fresh and cmd in ("status", "menu"):
+        print(paint("  %s  Welcome to PyQuest!" % STAR, "cyan", "bold"))
+        if cmd == "status":
+            print("  Open the menu to set up and pick a level:  %s\n"
+                  % cli("menu"))
+        else:
+            print("  Set up and pick a level from the menu below.\n")
+
+    # Context gate: the puzzle-logic verbs only mean something with a puzzle
+    # loaded. Without one the learner is between the two command sets, so route
+    # them to the menu (the home base) rather than dead-ending on a message.
+    if cmd in NEEDS_PUZZLE and not prog.get("active"):
+        print(paint("  %s  No puzzle loaded yet -- here's the menu." % NO,
+                    "yellow"))
+        cmd_menu(puzzles, by_id, prog)
+        return
+
+    cards.reset_card_shown()
+    prog = dispatch(args, puzzles, by_id, prog)
+    # If that landed on a puzzle card in an interactive terminal, open the
+    # cockpit so the bottom row is selectable; otherwise we just return.
+    if interactive and prog.get("active") and cards.card_shown():
+        _play(puzzles, by_id, prog)
