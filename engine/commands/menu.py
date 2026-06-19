@@ -133,8 +133,11 @@ def cmd_menu(puzzles, by_id, prog):
         print("")
 
 
-# The hub items the arrow-navigator steps through, top to bottom.
+# The hub items the arrow-navigator steps through, top to bottom, with the short
+# labels the compact (size-independent) selector shows on its one prompt line.
 _NAV = ("1", "2", "3", "4", "5", "6", "0")
+_NAV_LABELS = ("start", "select level", "textbook", "stats", "map",
+               "settings", "quit")
 
 
 def _menu_lines(puzzles, by_id, prog, sel=None):
@@ -201,30 +204,52 @@ def _fits(n_lines):
     return size.columns >= WIDTH and size.lines >= n_lines
 
 
+def _hub_navigate(render):
+    """Drive a hub selection through keys.navigate (Esc ignored -- 0/quit is the
+    explicit exit), translating Ctrl-C/EOF to None. Returns int | str | None."""
+    try:
+        return keys.navigate(render, len(_NAV), index=0,
+                             allow_typing=True, esc_cancels=False)
+    except KeyboardInterrupt:
+        return None
+
+
 def _menu_input(puzzles, by_id, prog):
-    """Read one hub command: arrow-navigate the items where the terminal
-    supports it AND the menu fits, otherwise the typed prompt. Returns the
-    command string (a chosen number or a typed line), or None to leave the hub
-    (Ctrl-C / EOF). Esc is ignored at the hub -- 0/quit is the explicit exit."""
+    """Read one hub command. Arrow-navigate the items wherever the terminal
+    supports raw input -- in-list highlight when the whole menu fits, else a
+    compact one-line selector that fits ANY size (a short Codespaces/VS Code
+    panel can't show the full block, but the menu is still navigable) -- and the
+    typed prompt only when keys aren't available at all. Returns the command
+    string (a chosen number or a typed line), or None to leave the hub."""
     body = _menu_lines(puzzles, by_id, prog)
     if keys.supported() and _fits(len(body) + 1):
-        def render(index, buf):
+        def render(index, buf):                 # full in-list highlight
             sel = None if buf else _NAV[index]
             return (_menu_lines(puzzles, by_id, prog, sel=sel)
                     + [PAD + paint("> ", "cyan", "bold") + buf])
+        res = _hub_navigate(render)
+    elif keys.supported():
+        print("\n".join(body))                  # menu scrolls; selector is 2 lines
+
+        def render(index, buf):                 # size-independent compact selector
+            if buf:
+                line = PAD + paint("> ", "cyan", "bold") + buf
+            else:
+                line = (PAD + paint("> ", "cyan", "bold")
+                        + paint("%s %s" % (CUR, _NAV_LABELS[index]),
+                                "byellow", "bold"))
+            return [line, PAD + paint("arrows select · Enter runs it · "
+                                      "type a verb", "gray")]
+        res = _hub_navigate(render)
+    else:
+        print("\n".join(body))
         try:
-            res = keys.navigate(render, len(_NAV), index=0,
-                                allow_typing=True, esc_cancels=False)
-        except KeyboardInterrupt:
+            return input(PAD + paint("> ", "cyan", "bold")).strip()
+        except (EOFError, KeyboardInterrupt):
             return None
-        if res is None:                         # EOF (esc is ignored here)
-            return None
-        return (res if isinstance(res, str) else _NAV[res]).strip()
-    print("\n".join(body))
-    try:
-        return input(PAD + paint("> ", "cyan", "bold")).strip()
-    except (EOFError, KeyboardInterrupt):
+    if res is None:                             # Ctrl-C / EOF -> leave the hub
         return None
+    return (res if isinstance(res, str) else _NAV[res]).strip()
 
 
 def _settings_action(head, arg, puzzles, by_id, prog):
