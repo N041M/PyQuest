@@ -127,19 +127,21 @@ classDiagram
         +discover() list~Puzzle~
         +starter_path(puzzle) str
         +read_starter(puzzle) str
+        +brief_path(dirpath) str
         +load_hints(dirpath) list~str~
         +load_reference(dirpath) str
         +load_tests(dirpath) module
     }
     content ..> config : CHAPTERS_DIR
-    content ..> i18n : localized(reference.md)
+    content ..> i18n : localized(brief · hints · reference)
 ```
 
 `discover()` tolerates a broken `meta.json`, it logs to stderr and skips that
 folder rather than failing the whole scan. `load_tests` re‑imports each
 `tests.py` fresh per call, which is what gives the audit fresh randomness on
-every attempt. `load_reference` serves the textbook's per‑topic `reference.md`,
-routed through `i18n.localized` so an active language pack can override it.
+every attempt. The learner-content loaders (`brief_path`, `load_hints`,
+`load_reference`) route their file through `i18n.localized`, so an active
+language pack can override any of them per topic, English otherwise.
 
 ## i18n.py: human-language piping
 
@@ -162,9 +164,10 @@ classDiagram
 ```
 
 `t()` localizes a **string** (pack `strings.json`, else the English default);
-`localized()` localizes a **file** (a pack's mirrored `chapters/.../reference.md`,
-else the on‑disk English file). Both fall back per item, so a half‑finished pack
-runs with everything it omits left in English. `set_language` validates first and
+`localized()` localizes a **file** (a pack's mirrored `chapters/.../<file>` —
+`brief.md`, `hints.md`, `reference.md` — else the on‑disk English file). Both
+fall back per item, so a half‑finished pack runs with everything it omits left in
+English. `set_language` validates first and
 reverts to English on any failure, naming what was missing.
 
 ## inputs.py: the input seam ("input automizer")

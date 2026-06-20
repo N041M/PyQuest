@@ -3,10 +3,8 @@ marker, and the goto/advance helpers. The play verbs and the launcher menu both
 build their screens from these, so they live one layer below both.
 """
 
-import os
-
 from ..config import WIDTH, rel, term_size
-from ..content import load_hints
+from ..content import load_hints, brief_path
 from ..state import current_puzzle, load_answers, switch_to, work_path
 from ..render import (paint, id_banner, header, field, wrap, cli, nav_row,
                       pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
@@ -173,8 +171,7 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
     for line in wrap(meta.get("concept", "")):
         print(PAD + line)
     print("")
-    print(field("read", paint(rel(os.path.join(cur["dir"], "brief.md")),
-                              "blue")))
+    print(field("read", paint(rel(brief_path(cur["dir"])), "blue")))
     print(field("edit", paint(rel(work_path()), "blue", "bold")
                 + paint("   (save before checking)", "gray")))
     note = load_answers().get(cur["id"], {}).get("note")

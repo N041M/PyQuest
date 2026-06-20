@@ -46,10 +46,11 @@ Translate the ones you want; leave the rest out.
 }
 ```
 
-## chapters/ — translating the textbook
+## chapters/ — translating the content
 
-The textbook is built from a `reference.md` in each topic folder under
-`chapters/`. To translate one, mirror its path under your pack's `chapters/`:
+Each topic folder under `chapters/` holds learner-facing content files:
+`brief.md` (the task), `hints.md`, and `reference.md` (the textbook entry). To
+translate any of them, mirror the file's path under your pack's `chapters/`:
 
 ```
 chapters/02_strings/01_indexing/reference.md          <- English (shipped)
@@ -57,8 +58,8 @@ lang/cs/chapters/02_strings/01_indexing/reference.md  <- Czech override
 ```
 
 When that language is active, the override is served in place of the English
-file; any topic you don't translate keeps the English `reference.md`. Like
-`strings.json`, this is **per-file partial** — translate the topics you want and
+file; any file you don't translate keeps its English original. Like
+`strings.json`, this is **per-file partial** — translate the files you want and
 leave the rest. Only files inside `chapters/` are ever redirected this way.
 
 Nothing here is translated yet — this is the plumbing. Contributions welcome.

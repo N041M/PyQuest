@@ -71,8 +71,16 @@ def read_starter(puzzle):
 
 
 # ---- brief / hints / tests ------------------------------------------------
+def brief_path(dirpath):
+    """The brief the card points the learner at, as the active language's
+    override when a pack supplies one, else the English brief.md. The brief is
+    read by the learner in their own editor, so this returns the path to show,
+    not the text."""
+    return i18n.localized(os.path.join(dirpath, "brief.md"))
+
+
 def load_hints(dirpath):
-    path = os.path.join(dirpath, "hints.md")
+    path = i18n.localized(os.path.join(dirpath, "hints.md"))
     if not os.path.isfile(path):
         return []
     with open(path, encoding="utf-8") as f:

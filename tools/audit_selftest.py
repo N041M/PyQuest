@@ -765,20 +765,24 @@ def _engine_selftest():
             shutil.rmtree(d)
 
     def t_i18n_content():
-        """File-backed content overrides: a valid pack may translate reference.md
-        under a mirrored chapters/ tree; load_reference serves the override when
-        present and falls back to the English file per-topic when not. A path
-        outside chapters/ is never redirected (no traversal)."""
+        """File-backed content overrides: a valid pack may translate the learner
+        content files (reference.md, hints.md, brief.md) under a mirrored
+        chapters/ tree. The loaders serve the override when present and fall back
+        to the English file per-topic when not. A path outside chapters/ is never
+        redirected (no traversal)."""
         import shutil
         from engine import i18n
-        from engine.content import load_reference
+        from engine.content import load_reference, load_hints, brief_path
         saved_lang, saved_ch = i18n.LANG_DIR, i18n.CHAPTERS_DIR
         root = tempfile.mkdtemp(prefix="pyquest_selftest_")
         chdir, lang = os.path.join(root, "chapters"), os.path.join(root, "lang")
         pz = os.path.join(chdir, "01_x", "01_y")
         os.makedirs(pz)
-        with open(os.path.join(pz, "reference.md"), "w", encoding="utf-8") as f:
-            f.write("English reference\n")
+        for name, text in (("reference.md", "English reference\n"),
+                           ("hints.md", "English hint\n"),
+                           ("brief.md", "English brief\n")):
+            with open(os.path.join(pz, name), "w", encoding="utf-8") as f:
+                f.write(text)
 
         def valid_pack(code, files=None):
             pdir = os.path.join(lang, code)
@@ -793,18 +797,28 @@ def _engine_selftest():
                 with open(fp, "w", encoding="utf-8") as f:
                     f.write(content)
 
+        def at(*parts):
+            return os.path.join("chapters", "01_x", "01_y", *parts)
+
         i18n.LANG_DIR, i18n.CHAPTERS_DIR = lang, chdir
         try:
-            # xx overrides the one reference.md; yy is a valid pack with none
-            valid_pack("xx", {os.path.join("chapters", "01_x", "01_y",
-                                           "reference.md"): "Translated ref\n"})
+            # xx overrides all three files; yy is a valid pack translating none
+            valid_pack("xx", {at("reference.md"): "Translated ref\n",
+                              at("hints.md"): "Translated hint\n",
+                              at("brief.md"): "Translated brief\n"})
             valid_pack("yy")
-            i18n.set_language("en")
-            assert load_reference(pz).strip() == "English reference"   # default
-            ok, _ = i18n.set_language("xx")
-            assert ok and load_reference(pz).strip() == "Translated ref"  # override
-            ok, _ = i18n.set_language("yy")
-            assert ok and load_reference(pz).strip() == "English reference"  # fallback
+            i18n.set_language("en")                                    # defaults
+            assert load_reference(pz).strip() == "English reference"
+            assert load_hints(pz) == ["English hint"]
+            assert brief_path(pz) == os.path.join(pz, "brief.md")
+            ok, _ = i18n.set_language("xx")                            # overrides
+            assert ok and load_reference(pz).strip() == "Translated ref"
+            assert load_hints(pz) == ["Translated hint"]
+            assert brief_path(pz) == os.path.join(lang, "xx", at("brief.md"))
+            ok, _ = i18n.set_language("yy")                            # fallback
+            assert ok and load_reference(pz).strip() == "English reference"
+            assert load_hints(pz) == ["English hint"]
+            assert brief_path(pz) == os.path.join(pz, "brief.md")
             # a path outside chapters/ is returned untouched, even with a pack on
             assert i18n.localized(os.path.join(root, "elsewhere.md")) == \
                 os.path.join(root, "elsewhere.md")
