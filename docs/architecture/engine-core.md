@@ -10,11 +10,14 @@ flowchart TB
     play --> app["app.py «dispatch»"]
     app --> checker["checker.py"]
     app --> commands["commands/*"]
+    app --> i18n["i18n.py"]
     checker --> toolkit["toolkit/"]
     checker --> content["content.py"]
     checker --> state["state.py"]
     checker --> render["render · theme"]
     content --> config["config.py"]
+    content --> i18n
+    i18n --> config
     state --> config
     toolkit --> config
     tests["tests.py «authoring»"] -. imports .-> inputs["inputs.py"]
@@ -125,15 +128,44 @@ classDiagram
         +starter_path(puzzle) str
         +read_starter(puzzle) str
         +load_hints(dirpath) list~str~
+        +load_reference(dirpath) str
         +load_tests(dirpath) module
     }
     content ..> config : CHAPTERS_DIR
+    content ..> i18n : localized(reference.md)
 ```
 
 `discover()` tolerates a broken `meta.json`, it logs to stderr and skips that
 folder rather than failing the whole scan. `load_tests` re‑imports each
 `tests.py` fresh per call, which is what gives the audit fresh randomness on
-every attempt.
+every attempt. `load_reference` serves the textbook's per‑topic `reference.md`,
+routed through `i18n.localized` so an active language pack can override it.
+
+## i18n.py: human-language piping
+
+English is the built-in default **and** fallback — written inline at every call
+site, so it can never be missing. Community **packs** under `lang/<code>/` are
+optional overrides, validated on select and silently per‑item partial.
+
+```mermaid
+classDiagram
+    class i18n {
+        <<module>>
+        +t(key, default) str
+        +localized(path) str
+        +validate(code) (ok, info)
+        +set_language(code) (ok, message)
+        +available() list~(code, name)~
+        +current() str
+    }
+    i18n ..> config : ROOT · CHAPTERS_DIR
+```
+
+`t()` localizes a **string** (pack `strings.json`, else the English default);
+`localized()` localizes a **file** (a pack's mirrored `chapters/.../reference.md`,
+else the on‑disk English file). Both fall back per item, so a half‑finished pack
+runs with everything it omits left in English. `set_language` validates first and
+reverts to English on any failure, naming what was missing.
 
 ## inputs.py: the input seam ("input automizer")
 

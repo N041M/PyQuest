@@ -6,18 +6,23 @@ never be missing. Other languages are community 'packs' dropped under lang/<code
 A pack is:
     lang/<code>/pack.json     {"name": "Čeština", "code": "cs"}
     lang/<code>/strings.json  {"<key>": "<translation>", ...}   (partial is fine)
+    lang/<code>/chapters/...  optional file-backed content overrides (reference.md)
 
 t(key, default) returns the active pack's value for `key`, or `default` (English)
 when there is no pack or the pack omits that key -- so a half-finished pack still
-runs, every untranslated string just stays English. Selecting a pack VALIDATES it
-first; if it doesn't load, set_language reports exactly what's missing and falls
-back to English, so the program is never left in a broken language.
+runs, every untranslated string just stays English. localized(path) is the same
+idea for FILE-backed content (the textbook's reference.md): it maps a default file
+under chapters/ to the pack's mirrored copy when one exists, else returns the
+English file unchanged -- so a pack translates the content files it wants and the
+rest stay English. Selecting a pack VALIDATES it first; if it doesn't load,
+set_language reports exactly what's missing and falls back to English, so the
+program is never left in a broken language.
 """
 
 import os
 import json
 
-from .config import ROOT
+from .config import ROOT, CHAPTERS_DIR
 
 LANG_DIR = os.path.join(ROOT, "lang")
 
@@ -34,6 +39,26 @@ def t(key, default):
 
 def current():
     return _active["code"]
+
+
+def localized(path):
+    """The active language's override for a default content file, or `path`
+    unchanged. `path` is a file under chapters/ (e.g. a topic's reference.md);
+    the override lives at the mirrored path under lang/<code>/chapters/. This is
+    the file-backed analogue of t(): English (the on-disk file) is the fallback,
+    a pack overrides per file, and any file a pack doesn't supply stays English.
+    A path outside chapters/ (or a pack that has no copy) is returned as-is."""
+    code = _active["code"]
+    if code == "en":
+        return path
+    try:
+        rel = os.path.relpath(path, CHAPTERS_DIR)
+    except ValueError:                       # e.g. different drive on Windows
+        return path
+    if rel == os.pardir or rel.startswith(os.pardir + os.sep):
+        return path                          # not under chapters/ -- never escape
+    candidate = os.path.join(_pack_dir(code), "chapters", rel)
+    return candidate if os.path.isfile(candidate) else path
 
 
 def _pack_dir(code):

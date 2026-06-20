@@ -9,6 +9,7 @@ import json
 import importlib.util
 
 from .config import CHAPTERS_DIR
+from . import i18n
 
 
 def discover():
@@ -84,10 +85,11 @@ def load_hints(dirpath):
 def load_reference(dirpath):
     """The optional reference.md: a topic's detailed, technical textbook entry.
     Returns its markdown, or None when a topic has no reference authored yet (the
-    textbook then falls back to the one-line concept)."""
+    textbook then falls back to the one-line concept). The active language pack
+    may override the file; a topic it doesn't translate stays English."""
     if not dirpath:
         return None
-    path = os.path.join(dirpath, "reference.md")
+    path = i18n.localized(os.path.join(dirpath, "reference.md"))
     if not os.path.isfile(path):
         return None
     with open(path, encoding="utf-8") as f:

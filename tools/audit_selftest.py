@@ -764,6 +764,55 @@ def _engine_selftest():
             i18n.set_language("en")
             shutil.rmtree(d)
 
+    def t_i18n_content():
+        """File-backed content overrides: a valid pack may translate reference.md
+        under a mirrored chapters/ tree; load_reference serves the override when
+        present and falls back to the English file per-topic when not. A path
+        outside chapters/ is never redirected (no traversal)."""
+        import shutil
+        from engine import i18n
+        from engine.content import load_reference
+        saved_lang, saved_ch = i18n.LANG_DIR, i18n.CHAPTERS_DIR
+        root = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        chdir, lang = os.path.join(root, "chapters"), os.path.join(root, "lang")
+        pz = os.path.join(chdir, "01_x", "01_y")
+        os.makedirs(pz)
+        with open(os.path.join(pz, "reference.md"), "w", encoding="utf-8") as f:
+            f.write("English reference\n")
+
+        def valid_pack(code, files=None):
+            pdir = os.path.join(lang, code)
+            os.makedirs(pdir, exist_ok=True)
+            with open(os.path.join(pdir, "pack.json"), "w", encoding="utf-8") as f:
+                f.write('{"name": "%s", "code": "%s"}' % (code.upper(), code))
+            with open(os.path.join(pdir, "strings.json"), "w", encoding="utf-8") as f:
+                f.write("{}")
+            for rel, content in (files or {}).items():
+                fp = os.path.join(pdir, rel)
+                os.makedirs(os.path.dirname(fp), exist_ok=True)
+                with open(fp, "w", encoding="utf-8") as f:
+                    f.write(content)
+
+        i18n.LANG_DIR, i18n.CHAPTERS_DIR = lang, chdir
+        try:
+            # xx overrides the one reference.md; yy is a valid pack with none
+            valid_pack("xx", {os.path.join("chapters", "01_x", "01_y",
+                                           "reference.md"): "Translated ref\n"})
+            valid_pack("yy")
+            i18n.set_language("en")
+            assert load_reference(pz).strip() == "English reference"   # default
+            ok, _ = i18n.set_language("xx")
+            assert ok and load_reference(pz).strip() == "Translated ref"  # override
+            ok, _ = i18n.set_language("yy")
+            assert ok and load_reference(pz).strip() == "English reference"  # fallback
+            # a path outside chapters/ is returned untouched, even with a pack on
+            assert i18n.localized(os.path.join(root, "elsewhere.md")) == \
+                os.path.join(root, "elsewhere.md")
+        finally:
+            i18n.LANG_DIR, i18n.CHAPTERS_DIR = saved_lang, saved_ch
+            i18n.set_language("en")
+            shutil.rmtree(root)
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -777,7 +826,7 @@ def _engine_selftest():
                t_username_validation, t_user_lifecycle,
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
-               t_key_decode, t_i18n):
+               t_key_decode, t_i18n, t_i18n_content):
         case(fn.__name__[2:], fn)
 
     bad = 0

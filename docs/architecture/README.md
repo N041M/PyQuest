@@ -189,6 +189,8 @@ flowchart TB
     state["state.py «progress/answers/work.py»"] --> content["content.py «discovery + loaders»"]
     state --> config["config.py «paths · atomic write · WIDTH»"]
     content --> config
+    content --> i18n["i18n.py «language packs»"]
+    i18n --> config
     render["render.py «primitives»"] --> theme["theme.py «palette · glyphs · paint»"]
     theme --> config
     inputs["inputs.py «input seam»"]

@@ -4,9 +4,9 @@ PyQuest ships in **English**, which is also the fallback: every UI string is
 written in English right in the code, so English can never be missing or broken.
 
 A **language pack** is a folder you drop in here — no engine changes — to
-translate the interface (and, later, the puzzle content) into another human
-language. Translating Python itself is *not* the goal: the grader is
-language-agnostic, only the presentation is localized.
+translate the interface and the textbook content into another human language.
+Translating Python itself is *not* the goal: the grader is language-agnostic,
+only the presentation is localized.
 
 ## Layout
 
@@ -14,7 +14,7 @@ language-agnostic, only the presentation is localized.
 lang/<code>/
   pack.json       required:  {"name": "Čeština", "code": "<code>"}
   strings.json    required:  {"<key>": "<translation>", ...}   (may be partial)
-  chapters/...    optional:  translated brief.md / hints.md, mirroring chapters/
+  chapters/...    optional:  translated content files, mirroring chapters/
 ```
 
 `<code>` is a short language code (e.g. `cs`, `de`, `fr`) and must match the
@@ -45,5 +45,20 @@ Translate the ones you want; leave the rest out.
   "menu.learn": "učit se"
 }
 ```
+
+## chapters/ — translating the textbook
+
+The textbook is built from a `reference.md` in each topic folder under
+`chapters/`. To translate one, mirror its path under your pack's `chapters/`:
+
+```
+chapters/02_strings/01_indexing/reference.md          <- English (shipped)
+lang/cs/chapters/02_strings/01_indexing/reference.md  <- Czech override
+```
+
+When that language is active, the override is served in place of the English
+file; any topic you don't translate keeps the English `reference.md`. Like
+`strings.json`, this is **per-file partial** — translate the topics you want and
+leave the rest. Only files inside `chapters/` are ever redirected this way.
 
 Nothing here is translated yet — this is the plumbing. Contributions welcome.
