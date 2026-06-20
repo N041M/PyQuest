@@ -1,0 +1,9 @@
+{
+  "id": "12.8",
+  "title": "Capstone: parse key=value config",
+  "chapter": "Regular Expressions",
+  "concept": "Combine findall and groups: one pattern extracts every key=value pair",
+  "syntax": "dict(re.findall(r\"(\\w+)=(\\w+)\", text))",
+  "mode": "import",
+  "why": "A two-group pattern fed to findall returns a list of (key, value) tuples, which dict() turns into a mapping -- a whole mini-parser in one expression."
+}

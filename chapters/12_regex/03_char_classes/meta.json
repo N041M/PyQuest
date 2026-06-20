@@ -1,0 +1,9 @@
+{
+  "id": "12.3",
+  "title": "Character classes: [aeiou]",
+  "chapter": "Regular Expressions",
+  "concept": "[...] matches any one character listed; [a-z] is a range",
+  "syntax": "re.findall(r\"[aeiou]\", text)",
+  "mode": "import",
+  "why": "A character class [ ] matches exactly one of the characters inside it (or a range like a-z), letting one pattern stand for a whole set of characters."
+}

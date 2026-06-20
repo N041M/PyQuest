@@ -1,0 +1,9 @@
+{
+  "id": "12.2",
+  "title": "re.findall: every match",
+  "chapter": "Regular Expressions",
+  "concept": "re.findall(pattern, text) returns a list of all non-overlapping matches",
+  "syntax": "re.findall(r\"\\d+\", text)",
+  "mode": "import",
+  "why": "Where search finds the first match, findall returns them all as a list of strings -- the way to extract every number, word, or token from a string at once."
+}

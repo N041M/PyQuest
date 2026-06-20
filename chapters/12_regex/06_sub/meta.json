@@ -1,0 +1,9 @@
+{
+  "id": "12.6",
+  "title": "re.sub: find and replace by pattern",
+  "chapter": "Regular Expressions",
+  "concept": "re.sub(pattern, repl, text) replaces every match with repl",
+  "syntax": "re.sub(r\"\\d+\", \"#\", text)",
+  "mode": "import",
+  "why": "re.sub is search-and-replace driven by a pattern: every place the pattern matches is swapped for the replacement, so a whole run \\d+ becomes a single token."
+}

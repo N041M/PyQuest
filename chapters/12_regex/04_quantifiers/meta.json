@@ -1,0 +1,9 @@
+{
+  "id": "12.4",
+  "title": "Quantifiers: + means one or more",
+  "chapter": "Regular Expressions",
+  "concept": "+ matches one or more of the preceding pattern; * zero or more, ? optional",
+  "syntax": "re.findall(r\"[A-Za-z]+\", text)",
+  "mode": "import",
+  "why": "A quantifier repeats the pattern before it: + is one-or-more, * zero-or-more, ? optional, {n} exactly n -- so [A-Za-z]+ matches a whole word, not a single letter."
+}

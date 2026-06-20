@@ -1,0 +1,9 @@
+{
+  "id": "12.5",
+  "title": "Groups: capture the parts",
+  "chapter": "Regular Expressions",
+  "concept": "Parentheses (...) capture part of a match; .group(n) reads each",
+  "syntax": "re.match(r\"(\\d+)-(\\d+)-(\\d+)\", text)",
+  "mode": "import",
+  "why": "Parentheses mark capture groups; the match object's .group(n) (or .groups()) returns the text each one caught, so one pattern both validates the shape AND pulls out the fields."
+}

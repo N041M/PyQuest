@@ -1,0 +1,9 @@
+{
+  "id": "12.7",
+  "title": "Anchors: match the whole string",
+  "chapter": "Regular Expressions",
+  "concept": "re.fullmatch requires the pattern to cover the entire string (like ^...$)",
+  "syntax": "re.fullmatch(r\"[A-Z]{2}\\d{4}\", text)",
+  "mode": "import",
+  "why": "search finds a pattern anywhere; validating a format means the WHOLE string must fit. fullmatch (or ^...$ anchors) enforces that, so trailing junk is rejected."
+}

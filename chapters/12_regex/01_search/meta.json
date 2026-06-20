@@ -1,0 +1,9 @@
+{
+  "id": "12.1",
+  "title": "re.search: is the pattern there?",
+  "chapter": "Regular Expressions",
+  "concept": "re.search(pattern, text) finds a pattern anywhere, or returns None",
+  "syntax": "re.search(r\"\\d\", text)",
+  "mode": "import",
+  "why": "A regular expression describes a set of strings; re.search scans text for the first place the pattern matches and returns a match object (truthy) or None, so it reads as a yes/no test."
+}
