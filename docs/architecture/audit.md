@@ -22,11 +22,17 @@ engine that does the grading*:
 
 - **`audit.py`** — conformance, the anti‑sidestep adversaries, and the two
   static meta‑audits (lesson‑guard, prove‑checks). All about the **puzzles**.
-- **`audit_selftest.py`** — `_engine_selftest()`: ~34 direct cases pinning the
-  execution guard and toolkit APIs. All about the **engine**, and emphatically
-  *not* "safe to delete". `audit.py --engine` dispatches here; the import is
-  one‑way (`audit.py → audit_selftest`), and the self‑test pulls the meta‑audit
-  helpers back from `audit.py` lazily inside `t_meta_audit` (no cycle).
+- **`audit_selftest.py`** — `_engine_selftest()`: ~37 direct cases pinning the
+  execution guard, toolkit APIs, and the language-pack plumbing (`i18n`,
+  content overrides, the pack validator). All about the **engine**, and
+  emphatically *not* "safe to delete". `audit.py --engine` dispatches here; the
+  import is one‑way (`audit.py → audit_selftest`), and the self‑test pulls the
+  meta‑audit helpers back from `audit.py` lazily inside `t_meta_audit` (no cycle).
+
+Two sibling tools sit alongside, each self-tested from `audit_selftest.py` but
+run on their own: **`audit_keys.py`** (`--keys`: the interactive key layer over a
+pseudo-terminal) and **`check_pack.py`** (a translator-facing validator that
+flags language-pack content overrides mirroring no real puzzle file).
 
 ```mermaid
 flowchart TB

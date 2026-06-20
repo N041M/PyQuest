@@ -62,4 +62,15 @@ file; any file you don't translate keeps its English original. Like
 `strings.json`, this is **per-file partial** — translate the files you want and
 leave the rest. Only files inside `chapters/` are ever redirected this way.
 
+A mistyped folder or filename simply isn't found — the engine looks for the real
+path, doesn't see your file, and shows English with no error. Run the checker to
+catch that before you ship:
+
+```
+python3 tools/check_pack.py <code>     # or with no code: check every pack
+```
+
+It validates `pack.json` / `strings.json` and flags any content override that
+mirrors no real puzzle file (a path typo) or isn't a translatable file.
+
 Nothing here is translated yet — this is the plumbing. Contributions welcome.

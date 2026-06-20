@@ -827,6 +827,42 @@ def _engine_selftest():
             i18n.set_language("en")
             shutil.rmtree(root)
 
+    def t_check_pack():
+        """The pack validator classifies content overrides: a file mirroring a
+        real translatable puzzle file is valid; a mistyped path or a
+        non-translatable filename is a problem."""
+        import shutil
+        import check_pack
+        saved_lang, saved_ch = check_pack.LANG_DIR, check_pack.CHAPTERS_DIR
+        root = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        lang, chdir = os.path.join(root, "lang"), os.path.join(root, "chapters")
+        pz = os.path.join(chdir, "02_x", "01_y")
+        os.makedirs(pz)
+        with open(os.path.join(pz, "reference.md"), "w", encoding="utf-8") as f:
+            f.write("EN\n")
+
+        def put(rel, text="x\n"):
+            p = os.path.join(lang, "xx", rel)
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "w", encoding="utf-8") as f:
+                f.write(text)
+
+        cp = os.path.join("chapters", "02_x", "01_y")
+        put(os.path.join(cp, "reference.md"), "TR\n")           # valid override
+        put(os.path.join("chapters", "02_x", "01_z", "reference.md"))  # bad path
+        put(os.path.join(cp, "starter.py"))                     # not translatable
+        check_pack.LANG_DIR, check_pack.CHAPTERS_DIR = lang, chdir
+        try:
+            ok, problems = check_pack._content_issues("xx")
+            assert ok == [os.path.join("lang", "xx", cp, "reference.md")], ok
+            reasons = [r for _, r in problems]
+            assert len(problems) == 2, problems
+            assert any("not a translatable" in r for r in reasons), reasons
+            assert any("no puzzle file" in r for r in reasons), reasons
+        finally:
+            check_pack.LANG_DIR, check_pack.CHAPTERS_DIR = saved_lang, saved_ch
+            shutil.rmtree(root)
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -840,7 +876,7 @@ def _engine_selftest():
                t_username_validation, t_user_lifecycle,
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
-               t_key_decode, t_i18n, t_i18n_content):
+               t_key_decode, t_i18n, t_i18n_content, t_check_pack):
         case(fn.__name__[2:], fn)
 
     bad = 0

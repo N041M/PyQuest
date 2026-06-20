@@ -71,6 +71,12 @@ def read_starter(puzzle):
 
 
 # ---- brief / hints / tests ------------------------------------------------
+# The per-topic content files routed through i18n.localized -- the set a language
+# pack may override under lang/<code>/chapters/. Kept here, beside the loaders
+# that read them, as the single source of truth (tools/check_pack.py reuses it).
+LOCALIZED_CONTENT = ("brief.md", "hints.md", "reference.md")
+
+
 def brief_path(dirpath):
     """The brief the card points the learner at, as the active language's
     override when a pack supplies one, else the English brief.md. The brief is

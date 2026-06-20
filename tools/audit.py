@@ -443,6 +443,14 @@ def conformance_issues(p):
             issues.append("meta missing %r" % key)
     if meta.get("mode") not in ("script", "import"):
         issues.append("bad mode %r" % meta.get("mode"))
+    # The card points the learner at brief.md, so it must exist; a concept-
+    # bearing puzzle (one with a textbook entry) must also carry its reference.md
+    # -- the standard every topic now meets, pinned so it can't silently regress.
+    if not os.path.isfile(os.path.join(p["dir"], "brief.md")):
+        issues.append("missing brief.md")
+    if meta.get("concept") and not os.path.isfile(
+            os.path.join(p["dir"], "reference.md")):
+        issues.append("has a concept but no reference.md")
     hints = load_hints(p["dir"])
     if len(hints) != 3:
         issues.append("%d hints (want 3)" % len(hints))
