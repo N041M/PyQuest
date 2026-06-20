@@ -4,9 +4,8 @@ build their screens from these, so they live one layer below both.
 """
 
 import os
-import sys
 
-from ..config import WIDTH, rel
+from ..config import WIDTH, rel, term_size
 from ..content import load_hints
 from ..state import current_puzzle, load_answers, switch_to, work_path
 from ..render import (paint, id_banner, header, field, wrap, cli, nav_row,
@@ -14,25 +13,20 @@ from ..render import (paint, id_banner, header, field, wrap, cli, nav_row,
 from .registry import NAV_CLUSTERS, NEEDS_PUZZLE
 from .. import keys
 
-# Play-cockpit state. When the session is an interactive TTY with key support,
-# `_COCKPIT` is on: the card omits its static bottom row, and the cockpit loop
-# (app._play) renders that row interactively via nav_select instead. `_SHOWN`
-# lets the entry point tell whether the command actually drew a card, so the
-# cockpit opens only when there is one. Off -> the unchanged print + typed flow.
-_COCKPIT = [False]
-_SHOWN = [False]
+# Play-cockpit coordination between the entry point (app.main) and the card
+# renderer, gathered into ONE named object rather than scattered flags. `active`
+# is set once per process when the session is an interactive, key-capable TTY:
+# then the card omits its static bottom row and the cockpit loop (app._play)
+# renders that row interactively via nav_select. `card_drawn` is a one-shot
+# signal print_current_card raises so main can tell a card actually reached the
+# screen (the cockpit opens only when one did). It is module-level because that
+# signal crosses from a deeply nested render call up to main.
+class _PlayMode:
+    active = False          # cockpit mode on (set once at startup)
+    card_drawn = False      # a card was rendered since the last reset
 
 
-def set_cockpit(on):
-    _COCKPIT[0] = bool(on)
-
-
-def reset_card_shown():
-    _SHOWN[0] = False
-
-
-def card_shown():
-    return _SHOWN[0]
+play = _PlayMode()
 
 
 def status_marker(prog, pid, current_id):
@@ -104,13 +98,6 @@ def nav_strip(prog, cur, puzzles=None):
     print(nav_row(primary, clusters))
 
 
-def _term_cols():
-    try:
-        return os.get_terminal_size(sys.stdout.fileno()).columns
-    except OSError:
-        return WIDTH
-
-
 def nav_select(prog, cur, puzzles=None):
     """The interactive version of the bottom row -- the play cockpit. Arrow
     across the verbs (the primary chip first), Enter runs the highlighted one,
@@ -138,7 +125,7 @@ def nav_select(prog, cur, puzzles=None):
                 groups.append(" · ".join(labels))
                 plains.append(" · ".join(cl))
             one = "[ %s ]   %s" % (primary, "   ".join(plains))   # plain width
-            if len(PAD) + len(one) <= _term_cols():
+            if len(PAD) + len(one) <= term_size()[0]:
                 rows = [PAD + "   ".join([chip] + groups)]        # fits one line
             else:
                 rows = [PAD + chip] + [PAD + g for g in groups]   # stack to fit
@@ -194,8 +181,8 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
                 lead = paint("hint  ", "yellow", "bold") if i == 0 else " " * 6
                 print(PAD + lead + line)
     print("")
-    _SHOWN[0] = True               # a card was drawn -> the cockpit may open
-    if not _COCKPIT[0]:            # in the cockpit, app._play renders the row
+    play.card_drawn = True          # a card reached the screen -> cockpit may open
+    if not play.active:             # in the cockpit, app._play renders the row
         nav_strip(prog, cur, puzzles)
 
 

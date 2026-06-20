@@ -81,6 +81,17 @@ def _term_width():
 WIDTH = _term_width()       # frames span the terminal (capped for readability)
 
 
+def term_size():
+    """The terminal's live (columns, lines) from the real ioctl size, with a
+    plain fallback off a TTY. The single source for in-place-repaint fit checks
+    -- distinct from WIDTH, the capped frame width fixed once at import."""
+    try:
+        s = os.get_terminal_size(sys.stdout.fileno())
+        return s.columns, s.lines
+    except OSError:
+        return 80, 24
+
+
 def now():
     return datetime.datetime.now().isoformat(timespec="seconds")
 

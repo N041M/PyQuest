@@ -167,7 +167,7 @@ def main():
     # The play cockpit (interactive bottom row) needs a key-capable TTY; without
     # one every card keeps its static row and the learner types verbs as before.
     interactive = sys.stdin.isatty() and keys.supported()
-    cards.set_cockpit(interactive)
+    cards.play.active = interactive
 
     # First run: greet the learner wherever a bare launch lands them. That is
     # the menu now, but an explicit `status` should still welcome too.
@@ -188,9 +188,9 @@ def main():
         cmd_menu(puzzles, by_id, prog)
         return
 
-    cards.reset_card_shown()
+    cards.play.card_drawn = False
     prog = dispatch(args, puzzles, by_id, prog)
     # If that landed on a puzzle card in an interactive terminal, open the
     # cockpit so the bottom row is selectable; otherwise we just return.
-    if interactive and prog.get("active") and cards.card_shown():
+    if interactive and prog.get("active") and cards.play.card_drawn:
         _play(puzzles, by_id, prog)

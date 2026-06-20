@@ -5,9 +5,8 @@ sits on top of the verbs, composing cards + profiles + shortcuts.
 """
 
 import sys
-import os
 
-from ..config import load_settings, MODES, WIDTH
+from ..config import load_settings, MODES, WIDTH, term_size
 from ..state import (current_puzzle, activate, load_answers, current_user,
                      list_users)
 from ..render import paint, wordmark, header, pane_open, cli, PAD, OK, CUR
@@ -133,11 +132,13 @@ def cmd_menu(puzzles, by_id, prog):
         print("")
 
 
-# The hub items the arrow-navigator steps through, top to bottom, with the short
-# labels the compact (size-independent) selector shows on its one prompt line.
-_NAV = ("1", "2", "3", "4", "5", "6", "0")
-_NAV_LABELS = ("start", "select level", "textbook", "stats", "map",
-               "settings", "quit")
+# The hub items the arrow-navigator steps through, top to bottom: (number, short
+# label). One source of truth -- _NAV (the dispatch numbers) and _NAV_LABELS (the
+# compact selector's prompt text) are derived, so they can't drift out of sync.
+_NAV_ITEMS = (("1", "start"), ("2", "select level"), ("3", "textbook"),
+              ("4", "stats"), ("5", "map"), ("6", "settings"), ("0", "quit"))
+_NAV = tuple(n for n, _ in _NAV_ITEMS)
+_NAV_LABELS = tuple(label for _, label in _NAV_ITEMS)
 
 
 def _menu_lines(puzzles, by_id, prog, sel=None):
@@ -192,16 +193,11 @@ def _menu_options(puzzles, by_id, prog):
 
 def _fits(n_lines):
     """Is the terminal wide and tall enough to repaint a block of n_lines in
-    place? If not, the navigator would wrap/scroll and corrupt -- fall back to
-    the typed prompt instead. Uses the real ioctl size (os.get_terminal_size),
-    not shutil's, which prefers possibly-stale COLUMNS/LINES env vars and made
-    the hub fall back on perfectly good terminals. The block only needs to FIT
-    (lines >= n_lines); demanding spare rows wrongly rejected short windows."""
-    try:
-        size = os.get_terminal_size(sys.stdout.fileno())
-    except OSError:
-        return True             # size unknowable -> assume it fits (like the cockpit)
-    return size.columns >= WIDTH and size.lines >= n_lines
+    place? If not, the navigator would wrap/scroll, so the hub uses the compact
+    selector (or, with no keys, the typed prompt). The block only needs to FIT
+    (lines >= n_lines) -- demanding spare rows wrongly rejected short windows."""
+    cols, rows = term_size()
+    return cols >= WIDTH and rows >= n_lines
 
 
 def _hub_navigate(render):

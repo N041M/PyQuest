@@ -80,28 +80,33 @@ def supported():
 
 @contextlib.contextmanager
 def raw():
-    """Hold the terminal in cbreak mode (no line buffering, no echo; signals
-    like Ctrl-C still fire) and restore it on every exit path. Yields True when
-    raw input is live, False when it isn't (the caller should then fall back).
-    Windows needs no mode switch; unsupported terminals are a clean no-op."""
-    if _backend() != "posix":
-        yield supported()
-        return
-    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+    """Hold the terminal ready for single-key reads and restore it on every exit
+    path (incl. KeyboardInterrupt). On POSIX that means cbreak (no line buffering
+    or echo; Ctrl-C still fires); on every backend it also holds auto-wrap OFF so
+    one logical line is exactly one screen row -- which is what keeps the
+    in-place repaint's row math exact. Yields True when raw input is live, False
+    when it isn't (the caller then falls back); unsupported terminals are a clean
+    no-op."""
+    from .theme import autowrap
+    if not supported():
         yield False
         return
+    if _backend() == "windows":              # msvcrt: no cbreak switch needed
+        sys.stdout.write(autowrap(False)); sys.stdout.flush()
+        try:
+            yield True
+        finally:
+            sys.stdout.write(autowrap(True)); sys.stdout.flush()
+        return
     import termios, tty
-    from .theme import autowrap
     fd = sys.stdin.fileno()
     saved = termios.tcgetattr(fd)
     try:
         tty.setcbreak(fd)
-        sys.stdout.write(autowrap(False))    # one logical line == one screen row
-        sys.stdout.flush()
+        sys.stdout.write(autowrap(False)); sys.stdout.flush()
         yield True
     finally:
-        sys.stdout.write(autowrap(True))     # restore wrapping for normal output
-        sys.stdout.flush()
+        sys.stdout.write(autowrap(True)); sys.stdout.flush()
         termios.tcsetattr(fd, termios.TCSADRAIN, saved)
 
 
