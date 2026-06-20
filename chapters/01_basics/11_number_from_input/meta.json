@@ -3,6 +3,7 @@
   "title": "A number from input",
   "chapter": "Basics",
   "concept": "Converting input text to a number with int() before doing arithmetic",
+  "syntax": "int(text)",
   "mode": "script",
   "why": "input() returns a string, so + would join rather than add. int() converts the text to an integer so arithmetic works as expected."
 }

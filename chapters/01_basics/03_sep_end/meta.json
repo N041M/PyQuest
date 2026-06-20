@@ -3,6 +3,7 @@
   "title": "Choosing the separator",
   "chapter": "Basics",
   "concept": "The print sep setting controls what goes between values",
+  "syntax": "print(..., sep=..., end=...)",
   "mode": "script",
   "why": "By default print joins values with a space. sep=\"-\" replaces that join string, placing a dash between each pair of values (never before the first or after the last)."
 }

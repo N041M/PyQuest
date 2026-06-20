@@ -3,6 +3,7 @@
   "title": "Comments",
   "chapter": "Basics",
   "concept": "The # symbol marks a comment that Python ignores, and can switch a line off",
+  "syntax": "# comment",
   "mode": "script",
   "why": "Python skips everything after a # on a line. Putting # before code 'comments it out' so it does not run, without deleting it."
 }

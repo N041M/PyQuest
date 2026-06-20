@@ -3,6 +3,7 @@
   "title": "Arithmetic and order",
   "chapter": "Basics",
   "concept": "Arithmetic operators and operator precedence; parentheses override order",
+  "syntax": "+  -  *  /  //  %  **",
   "mode": "script",
   "why": "* and / bind tighter than + and -, so they run first. Parentheses group an expression so it is evaluated before the operators around it."
 }

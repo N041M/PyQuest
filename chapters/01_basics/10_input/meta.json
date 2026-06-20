@@ -3,6 +3,7 @@
   "title": "Asking the user",
   "chapter": "Basics",
   "concept": "input() reads a line of text from the user and returns it as a string",
+  "syntax": "input(prompt='')",
   "mode": "script",
   "why": "input() returns whatever the user typed as a string, which you can store and join with other text using +."
 }

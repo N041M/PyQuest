@@ -3,6 +3,7 @@
   "title": "Three kinds of division",
   "chapter": "Basics",
   "concept": "/ (float division), // (floor division), and % (remainder)",
+  "syntax": "a / b   a // b   a % b",
   "mode": "script",
   "why": "/ always yields a float, // discards the fraction to give a whole number, and % gives the remainder. They answer three different questions about the same division."
 }

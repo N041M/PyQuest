@@ -3,6 +3,7 @@
   "title": "Hello, output",
   "chapter": "Basics",
   "concept": "print() displays a line of text on the screen",
+  "syntax": "print(*values, sep=' ', end='\\n')",
   "mode": "script",
   "why": "print() takes the text in its parentheses and writes it to the screen, then adds a newline so the next output starts on a fresh line."
 }

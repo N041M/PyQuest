@@ -81,6 +81,19 @@ def load_hints(dirpath):
     return [p for p in parts if p]
 
 
+def load_reference(dirpath):
+    """The optional reference.md: a topic's detailed, technical textbook entry.
+    Returns its markdown, or None when a topic has no reference authored yet (the
+    textbook then falls back to the one-line concept)."""
+    if not dirpath:
+        return None
+    path = os.path.join(dirpath, "reference.md")
+    if not os.path.isfile(path):
+        return None
+    with open(path, encoding="utf-8") as f:
+        return f.read().replace("\r\n", "\n")
+
+
 def load_tests(dirpath):
     path = os.path.join(dirpath, "tests.py")
     name = "pyquest_tests_" + os.path.basename(dirpath)

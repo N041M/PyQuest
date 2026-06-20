@@ -9,7 +9,7 @@ import os
 import datetime
 
 from ..config import WIDTH, rel
-from ..content import load_hints
+from ..content import load_hints, load_reference
 from ..state import (current_puzzle, save_progress, stat, textbook_path,
                      write_textbook, current_user)
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
@@ -320,46 +320,40 @@ def _has_entry(p):
 
 
 def _textbook_md(shown, full, total):
-    """Render the textbook as structured markdown: per chapter, all the syntax
-    bundled together, then all the tips. `concept` supplies the syntax line, the
-    optional `why` the tip -- so it needs no separate authoring and never drifts.
-
-    Not every puzzle carries an entry: those with neither a concept nor a tip
-    are skipped, and a chapter with nothing to show drops out entirely -- the
-    textbook mirrors the course's real content, not one row per puzzle.
-
-    Built as a list, not a table: a `concept` can carry a literal `|` (e.g. the
-    set-union operator), which a markdown table would split into a stray column.
-    A list also reads cleanly raw, before any markdown renderer touches it."""
+    """Render the textbook as a technical reference: per chapter, a section per
+    topic. The heading is the topic's `syntax` -- the construct itself, code-
+    formatted (e.g. `s[start:stop]`) -- or its title, and the body is the
+    puzzle's detailed `reference.md`. Until a reference is authored, it falls
+    back to the one-line `concept` (and `why`), so the textbook is always
+    complete and only deepens as references are written. Topics with neither a
+    concept nor a why are skipped and an empty chapter drops out, so the textbook
+    mirrors the real content, not one row per puzzle."""
     chapters = {}
     for p in shown:
         chapters.setdefault(p["ch_num"], []).append(p)
 
     body, covered = [], 0
     for ch in sorted(chapters):
-        items = chapters[ch]
-        syntax = [p for p in items if p["meta"].get("concept")]
-        tips = [p for p in items if p["meta"].get("why")]
-        if not syntax and not tips:
+        items = [p for p in chapters[ch] if _has_entry(p)]
+        if not items:
             continue                       # nothing to teach here -- skip it
-        covered += sum(1 for p in items if _has_entry(p))
+        covered += len(items)
         # A rule before each chapter -- it parts the preamble from the body and
         # the chapters from one another, with none left dangling at the end.
         body += ["---", "", "## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
-        # Syntax bundle: a definition list, each topic by name (no puzzle ids --
-        # this reads as a textbook, not a pointer back into the course).
-        if syntax:
-            body += ["### Syntax", ""]
-            body += ["- **%s** — %s" % (p["meta"].get("title", ""),
-                                        p["meta"]["concept"]) for p in syntax]
-            body.append("")
-        # Tips bundle: the deeper `why` for each topic that carries one, named
-        # the same way so the two sections read independently.
-        if tips:
-            body += ["### Tips", ""]
-            body += ["- **%s** — %s" % (p["meta"].get("title", ""),
-                                        p["meta"]["why"]) for p in tips]
-            body.append("")
+        for p in items:
+            meta = p["meta"]
+            heading = ("`%s`" % meta["syntax"] if meta.get("syntax")
+                       else meta.get("title", ""))
+            body += ["### %s" % heading, ""]
+            ref = load_reference(p["dir"]) if p.get("dir") else None
+            if ref and ref.strip():
+                body += [ref.rstrip(), ""]          # the full authored reference
+            else:                                   # not authored yet -> the gist
+                if meta.get("concept"):
+                    body += [meta["concept"], ""]
+                if meta.get("why"):
+                    body += ["*%s*" % meta["why"], ""]
 
     out = ["# PyQuest Textbook", ""]
     if full:
@@ -368,7 +362,7 @@ def _textbook_md(shown, full, total):
                 "*Run `textbook` to come back to just the chapters you've "
                 "reached.*"]
     elif body:
-        out += ["*The syntax and tips you've covered so far -- %d of %d "
+        out += ["*A technical reference for what you've reached -- %d of %d "
                 "topics.*" % (covered, total),
                 "*Run `textbook all` for the whole language; `textbook` brings "
                 "you back here.*"]

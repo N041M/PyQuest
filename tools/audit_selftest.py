@@ -526,32 +526,33 @@ def _engine_selftest():
             shutil.rmtree(os.path.join(CHAPTERS_DIR, "98_selftest_tmp"))
 
     def t_textbook_omits_empty():
-        # Not every puzzle earns a textbook entry: one with neither a concept
-        # nor a why is left out, a chapter with nothing to teach drops entirely,
-        # and a section (Syntax/Tips) appears only when it has content.
+        # The textbook is a per-topic reference: each entry a section headed by
+        # its `syntax` (code-formatted) or title, body = concept until a
+        # reference.md exists. A puzzle with neither a concept nor a why earns no
+        # entry, and a chapter with nothing to teach drops entirely.
         from engine.commands.views import _textbook_md, _has_entry
 
-        def P(ch, title, concept=None, why=None):
+        def P(ch, title, concept=None, why=None, syntax=None):
             m = {"title": title}
-            if concept:
-                m["concept"] = concept
-            if why:
-                m["why"] = why
+            for k, v in (("concept", concept), ("why", why), ("syntax", syntax)):
+                if v:
+                    m[k] = v
             return {"ch_num": ch, "ch_title": "Ch%d" % ch, "meta": m}
 
         assert _has_entry(P(1, "x", concept="c"))
         assert _has_entry(P(1, "x", why="w"))
         assert not _has_entry(P(1, "x"))          # neither -> no entry
 
-        shown = [P(1, "Has syntax", concept="syn"),
+        shown = [P(1, "Indexing", concept="char by position", syntax="s[i]"),
                  P(1, "Drill only"),              # no entry -> omitted
                  P(2, "Cap A"), P(2, "Cap B"),    # whole chapter empty -> gone
-                 P(3, "Tip only", why="tip")]
+                 P(3, "Tip only", why="mind the edges")]
         md = _textbook_md(shown, full=False, total=2)
-        assert "Has syntax" in md and "syn" in md
+        assert "### `s[i]`" in md and "char by position" in md  # syntax head + body
         assert "Drill only" not in md             # entry-less puzzle omitted
         assert "Cap A" not in md and "Ch2" not in md  # empty chapter dropped
-        assert md.count("### Tips") == 1          # only ch3 carries a tip
+        assert "### Tip only" in md and "mind the edges" in md  # why -> the body
+        assert "### Syntax" not in md and "### Tips" not in md  # old bundles gone
         assert "2 of 2 topics" in md              # count is entries, not puzzles
         assert not md.rstrip().endswith("---")    # no rule left dangling
 

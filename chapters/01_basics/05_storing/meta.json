@@ -3,6 +3,7 @@
   "title": "Storing a value",
   "chapter": "Basics",
   "concept": "Assigning a value to a variable with = and reusing it by name",
+  "syntax": "name = value",
   "mode": "script",
   "why": "= stores the right-hand value under the name on the left. Using the name (without quotes) substitutes the stored value, so it can be reused as often as needed."
 }
