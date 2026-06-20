@@ -1,0 +1,9 @@
+{
+  "id": "11.3",
+  "title": "import as: rename on the way in",
+  "chapter": "The Standard Library",
+  "concept": "import statistics as stats binds the module under a name you choose",
+  "syntax": "import statistics as stats",
+  "mode": "import",
+  "why": "import ... as ... gives a module a local alias -- a shorter or clearer name -- without changing the module itself; stats.mean is then the same as statistics.mean."
+}

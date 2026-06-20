@@ -222,5 +222,5 @@ flowchart LR
 ```
 
 Run order in CI‑of‑one: `--engine` after touching `toolkit/`, `--sidestep`
-before any commit; both must be green (current bar: **98/98 conformance,
-0/98 sidesteppable, 0/98 unguarded lessons, 34/34 engine self‑tests**).
+before any commit; both must be green (current bar: **106/106 conformance,
+0/106 sidesteppable, 0/106 unguarded lessons, 37/37 engine self‑tests**).

@@ -1,0 +1,9 @@
+{
+  "id": "11.8",
+  "title": "Capstone: a stats summary from JSON",
+  "chapter": "The Standard Library",
+  "concept": "Compose stdlib modules: json.loads to read, statistics to summarize",
+  "syntax": "json.loads(text)  +  statistics.mean(nums)",
+  "mode": "import",
+  "why": "Real work is gluing library tools together: parse the input with json, summarize it with statistics, return a plain dict -- each step a module you didn't have to write."
+}

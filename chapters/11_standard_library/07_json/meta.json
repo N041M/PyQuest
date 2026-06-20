@@ -1,0 +1,9 @@
+{
+  "id": "11.7",
+  "title": "json: data as text",
+  "chapter": "The Standard Library",
+  "concept": "json.dumps turns a dict/list into a JSON string; json.loads reads it back",
+  "syntax": "json.dumps(obj)   json.loads(text)",
+  "mode": "import",
+  "why": "JSON is the common text format for data exchange; json.dumps serializes Python values to it and json.loads parses them back, so you never hand-format or hand-parse it."
+}

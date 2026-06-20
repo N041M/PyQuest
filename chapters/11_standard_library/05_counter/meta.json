@@ -1,0 +1,9 @@
+{
+  "id": "11.5",
+  "title": "Counter: tally in one step",
+  "chapter": "The Standard Library",
+  "concept": "collections.Counter(items) counts each distinct item for you",
+  "syntax": "from collections import Counter",
+  "mode": "import",
+  "why": "Counter is a dict subclass that tallies an iterable in one call -- the get(k, 0) + 1 loop, already written and tested, with extras like most_common()."
+}

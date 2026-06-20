@@ -1,0 +1,9 @@
+{
+  "id": "11.2",
+  "title": "from import: pull out one name",
+  "chapter": "The Standard Library",
+  "concept": "from math import gcd brings a name in directly, called bare as gcd(...)",
+  "syntax": "from math import gcd",
+  "mode": "import",
+  "why": "from module import name binds just that name into your file, so you call gcd(a, b) without the math. prefix -- handy for a tool you use a lot."
+}

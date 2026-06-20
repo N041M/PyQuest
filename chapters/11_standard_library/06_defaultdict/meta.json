@@ -1,0 +1,9 @@
+{
+  "id": "11.6",
+  "title": "defaultdict: a default for missing keys",
+  "chapter": "The Standard Library",
+  "concept": "collections.defaultdict(list) auto-creates an empty list for a new key",
+  "syntax": "from collections import defaultdict",
+  "mode": "import",
+  "why": "defaultdict(factory) calls the factory the first time a missing key is touched, so groups[k].append(x) just works -- no 'if key not in d' setup."
+}

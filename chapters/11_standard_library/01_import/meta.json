@@ -1,0 +1,9 @@
+{
+  "id": "11.1",
+  "title": "import: bring in a module",
+  "chapter": "The Standard Library",
+  "concept": "import math loads a module; reach its tools as math.name",
+  "syntax": "import math   math.sqrt(x)",
+  "mode": "import",
+  "why": "import binds a whole module to a name; math.sqrt looks the function up on it. The standard library ships these batteries so common work isn't re-derived."
+}

@@ -1,0 +1,9 @@
+{
+  "id": "11.4",
+  "title": "random: reproducible chance",
+  "chapter": "The Standard Library",
+  "concept": "random.seed(n) makes random.shuffle / randint repeatable",
+  "syntax": "random.seed(n)   random.shuffle(lst)",
+  "mode": "import",
+  "why": "random draws pseudo-random values; seeding fixes the starting point so the same seed always yields the same sequence -- repeatable randomness for tests and games."
+}
