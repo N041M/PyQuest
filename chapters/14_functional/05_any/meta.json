@@ -1,0 +1,9 @@
+{
+  "id": "14.5",
+  "title": "any: is at least one true?",
+  "chapter": "Functional Tools",
+  "concept": "any(iterable) is True if at least one item is truthy",
+  "syntax": "any(n < 0 for n in nums)",
+  "mode": "import",
+  "why": "any collapses a sequence of true/false tests into one answer -- True as soon as one passes -- replacing a loop-with-a-flag, and short-circuits on the first hit."
+}

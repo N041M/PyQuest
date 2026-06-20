@@ -1,0 +1,9 @@
+{
+  "id": "14.4",
+  "title": "sorted(key=lambda): sort by a derived value",
+  "chapter": "Functional Tools",
+  "concept": "sorted(items, key=lambda x: ...) orders by a value computed per item",
+  "syntax": "sorted(words, key=lambda w: w[-1])",
+  "mode": "import",
+  "why": "The key= function maps each item to the value to sort on; an inline lambda expresses that mapping right where it's used, so you can sort by anything derived from the items."
+}

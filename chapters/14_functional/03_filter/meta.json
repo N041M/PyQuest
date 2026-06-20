@@ -1,0 +1,9 @@
+{
+  "id": "14.3",
+  "title": "filter: keep what passes",
+  "chapter": "Functional Tools",
+  "concept": "filter(pred, iterable) keeps the items for which pred is true",
+  "syntax": "list(filter(pred, items))",
+  "mode": "import",
+  "why": "filter runs a predicate (a true/false function) over each item and keeps only those that pass -- the keep-if pattern as a higher-order function, collected with list()."
+}

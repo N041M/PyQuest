@@ -1,0 +1,9 @@
+{
+  "id": "14.8",
+  "title": "Capstone: a ranked shortlist",
+  "chapter": "Functional Tools",
+  "concept": "Compose filter, sorted(key=lambda) and map into one pipeline",
+  "syntax": "filter -> sorted(key=..., reverse=True) -> map",
+  "mode": "import",
+  "why": "Real work chains these tools: filter to the records that qualify, sort them by a key, map out the field you want -- a data pipeline written as a sequence of higher-order functions."
+}

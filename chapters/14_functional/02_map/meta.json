@@ -1,0 +1,9 @@
+{
+  "id": "14.2",
+  "title": "map: apply to every item",
+  "chapter": "Functional Tools",
+  "concept": "map(func, iterable) applies func to each item, lazily",
+  "syntax": "list(map(func, items))",
+  "mode": "import",
+  "why": "map runs one function over every item of an iterable, producing a lazy iterator; it is the apply-to-each pattern as a higher-order function, wrapped in list() to collect."
+}

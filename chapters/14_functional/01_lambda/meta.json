@@ -1,0 +1,9 @@
+{
+  "id": "14.1",
+  "title": "lambda: a function in an expression",
+  "chapter": "Functional Tools",
+  "concept": "lambda args: expr is a small anonymous function you can return or pass",
+  "syntax": "lambda x: x * n",
+  "mode": "import",
+  "why": "A lambda is a one-expression function with no name; it shines where a function is a value -- returned from another function, or handed to map/sorted -- without a separate def."
+}

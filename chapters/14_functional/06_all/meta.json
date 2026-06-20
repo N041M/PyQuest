@@ -1,0 +1,9 @@
+{
+  "id": "14.6",
+  "title": "all: are they every one true?",
+  "chapter": "Functional Tools",
+  "concept": "all(iterable) is True only if every item is truthy",
+  "syntax": "all(n > 0 for n in nums)",
+  "mode": "import",
+  "why": "all is any's partner: True only when every test passes, short-circuiting False on the first failure -- the 'do they all satisfy this?' check in one expression."
+}

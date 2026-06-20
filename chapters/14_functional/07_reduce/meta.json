@@ -1,0 +1,9 @@
+{
+  "id": "14.7",
+  "title": "reduce: fold a sequence to one value",
+  "chapter": "Functional Tools",
+  "concept": "functools.reduce(func, items, start) combines items pairwise into one",
+  "syntax": "reduce(lambda a, b: a * b, nums, 1)",
+  "mode": "import",
+  "why": "reduce folds a sequence to a single value by applying a two-argument function cumulatively; with a start value it generalises the accumulator loop (sum, product, max...) into one call."
+}
