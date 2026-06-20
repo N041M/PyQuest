@@ -67,7 +67,11 @@ def _launch(kind, exe):
     if kind == "powershell":
         ps1 = os.path.join(sh, "pyquest.ps1")
         cmd = ". '%s'; & '%s' '%s' menu" % (ps1, py, ENTRY)
-        return subprocess.call([exe, "-NoExit", "-NoProfile", "-Command", cmd])
+        # -ExecutionPolicy Bypass so dot-sourcing pyquest.ps1 works under the
+        # default (Restricted/RemoteSigned) policy. It applies ONLY to this
+        # spawned process -- no admin, no change to the system/user policy.
+        return subprocess.call([exe, "-NoExit", "-NoProfile",
+                                "-ExecutionPolicy", "Bypass", "-Command", cmd])
 
     # zsh / bash: a throwaway startup file that keeps the user's own
     # environment, loads the shortcuts, opens the menu, then stays interactive.

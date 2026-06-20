@@ -110,25 +110,35 @@ def nav_select(prog, cur, puzzles=None):
     verbs = [primary] + [v for cl in clusters for v in cl]
 
     def render(idx, buf):
+        # The cursor is a MOVING bracket, not just a colour -- so the selection
+        # reads on a console with muted/absent colour (Windows). Exactly one cell
+        # is bracketed at a time, so the row's width never jitters as you arrow.
+        def cell(v, pos):
+            if pos == idx:
+                return paint("[%s]" % v, "bcyan", "bold"), "[%s]" % v
+            if pos == 0:                        # the primary (default) action
+                return paint(v, "byellow", "bold"), v
+            return paint(v, "gray"), v
+
         if buf:
             rows = [PAD + paint("> ", "cyan", "bold") + buf]
         else:
-            chip = paint("[ %s ]" % primary, "bcyan" if idx == 0 else "byellow",
-                         "bold")
+            head, head_plain = cell(primary, 0)
             groups, plains, i = [], [], 1
             for cl in clusters:
-                labels = []
+                painted, plain = [], []
                 for v in cl:
-                    labels.append(paint(v, "bcyan", "bold") if i == idx
-                                  else paint(v, "gray"))
+                    p, t = cell(v, i)
+                    painted.append(p)
+                    plain.append(t)
                     i += 1
-                groups.append(" · ".join(labels))
-                plains.append(" · ".join(cl))
-            one = "[ %s ]   %s" % (primary, "   ".join(plains))   # plain width
-            if len(PAD) + len(one) <= term_size()[0]:
-                rows = [PAD + "   ".join([chip] + groups)]        # fits one line
+                groups.append(" · ".join(painted))
+                plains.append(" · ".join(plain))
+            one_plain = "%s   %s" % (head_plain, "   ".join(plains))
+            if len(PAD) + len(one_plain) <= term_size()[0]:
+                rows = [PAD + "   ".join([head] + groups)]        # fits one line
             else:
-                rows = [PAD + chip] + [PAD + g for g in groups]   # stack to fit
+                rows = [PAD + head] + [PAD + g for g in groups]   # stack to fit
         hint = PAD + paint("arrows move · Enter runs it · type a verb · "
                            "Esc to the shell", "gray")
         return rows + [hint]
