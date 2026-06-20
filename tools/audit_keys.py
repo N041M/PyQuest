@@ -192,9 +192,12 @@ def keys_selftest():
         prog = {"active": True, "completed": [], "mode": "normal"}
         cur = {"id": "1.1", "index": 0}
         puz = [{"id": "1.1", "index": 0}, {"id": "1.2", "index": 1}]
-        out = on_pty(24, 140, lambda: cards.nav_select(prog, cur, puz),
-                     [(0.3, b"\x1b[C"), (0.55, b"\r")])     # RIGHT -> verbs[1]
-        assert out == "hint", "cockpit RIGHT,ENTER -> %r (want 'hint')" % out
+        # 140 cols -> the row fits on one line; 40 cols -> it stacks the clusters.
+        # The index->verb mapping (and the repaint) must survive both packings.
+        for cols in (140, 40):
+            out = on_pty(24, cols, lambda: cards.nav_select(prog, cur, puz),
+                         [(0.3, b"\x1b[C"), (0.55, b"\r")])   # RIGHT -> verbs[1]
+            assert out == "hint", "cockpit (%d cols) RIGHT,ENTER -> %r" % (cols, out)
 
     def t_resize_redraws():
         # resize mid-navigation (winsize change + SIGWINCH), then finish the pick;

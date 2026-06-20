@@ -635,14 +635,10 @@ def _engine_selftest():
         does; _strip_lesson_checks removes exactly the construct layer and
         leaves a runnable check()."""
         import shutil
-        import sys
-        # the meta-audit helpers live in audit.py; reach the already-loaded module
-        # (it is __main__ when run as a script, "audit" when imported as one)
-        # rather than `from audit import`, which would load a SECOND copy.
-        a = sys.modules.get("audit") or sys.modules["__main__"]
-        check_inventory, lesson_guard = a.check_inventory, a.lesson_guard
-        _strip_lesson_checks = a._strip_lesson_checks
-        LESSON_CHECKS, GUARDED_OK = a.LESSON_CHECKS, a.GUARDED_OK
+        # the meta-audit helpers live in audit.py; import them at call time so
+        # this module never imports audit at top (which would be a cycle).
+        from audit import (check_inventory, lesson_guard, _strip_lesson_checks,
+                           LESSON_CHECKS, GUARDED_OK)
         d = tempfile.mkdtemp(prefix="pyquest_selftest_")
 
         def write_tests(body):
