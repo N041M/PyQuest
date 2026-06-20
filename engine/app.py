@@ -2,7 +2,7 @@
 
 import sys
 
-from .config import CHAPTERS_DIR, rel
+from .config import CHAPTERS_DIR, rel, load_settings
 from .content import discover
 from .state import (load_progress, current_puzzle, ensure_workspace,
                     load_answers, migrate_legacy)
@@ -18,6 +18,7 @@ from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
 from .commands import cards
 from .commands.registry import canonical, NEEDS_PUZZLE, suggest, _all_names
 from . import keys
+from . import i18n
 
 
 def _emit_completions(what, puzzles):
@@ -152,6 +153,13 @@ def main():
     prog.setdefault("highest", 0)
     # existing learners (already have progress) count as active
     prog.setdefault("active", len(prog.get("completed", [])) > 0)
+
+    # Activate the saved UI language. English is the default and the fallback:
+    # a missing or broken pack reports what's wrong and reverts to English rather
+    # than blocking startup.
+    lang_ok, lang_msg = i18n.set_language(load_settings().get("lang", "en"))
+    if not lang_ok:
+        print(paint("  %s  %s" % (NO, lang_msg), "yellow"))
 
     args = sys.argv[1:]
     # Bare invocation (`start` / `python3 start.py` inside a session) always

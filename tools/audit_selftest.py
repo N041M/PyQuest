@@ -720,6 +720,49 @@ def _engine_selftest():
         assert d(b"\x1b[Z") == keys.ESC                # unmapped CSI -> ESC
         assert d(b"\x01") == keys.ESC                  # non-printable control
 
+    def t_i18n():
+        """The language piping: English is the default + fallback, a valid pack
+        translates via t(), a partial pack falls back per missing key, and a
+        broken pack is rejected with a reason naming what's wrong -- never left
+        active. (No language is shipped translated; this pins the plumbing.)"""
+        import json
+        import shutil
+        from engine import i18n
+        saved = i18n.LANG_DIR
+        d = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        i18n.LANG_DIR = d
+
+        def pack(code, files):
+            os.makedirs(os.path.join(d, code))
+            for name, content in files.items():
+                with open(os.path.join(d, code, name), "w", encoding="utf-8") as f:
+                    f.write(content)
+        try:
+            i18n.set_language("en")
+            assert i18n.t("k", "Eng") == "Eng"            # default, no pack
+            # a valid, PARTIAL pack
+            pack("xx", {"pack.json": '{"name": "Test", "code": "xx"}',
+                        "strings.json": '{"menu.play": "TR"}'})
+            ok, msg = i18n.set_language("xx")
+            assert ok and msg is None and i18n.current() == "xx"
+            assert i18n.t("menu.play", "play") == "TR"          # translated
+            assert i18n.t("menu.learn", "learn") == "learn"     # missing -> fallback
+            assert ("xx", "Test") in i18n.available()
+            # broken: no pack.json -> rejected, names it, reverts to English
+            pack("yy", {"strings.json": "{}"})
+            ok, msg = i18n.set_language("yy")
+            assert not ok and "pack.json" in msg, msg
+            assert i18n.current() == "en" and i18n.t("menu.play", "play") == "play"
+            assert not any(c == "yy" for c, _ in i18n.available())
+            # broken: invalid JSON -> rejected with a reason, reverts
+            pack("zz", {"pack.json": "{ not json"})
+            ok, msg = i18n.set_language("zz")
+            assert not ok and "JSON" in msg and i18n.current() == "en", msg
+        finally:
+            i18n.LANG_DIR = saved
+            i18n.set_language("en")
+            shutil.rmtree(d)
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -733,7 +776,7 @@ def _engine_selftest():
                t_username_validation, t_user_lifecycle,
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
-               t_key_decode):
+               t_key_decode, t_i18n):
         case(fn.__name__[2:], fn)
 
     bad = 0

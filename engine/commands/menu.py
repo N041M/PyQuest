@@ -6,11 +6,12 @@ sits on top of the verbs, composing cards + profiles + shortcuts.
 
 import sys
 
-from ..config import load_settings, MODES, WIDTH, term_size
+from ..config import load_settings, save_settings, MODES, WIDTH, term_size
 from ..state import (current_puzzle, activate, load_answers, current_user,
                      list_users)
 from ..render import paint, wordmark, header, pane_open, cli, PAD, OK, CUR
 from .. import keys
+from .. import i18n
 from .cards import print_current_card, _goto_list, _resolve_goto, _jump
 from .profiles import cmd_theme, cmd_user, cmd_mode
 from .views import cmd_status, cmd_map, cmd_search, cmd_stats, cmd_textbook
@@ -32,7 +33,7 @@ _BACK = ("0", "back", "quit", "exit")
 # hub's own menu, so only the settings PANE passes the 1-4 aliases that
 # _settings_action also understands).
 _SETTINGS_VERBS = ("theme", "mode", "profiles", "profile", "users", "user",
-                   "shortcuts", "short")
+                   "shortcuts", "short", "language", "lang")
 
 
 def _leaving(answer):
@@ -167,17 +168,17 @@ def _menu_lines(puzzles, by_id, prog, sel=None):
 
     title = cur["meta"].get("title", "") if cur else ""
     where = ("%s · %s" % (cur["id"], title[:40]) if cur else "-")
-    group("play")
-    item("1", "start", where)
+    group(i18n.t("menu.play", "play"))          # seed strings: the rest are
+    item("1", "start", where)                   # routed through t() over time
     item("2", "select level", "jump to any puzzle")
     L.append("")
-    group("learn")
+    group(i18n.t("menu.learn", "learn"))
     item("3", "textbook", "sealed in hard mode" if hard
          else "syntax & tips so far")
     item("4", "stats", "attempts · hints · pace")
     item("5", "map", "the chapter / puzzle tree")
     L.append("")
-    group("set up")
+    group(i18n.t("menu.setup", "set up"))
     item("6", "settings", "theme · mode · profiles · shortcuts")
     L.append("")
     item("0", "quit")
@@ -265,6 +266,8 @@ def _settings_action(head, arg, puzzles, by_id, prog):
                 else _menu_users(puzzles, by_id, prog))
     elif head in ("4", "shortcuts", "short"):
         _menu_shortcuts()
+    elif head in ("5", "language", "lang"):
+        _apply_language(arg) if arg else _menu_language()
     else:
         return False, prog
     return True, prog
@@ -273,14 +276,15 @@ def _settings_action(head, arg, puzzles, by_id, prog):
 def _menu_setup(puzzles, by_id, prog):
     """The folded set-up pane: theme, mode, profiles, shortcuts behind one menu
     entry. Stays open until 0/back. Returns prog (the profile pane can swap it)."""
-    labels = ("theme", "mode", "profiles", "shortcuts")
+    labels = ("theme", "mode", "profiles", "shortcuts", "language")
     while True:
         print("")
         print(header("settings", "cyan"))
         print("")
         notes = (load_settings().get("theme", "neon"), prog["mode"],
                  current_user(),
-                 "persistent: %s" % ("on" if _is_persistent() else "off"))
+                 "persistent: %s" % ("on" if _is_persistent() else "off"),
+                 i18n.current())
         if keys.supported():
             opts = ["%s   %s" % (l.ljust(11), n) for l, n in zip(labels, notes)]
             res = keys.pick("settings", opts, allow_typing=True)
@@ -422,6 +426,52 @@ def _menu_theme():
         if c.startswith("theme "):                  # forgive "theme ocean"
             c = c[6:].strip()
         cmd_theme(c)                                # applies + persists live
+
+
+def _apply_language(code):
+    """Switch UI language to `code` and persist it. On a bad pack, print what's
+    missing and stay on English -- i18n.set_language has already fallen back."""
+    code = (code or "").strip()
+    ok, msg = i18n.set_language(code or "en")
+    if not ok:
+        print(PAD + paint(msg, "yellow"))           # names the missing file/field
+        return
+    settings = load_settings()
+    settings["lang"] = i18n.current()
+    save_settings(settings)
+    print(PAD + paint("language set to %s." % i18n.current(), "green", "bold"))
+
+
+def _menu_language():
+    """Pick the UI language. The list is English plus every pack under lang/ that
+    loads; a contributor drops a folder in (see lang/README.md) and it appears."""
+    langs = i18n.available()                         # [(code, name), ...], en first
+    cur = i18n.current()
+    start = next((i for i, (c, _) in enumerate(langs) if c == cur), 0)
+    if keys.supported():
+        print("")
+        print(header("language", "cyan"))
+        i = keys.pick("language", ["%s  (%s)" % (n, c) for c, n in langs],
+                      index=start)
+        if i is not None:
+            _apply_language(langs[i][0])
+        return
+    print("")
+    print(header("language", "cyan"))
+    for c, n in langs:
+        on = c == cur
+        print(PAD + " %s  %s  %s"
+              % (paint(OK if on else "·", "green" if on else "gray"),
+                 paint(n.ljust(12), "byellow" if on else "white", "bold"),
+                 paint("(%s)" % c, "gray")))
+    print("")
+    try:
+        c = input(PAD + paint("language code  (0 = back) > ", "cyan",
+                              "bold")).strip()
+    except (EOFError, KeyboardInterrupt):
+        return
+    if not _leaving(c):
+        _apply_language(c)
 
 
 def _menu_users(puzzles, by_id, prog):
