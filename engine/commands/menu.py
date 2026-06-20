@@ -51,8 +51,12 @@ def cmd_menu(puzzles, by_id, prog):
         _menu_options(puzzles, by_id, prog)
         print(PAD + paint("(run this in a terminal to choose)", "gray"))
         return
-    print(wordmark("cyan"))
     while True:
+        # Redraw the wordmark each time we land on the hub -- on first entry and
+        # on every return from a submenu (settings, level) or an inline verb --
+        # so "back to the main menu" always shows the same banner, never a bare
+        # option list under whatever the submenu left on screen.
+        print(wordmark("cyan"))
         raw = _menu_input(puzzles, by_id, prog)
         if raw is None:                          # Ctrl-C / EOF -> leave the hub
             print("")
