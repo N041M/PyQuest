@@ -1,0 +1,9 @@
+{
+  "id": "13.5",
+  "title": "Subtracting dates: days between",
+  "chapter": "Dates and Times",
+  "concept": "date - date gives a timedelta; .days is the number of days between",
+  "syntax": "(date_b - date_a).days",
+  "mode": "import",
+  "why": "Subtracting one date from another yields a timedelta spanning them; its .days is the exact day count, correct across months, years and leap days -- no manual counting."
+}

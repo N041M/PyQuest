@@ -1,0 +1,9 @@
+{
+  "id": "13.4",
+  "title": "timedelta: date arithmetic",
+  "chapter": "Dates and Times",
+  "concept": "date + timedelta(days=n) moves a date by a span of time",
+  "syntax": "date.fromisoformat(text) + timedelta(days=n)",
+  "mode": "import",
+  "why": "A timedelta is a duration; adding it to a date handles month and year rollover and leap days automatically, so 'what date is 40 days from now' is one safe operation."
+}

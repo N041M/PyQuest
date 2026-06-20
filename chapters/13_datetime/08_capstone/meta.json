@@ -1,0 +1,9 @@
+{
+  "id": "13.8",
+  "title": "Capstone: shift a timestamp",
+  "chapter": "Dates and Times",
+  "concept": "Compose the module: strptime to parse, timedelta to shift, strftime to format",
+  "syntax": "strptime -> + timedelta(hours=h) -> strftime",
+  "mode": "import",
+  "why": "The full round trip: parse a timestamp into a datetime, move it by a duration (rolling across days and months), and format it back -- each step a datetime tool, none done by hand."
+}

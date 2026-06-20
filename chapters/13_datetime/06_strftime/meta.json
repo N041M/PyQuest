@@ -1,0 +1,9 @@
+{
+  "id": "13.6",
+  "title": "strftime: format a date your way",
+  "chapter": "Dates and Times",
+  "concept": "strftime(format) renders a date using format codes like %d %m %Y",
+  "syntax": "date.strftime(\"%d/%m/%Y\")",
+  "mode": "import",
+  "why": "isoformat gives one fixed layout; strftime renders a date in any layout you describe with format codes (%d day, %m month, %Y year), zero-padding handled for you."
+}

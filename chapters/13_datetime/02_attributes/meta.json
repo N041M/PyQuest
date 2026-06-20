@@ -1,0 +1,9 @@
+{
+  "id": "13.2",
+  "title": "fromisoformat: text to date",
+  "chapter": "Dates and Times",
+  "concept": "date.fromisoformat(text) parses a YYYY-MM-DD string into a date",
+  "syntax": "date.fromisoformat(\"2026-06-20\")",
+  "mode": "import",
+  "why": "fromisoformat is the inverse of isoformat: it parses a standard date string into a real date object, so you can then read .year/.month/.day or do calendar maths on it."
+}

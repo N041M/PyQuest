@@ -1,0 +1,9 @@
+{
+  "id": "13.1",
+  "title": "date: a calendar day",
+  "chapter": "Dates and Times",
+  "concept": "date(year, month, day) makes a date; .isoformat() renders it",
+  "syntax": "date(2026, 6, 20).isoformat()",
+  "mode": "import",
+  "why": "A date object models a real calendar day, validating the values and offering methods like isoformat() -- far better than juggling three loose integers or a hand-formatted string."
+}

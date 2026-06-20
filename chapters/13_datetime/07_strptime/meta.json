@@ -1,0 +1,9 @@
+{
+  "id": "13.7",
+  "title": "strptime: parse by a format",
+  "chapter": "Dates and Times",
+  "concept": "datetime.strptime(text, format) parses a string into a datetime",
+  "syntax": "datetime.strptime(text, \"%Y-%m-%d %H:%M\")",
+  "mode": "import",
+  "why": "strptime is the inverse of strftime: give it the same format codes and it reads a string into a real datetime, validating the shape and giving you .year/.hour/etc. to work with."
+}

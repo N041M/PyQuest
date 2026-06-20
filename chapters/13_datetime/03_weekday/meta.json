@@ -1,0 +1,9 @@
+{
+  "id": "13.3",
+  "title": "weekday: which day of the week",
+  "chapter": "Dates and Times",
+  "concept": "date.weekday() returns the day of week, Monday=0 .. Sunday=6",
+  "syntax": "date.fromisoformat(text).weekday()",
+  "mode": "import",
+  "why": "Working out a weekday from a date needs the whole calendar (leap years, month lengths); the date object already knows it, so .weekday() gives the answer no hand arithmetic could."
+}
