@@ -3,6 +3,7 @@
   "title": "Two parameters",
   "chapter": "Functions",
   "concept": "Functions take several comma-separated parameters; the caller's values arrive in order and are local to the call",
+  "syntax": "def f(a, b):",
   "mode": "import",
   "why": "Parameters are ordinary local variables filled in by position at the call, so rect_area(3, 4) computes with width=3 and height=4."
 }

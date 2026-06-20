@@ -3,6 +3,7 @@
   "title": "The accumulator pattern",
   "chapter": "Decisions & Loops",
   "concept": "Summing in a loop: start a total at 0, add each pass (combines for/range/input)",
+  "syntax": "total = 0; for ...: total += x",
   "mode": "script",
   "why": "Starting an accumulator at 0 and adding inside the loop builds a running total -- the core pattern behind sums, counts, and more."
 }

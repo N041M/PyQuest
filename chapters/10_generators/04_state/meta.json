@@ -3,6 +3,7 @@
   "title": "a generator remembers",
   "chapter": "Generators",
   "concept": "Local variables survive across yields, so a generator can carry state (an accumulator) from one item to the next",
+  "syntax": "local vars survive across yields",
   "mode": "import",
   "why": "Pausing instead of returning keeps the function's locals alive, so a running total built in a loop is remembered between yields rather than reset each pass."
 }

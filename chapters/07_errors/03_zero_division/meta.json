@@ -3,6 +3,7 @@
   "title": "ZeroDivisionError: ask forgiveness",
   "chapter": "Errors & Robustness",
   "concept": "EAFP: attempt the operation and catch its failure, instead of pre-testing every way it could go wrong",
+  "syntax": "try: a / b  except ZeroDivisionError:",
   "mode": "import",
   "why": "The except names the actual event -- the division failing -- and scales to operations whose failure modes can't all be pre-checked."
 }

@@ -3,6 +3,7 @@
   "title": "A sensible default",
   "chapter": "Classes & Objects",
   "concept": "__init__ is a function, so it can take a default parameter -- configure the object once, reuse it everywhere",
+  "syntax": "def __init__(self, x=default):",
   "mode": "import",
   "why": "greeting=\"Hello\" in the signature lets a caller omit it; the value is stored once at construction and every greet() reuses self.greeting."
 }

@@ -3,6 +3,7 @@
   "title": "zip(): pairing lists",
   "chapter": "Power Tools",
   "concept": "zip(a, b) walks two lists in step, yielding one (item_a, item_b) pair per pass",
+  "syntax": "zip(a, b)",
   "mode": "script",
   "why": "zip() joins lists item-by-item like a zipper's teeth, stopping at the shorter list -- the standard way to loop over related lists together."
 }

@@ -3,6 +3,7 @@
   "title": "IndexError and safe access",
   "chapter": "Errors & Robustness",
   "concept": "Catching IndexError makes a safe list lookup that is correct by definition -- valid negative indexes included",
+  "syntax": "try: lst[i]  except IndexError:",
   "mode": "import",
   "why": "The except fires exactly when Python itself rejects the index, so there is no two-sided bounds arithmetic to get wrong."
 }

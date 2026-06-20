@@ -3,6 +3,7 @@
   "title": "Capstone: word report",
   "chapter": "Power Tools",
   "concept": "Combine split, the dict tally, and sorted() into a word frequency report",
+  "syntax": "split + tally + sorted",
   "mode": "script",
   "why": "split() makes the words, the tally counts each distinct one, and sorted(counts) walks the dict's keys alphabetically for a tidy report."
 }

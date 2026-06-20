@@ -3,6 +3,7 @@
   "title": "sorted()",
   "chapter": "Power Tools",
   "concept": "sorted(nums) returns a new list in ascending order, leaving the original untouched; reverse=True flips it",
+  "syntax": "sorted(items)",
   "mode": "script",
   "why": "sorted() hands back an ordered copy -- safe to use anywhere -- while .sort() reorders the list in place."
 }

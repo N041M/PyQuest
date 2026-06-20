@@ -3,6 +3,7 @@
   "title": "join: a list into text",
   "chapter": "Collections",
   "concept": "sep.join(list) glues a list of strings into one string",
+  "syntax": "sep.join(list)",
   "mode": "script",
   "why": "join is the inverse of split: called on the separator, it stitches a list of strings together with that separator between each."
 }

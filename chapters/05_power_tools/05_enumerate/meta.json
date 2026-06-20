@@ -3,6 +3,7 @@
   "title": "enumerate()",
   "chapter": "Power Tools",
   "concept": "for i, item in enumerate(lst, 1) loops with the position and the item together -- no hand-kept counter",
+  "syntax": "for i, x in enumerate(items, start)",
   "mode": "script",
   "why": "enumerate() yields (position, item) pairs you unpack in the for line; the second argument picks the starting number."
 }

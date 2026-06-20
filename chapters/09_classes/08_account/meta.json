@@ -3,6 +3,7 @@
   "title": "Capstone: a bank account",
   "chapter": "Classes & Objects",
   "concept": "a stateful class with a default, mutating methods, and a guarded rule the object enforces",
+  "syntax": "class with state + guard + __str__",
   "mode": "import",
   "why": "balance is per-instance state that deposit/withdraw update; withdraw's if-guard refuses an overdraw and reports it via True/False, so the object protects its own invariant."
 }

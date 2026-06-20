@@ -3,6 +3,7 @@
   "title": "A frequency report",
   "chapter": "Files & I/O",
   "concept": "read a file, tally with a dict, write a sorted report -- the count-and-report pipeline",
+  "syntax": "read -> dict tally -> write sorted",
   "mode": "script",
   "why": "The dict.get tally counts each word in one pass; sorting the keys by (-count, word) orders the report, which is then written line by line to a second file."
 }

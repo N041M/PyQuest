@@ -3,6 +3,7 @@
   "title": "Looping over a dictionary",
   "chapter": "Collections",
   "concept": "Iterating key/value pairs with for k, v in d.items()",
+  "syntax": "for k, v in d.items()",
   "mode": "script",
   "why": ".items() yields each key and value together (in insertion order), which you unpack into two loop variables."
 }

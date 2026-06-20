@@ -3,6 +3,7 @@
   "title": "for and range",
   "chapter": "Decisions & Loops",
   "concept": "Counting loops with for + range(n) (0 to n-1)",
+  "syntax": "for i in range(n):",
   "mode": "script",
   "why": "for steps through each value range() produces, so it repeats a set number of times without a manual counter."
 }

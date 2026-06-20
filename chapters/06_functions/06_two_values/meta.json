@@ -3,6 +3,7 @@
   "title": "Returning two values",
   "chapter": "Functions",
   "concept": "return a, b hands back a tuple; the caller unpacks it with lo, hi = f(...)",
+  "syntax": "return a, b",
   "mode": "import",
   "why": "Comma-separated return values are packed into a tuple, so one return can answer two questions and unpacking names them at the call site."
 }

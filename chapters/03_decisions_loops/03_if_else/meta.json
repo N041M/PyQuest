@@ -3,6 +3,7 @@
   "title": "if / else",
   "chapter": "Decisions & Loops",
   "concept": "Two-way branching: else runs when the if condition is False",
+  "syntax": "if ... else ...",
   "mode": "script",
   "why": "Exactly one of the if/else blocks runs -- else handles every case where the condition was False."
 }

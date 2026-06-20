@@ -3,6 +3,7 @@
   "title": "Catch the RIGHT error",
   "chapter": "Errors & Robustness",
   "concept": "except names exactly the error you expect; everything else should escape -- a bare except hides bugs",
+  "syntax": "except SpecificError:",
   "mode": "import",
   "why": "ValueError means 'bad text', which safe_int expects; TypeError means 'wrong kind of thing', a caller bug that must stay loud."
 }

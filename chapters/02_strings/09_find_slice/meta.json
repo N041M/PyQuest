@@ -3,6 +3,7 @@
   "title": "Finding a position",
   "chapter": "Strings",
   "concept": "s.find(sub) returns an index; combine it with slicing to extract a part",
+  "syntax": "s.find(sub)",
   "mode": "script",
   "why": "find returns the position of the first match, which you can feed into a slice to pull out the text before or after a marker."
 }

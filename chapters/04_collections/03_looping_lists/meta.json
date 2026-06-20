@@ -3,6 +3,7 @@
   "title": "Looping over a list",
   "chapter": "Collections",
   "concept": "Iterating a list with for, plus len() and slicing",
+  "syntax": "for x in lst",
   "mode": "script",
   "why": "A list is a sequence, so for x in list hands you each item in turn -- the natural way to process every element."
 }

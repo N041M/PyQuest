@@ -3,6 +3,7 @@
   "title": "Looping over a string",
   "chapter": "Decisions & Loops",
   "concept": "Iterating a string with for ch in s -- one character per pass",
+  "syntax": "for ch in s:",
   "mode": "script",
   "why": "A string is a sequence, so a for loop hands you each character in turn without any indexing."
 }

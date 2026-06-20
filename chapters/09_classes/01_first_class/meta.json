@@ -3,6 +3,7 @@
   "title": "A first class",
   "chapter": "Classes & Objects",
   "concept": "class + __init__ bundle related data onto self -- one object instead of loose variables",
+  "syntax": "class Name:  def __init__(self, ...):",
   "mode": "import",
   "why": "__init__ runs when the object is built and self.name = name stores each value on the instance, so the data travels together and every instance keeps its own."
 }

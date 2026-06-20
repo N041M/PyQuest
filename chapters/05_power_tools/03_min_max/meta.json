@@ -3,6 +3,7 @@
   "title": "min() and max()",
   "chapter": "Power Tools",
   "concept": "min(nums) and max(nums) return the smallest and largest item of a non-empty collection",
+  "syntax": "min(items)   max(items)",
   "mode": "script",
   "why": "min()/max() package the keep-the-best-so-far loop; they need at least one item, since an empty list has no smallest."
 }

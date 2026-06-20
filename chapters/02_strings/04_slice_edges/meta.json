@@ -3,6 +3,7 @@
   "title": "Slicing the middle",
   "chapter": "Strings",
   "concept": "Mixing negative indexes in slices (s[1:-1]); empty slices are valid",
+  "syntax": "s[1:-1]",
   "mode": "script",
   "why": "s[1:-1] drops the first and last characters. Out-of-range slices do not error -- a too-short string just yields an empty result."
 }

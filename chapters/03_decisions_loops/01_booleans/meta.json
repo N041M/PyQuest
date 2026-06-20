@@ -3,6 +3,7 @@
   "title": "Booleans and comparison",
   "chapter": "Decisions & Loops",
   "concept": "Booleans (True/False) and the comparison operators ==, !=, <, >, <=, >=",
+  "syntax": "==  !=  <  >  <=  >=",
   "mode": "script",
   "why": "Comparing two values produces a boolean. == asks whether values are equal (a single = assigns instead)."
 }

@@ -3,6 +3,7 @@
   "title": "Lists inside lists",
   "chapter": "Collections",
   "concept": "Nested lists; two indexes reach an inner item (grid[r][c])",
+  "syntax": "grid[r][c]",
   "mode": "script",
   "why": "A list can contain lists, so one index picks an inner list and a second picks an item inside it -- the basis for rows, pairs, and grids."
 }

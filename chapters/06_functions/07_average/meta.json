@@ -3,6 +3,7 @@
   "title": "Building on built-ins",
   "chapter": "Functions",
   "concept": "A function can bundle a recipe of built-ins behind a clear name: average = sum / len",
+  "syntax": "def average(nums): ...",
   "mode": "import",
   "why": "sum(nums) / len(nums) is the whole recipe; / keeps the result a float, which an average naturally is."
 }

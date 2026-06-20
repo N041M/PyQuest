@@ -3,6 +3,7 @@
   "title": "Writing a file",
   "chapter": "Files & I/O",
   "concept": "open(name, \"w\") and f.write() -- create a file and put exact text in it (no automatic newline)",
+  "syntax": "open(name, \"w\")  f.write(text)",
   "mode": "script",
   "why": "Mode \"w\" opens a fresh file for writing and write() emits exactly the string given, so reading one file and writing a transformed copy is the everyday file pipeline."
 }

@@ -3,6 +3,7 @@
   "title": "f-strings",
   "chapter": "Strings",
   "concept": "Building text with f-strings: f\"...{expression}...\"",
+  "syntax": "f\"...{expression}...\"",
   "mode": "script",
   "why": "An f-string evaluates each {expression} and drops its value into the text, making readable output without manual concatenation."
 }

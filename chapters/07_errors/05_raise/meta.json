@@ -3,6 +3,7 @@
   "title": "raise: errors are yours too",
   "chapter": "Errors & Robustness",
   "concept": "raise ValueError(\"message\") rejects senseless input at the door -- garbage in, error out, never garbage out",
+  "syntax": "raise ValueError(\"message\")",
   "mode": "import",
   "why": "Raising pins the failure to the moment and message where it happened; a wrong returned value would travel and crash far from the real mistake."
 }

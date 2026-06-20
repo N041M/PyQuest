@@ -3,6 +3,7 @@
   "title": "Capstone: a robust calculator",
   "chapter": "Errors & Robustness",
   "concept": "One try, several excepts: each kind of failure picks its own recovery, and no input can crash the program",
+  "syntax": "try: ... except A: ... except B: ...",
   "mode": "script",
   "why": "Multiple except blocks route each error to its own message -- ValueError to 'bad number', ZeroDivisionError to 'cannot divide' -- while the elif chain handles the happy paths."
 }

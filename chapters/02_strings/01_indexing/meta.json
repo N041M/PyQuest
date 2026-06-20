@@ -3,6 +3,7 @@
   "title": "Indexing",
   "chapter": "Strings",
   "concept": "Reading a character by position with s[index], counting from 0",
+  "syntax": "s[index]",
   "mode": "script",
   "why": "Strings are indexed from 0, so s[0] is the first character, s[1] the second, and so on."
 }

@@ -3,6 +3,7 @@
   "title": "in: membership testing",
   "chapter": "Power Tools",
   "concept": "x in s asks whether something is inside a string, list, or dict -- a boolean you can put straight in an if",
+  "syntax": "x in collection",
   "mode": "script",
   "why": "`in` evaluates to True or False, so `if letter in word:` reads like English and replaces fiddly .find() == -1 checks."
 }

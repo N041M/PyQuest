@@ -3,6 +3,7 @@
   "title": "Ask again: the retry loop",
   "chapter": "Errors & Robustness",
   "concept": "while True + try/break + except/pass: keep asking until the input makes sense, then trust it",
+  "syntax": "while True: try: ... break  except: ...",
   "mode": "script",
   "why": "The happy path breaks out of the loop and the except absorbs each failure, so code after the loop always sees a valid value."
 }

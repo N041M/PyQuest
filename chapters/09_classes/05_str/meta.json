@@ -3,6 +3,7 @@
   "title": "Printing an object: __str__",
   "chapter": "Classes & Objects",
   "concept": "__str__ returns the text Python shows for an object; str()/print() call it for you",
+  "syntax": "def __str__(self):",
   "mode": "import",
   "why": "Python invokes the __str__ dunder whenever the object becomes text, so defining it replaces the default <object at 0x...> with a readable form."
 }

@@ -3,6 +3,7 @@
   "title": "Filtering lines into a new file",
   "chapter": "Files & I/O",
   "concept": "read a file, keep only the lines an `if` accepts, write them to another file -- the read/filter/write pipeline",
+  "syntax": "read, if test, write",
   "mode": "script",
   "why": "Reading into a list, testing each line, and writing the survivors is the core file-processing shape; `if line.strip():` drops blank lines because an empty string is falsey."
 }

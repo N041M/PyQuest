@@ -3,6 +3,7 @@
   "title": "Adding up a file",
   "chapter": "Files & I/O",
   "concept": "file lines are text -- int() each one before arithmetic, then accumulate the total",
+  "syntax": "int(line) for line in f",
   "mode": "script",
   "why": "A file yields strings, so int() must convert each line before it can be summed; an accumulator builds the total as the loop walks the file."
 }

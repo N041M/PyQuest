@@ -3,6 +3,7 @@
   "title": "Changing a list",
   "chapter": "Collections",
   "concept": "Lists are mutable: replace by index, and .pop() the last item",
+  "syntax": "lst[i] = x   lst.pop()",
   "mode": "script",
   "why": "Lists can be changed in place -- assigning to nums[i] replaces an item and .pop() removes the last -- without making a new list."
 }

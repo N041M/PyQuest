@@ -3,6 +3,7 @@
   "title": "return ends the function",
   "chapter": "Functions",
   "concept": "return stops the function immediately, so branching functions can settle each case and leave -- the early-return style",
+  "syntax": "if cond: return",
   "mode": "import",
   "why": "Once a return runs nothing else in the function does, so each if can return its own answer and the last line handles whatever is left."
 }

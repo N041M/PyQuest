@@ -3,6 +3,7 @@
   "title": "Counting with a dict",
   "chapter": "Power Tools",
   "concept": "The tally pattern: counts[w] = counts.get(w, 0) + 1 counts how many times each thing appears",
+  "syntax": "counts[k] = counts.get(k, 0) + 1",
   "mode": "script",
   "why": "Each key holds its own running count; .get(w, 0) makes the first sighting start from 0, so one loop counts everything."
 }

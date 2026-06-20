@@ -3,6 +3,7 @@
   "title": "Capstone: a streaming pipeline",
   "chapter": "Generators",
   "concept": "Combine the chapter: a source, a filter, and a transform generator composed into a pipeline that streams item by item",
+  "syntax": "source -> filter -> transform",
   "mode": "import",
   "why": "Each stage loops over its input stream and yields as it goes, so feeding one generator into the next lets data flow through the whole pipeline one item at a time, never a full list in between."
 }

@@ -3,6 +3,7 @@
   "title": "Methods: behaviour on the data",
   "chapter": "Classes & Objects",
   "concept": "a method takes self and computes from the object's own data -- behaviour travels with the data",
+  "syntax": "def method(self):",
   "mode": "import",
   "why": "area(self) reads self.side, so every Square already knows how to compute its own area; the method is called with a dot and Python passes self for you."
 }

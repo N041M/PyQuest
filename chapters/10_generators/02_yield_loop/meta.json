@@ -3,6 +3,7 @@
   "title": "yield inside a loop",
   "chapter": "Generators",
   "concept": "A yield inside a for/while loop streams a whole transformed sequence, one item per pass",
+  "syntax": "for ...: yield f(x)",
   "mode": "import",
   "why": "The loop walks the input and the yield emits one transformed value each pass, so squares produces its numbers lazily instead of materializing the full list."
 }

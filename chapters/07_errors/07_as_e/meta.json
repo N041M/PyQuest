@@ -3,6 +3,7 @@
   "title": "Reading the error: except ... as e",
   "chapter": "Errors & Robustness",
   "concept": "except ValueError as e catches the error OBJECT; printing e relays Python's own diagnosis",
+  "syntax": "except ValueError as e:",
   "mode": "script",
   "why": "The exception carries the message attached when it was raised, so relaying e reports exactly what went wrong for any input."
 }

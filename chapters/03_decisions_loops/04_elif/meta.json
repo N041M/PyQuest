@@ -3,6 +3,7 @@
   "title": "elif",
   "chapter": "Decisions & Loops",
   "concept": "Multiple branches with elif; the first true condition wins",
+  "syntax": "elif condition:",
   "mode": "script",
   "why": "Python checks the if/elif conditions in order and runs the first True one, skipping the rest; else catches what's left."
 }

@@ -3,6 +3,7 @@
   "title": "Lists and append",
   "chapter": "Collections",
   "concept": "Lists hold ordered values; build one from empty with .append()",
+  "syntax": "lst.append(x)",
   "mode": "script",
   "why": "A list stores many values in order. Starting empty and calling .append() in a loop is the standard way to build one up from input."
 }
