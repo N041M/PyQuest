@@ -35,7 +35,7 @@ def discover():
             except ValueError:
                 continue
             try:
-                with open(meta_path) as f:
+                with open(meta_path, encoding="utf-8") as f:
                     meta = json.load(f)
                 if not isinstance(meta, dict):
                     raise ValueError("meta.json is not an object")
@@ -63,7 +63,7 @@ def starter_path(puzzle):
 def read_starter(puzzle):
     path = starter_path(puzzle)
     if os.path.isfile(path):
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return f.read()
     return "# %s -- %s\n# TODO: your code here\n" % (
         puzzle["id"], puzzle["meta"].get("title", ""))
@@ -74,7 +74,7 @@ def load_hints(dirpath):
     path = os.path.join(dirpath, "hints.md")
     if not os.path.isfile(path):
         return []
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         text = f.read()
     text = text.replace("\r\n", "\n")       # Windows-edited hints still split
     parts = [p.strip() for p in text.split("\n---\n")]

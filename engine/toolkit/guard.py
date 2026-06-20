@@ -72,7 +72,7 @@ class ExecutionGuard:
 
     def put_file(self, name, content):
         """Create a fixture file the learner's code can open by name."""
-        with open(os.path.join(self.sandbox(), name), "w") as f:
+        with open(os.path.join(self.sandbox(), name), "w", encoding="utf-8") as f:
             f.write(content)
 
     def guarded(self, because, fn, *args, **kwargs):

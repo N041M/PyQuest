@@ -250,7 +250,7 @@ def cmd_solution(puzzles, by_id, prog):
     if not os.path.isfile(path):
         print("No solution file for this puzzle.")
         return
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         code = f.read().rstrip()
     print(pane_open("solution · %s · %s"
                     % (cur["id"], cur["meta"].get("title", "")),

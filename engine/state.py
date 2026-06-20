@@ -204,7 +204,7 @@ def read_work():
 
 def write_work(code):
     ensure_user()
-    with open(work_path(), "w") as f:
+    with open(work_path(), "w", encoding="utf-8") as f:
         f.write(code)
 
 
@@ -216,7 +216,7 @@ def write_textbook(text):
     """(Re)generate the per-user textbook markdown the learner opens via a link.
     Owned by the engine like work.py -- regenerated on each summon."""
     ensure_user()
-    with open(textbook_path(), "w") as f:
+    with open(textbook_path(), "w", encoding="utf-8") as f:
         f.write(text)
 
 

@@ -39,7 +39,7 @@ class RunnersMixin:
         """The text of a file the learner's code wrote (translated failure
         if it never appeared)."""
         try:
-            with open(os.path.join(self.sandbox(), name)) as f:
+            with open(os.path.join(self.sandbox(), name), encoding="utf-8") as f:
                 return f.read()
         except OSError:
             raise WrongResultError("a file named %r to be written" % name,
@@ -79,7 +79,7 @@ class RunnersMixin:
         whose lesson IS a specific piece of source (e.g. commenting a line out).
         """
         try:
-            with open(self.path) as f:
+            with open(self.path, encoding="utf-8") as f:
                 return f.read()
         except OSError:
             return ""
