@@ -10,27 +10,42 @@ only the presentation is localized.
 
 ## Start with the one-file worksheet
 
-Generate a single file with *every* translatable instance (all UI strings + every
-puzzle's brief/hints/reference), English prewritten, then translate in place and
-split it back into a pack:
+Generate a single Python data file listing *every* translatable piece (the pack
+name, all UI strings, and every puzzle's brief/hints/reference) as one
+`TRANSLATIONS` dict, each value prefilled with its English — then edit the values
+and split it into a pack:
 
 ```
-python3 tools/lang_worksheet.py new <code>     # writes lang/<code>.worksheet.txt
-# ... translate the text under each "#@ pyquest:" marker, in place ...
+python3 tools/lang_worksheet.py new <code>     # writes lang/<code>.translations.py
+# ... change each value to your language (leave it to keep English) ...
 python3 tools/lang_worksheet.py apply <code>   # builds lang/<code>/ from it
 python3 tools/check_pack.py <code>             # validate
 ```
 
-`apply` writes only the entries you actually changed, so a partial translation
-stays partial — everything untouched falls back to English. The worksheet is a
-loose `lang/<code>.worksheet.txt` file (not a pack folder), so a half-finished
-one is invisible to the engine and the checker.
+Each piece is one dict entry, keyed by what it is. Multi-line content is a raw
+triple-quoted string, so markdown and backslashes (regex `\d`, ...) survive as
+typed:
 
-See [`example.worksheet.txt`](example.worksheet.txt) for what one looks like (an
-abbreviated sample — the pack name, the UI strings, and one content file).
+```python
+TRANSLATIONS = {
+    "ui menu.play": "hrát",
+    "1.1 hints": r"""Která vestavěná funkce vypíše text na obrazovku? ...
+""",
+}
+```
 
-(You can also hand-build a pack by creating the files below directly — `apply`
-just produces them for you.)
+`apply` writes only the values you changed, so a partial translation stays
+partial — every unchanged value falls back to English. Keep each value's markdown
+and ``` code blocks exactly; only the prose is localized (literals the grader
+checks stay as-is). The file is **pure data** — read with `ast.literal_eval`,
+never executed — and lives as a loose `lang/<code>.translations.py` (not a pack
+folder), so a half-finished one is invisible to the engine and the checker.
+
+See [`example.translations.py`](example.translations.py) — a complete file with a
+few values translated to Czech (the name, the UI strings, and `1.1 hints`) to show
+the format.
+
+(`apply` produces the pack files below; you can also hand-build them.)
 
 ## Layout
 

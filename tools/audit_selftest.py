@@ -952,9 +952,11 @@ def _engine_selftest():
             shutil.rmtree(root)
 
     def t_lang_worksheet():
-        """The one-file worksheet round-trips: `new` prefills every English UI
-        string + content file; editing entries and `apply` writes only the
-        changed ones into the pack (untouched entries fall back to English)."""
+        """The one-file TRANSLATIONS data file round-trips: `new` lists every
+        piece (UI string + each puzzle's brief/hints/reference, by id) as a dict
+        keyed by label, each value prefilled with the English; editing a value
+        and `apply` writes just that piece, unchanged values staying English.
+        Read with ast.literal_eval, so a value's backslashes survive verbatim."""
         import io
         import json
         import shutil
@@ -970,14 +972,16 @@ def _engine_selftest():
         os.makedirs(lang)
         with open(os.path.join(eng, "m.py"), "w", encoding="utf-8") as f:
             f.write('i18n.t("menu.play", "play")\n')
+        with open(os.path.join(pz, "meta.json"), "w", encoding="utf-8") as f:
+            f.write('{"id": "1.1"}')
         with open(os.path.join(pz, "brief.md"), "w", encoding="utf-8") as f:
-            f.write("# Hello\n")
+            f.write('regex `\\d` keeps its backslash\n')      # the hard case
         with open(os.path.join(pz, "hints.md"), "w", encoding="utf-8") as f:
             f.write("a hint\n")
         lw.ENGINE_DIR = eng
         lw.CHAPTERS_DIR = os.path.join(root, "chapters")
         lw.LANG_DIR = lang
-        wp = os.path.join(lang, "cs.worksheet.txt")
+        wp = os.path.join(lang, "cs.translations.py")
         ov = os.path.join(lang, "cs", "chapters", "01_x", "01_y")
 
         def hush(fn, *a):
@@ -985,15 +989,18 @@ def _engine_selftest():
                 return fn(*a)
         try:
             assert hush(lw.new, "cs") == 0
-            text = open(wp, encoding="utf-8").read()
-            assert "%sstring menu.play" % lw.MARK in text
-            assert "%sfile 01_x/01_y/brief.md" % lw.MARK in text
-            # translate the name, the string, and brief.md; leave hints.md English
-            text = text.replace(lw.NAME_PLACEHOLDER, "Test")
-            text = text.replace("%sstring menu.play\nplay\n" % lw.MARK,
-                                "%sstring menu.play\nhrat\n" % lw.MARK)
-            text = text.replace("%sfile 01_x/01_y/brief.md\n# Hello\n" % lw.MARK,
-                                "%sfile 01_x/01_y/brief.md\n# Ahoj\n" % lw.MARK)
+            entries = lw._entries()                          # [(label, english)]
+            labels = {label for label, _ in entries}
+            assert {"name", "ui menu.play", "1.1 brief", "1.1 hints"} <= labels
+            # values start as the English -- and a backslash survives parsing
+            data = lw.parse(open(wp, encoding="utf-8").read())
+            assert data["1.1 hints"] == "a hint\n"
+            assert data["ui menu.play"] == "play"
+            assert data["1.1 brief"] == "regex `\\d` keeps its backslash\n"
+            # translate name, the string, and brief; leave 1.1 hints English
+            fill = {"name": "Test", "ui menu.play": "hrat", "1.1 brief": "# Ahoj\n"}
+            text = lw.serialize([(label, fill.get(label, en))
+                                 for label, en in entries])
             open(wp, "w", encoding="utf-8").write(text)
             assert hush(lw.apply, "cs") == 0
             meta = json.load(open(os.path.join(lang, "cs", "pack.json")))

@@ -1,21 +1,32 @@
-"""One-file translation worksheet: every translatable instance, English
-prewritten, in a single editable file -- then split into the pack the engine
-loads.
+"""One-file translation worksheet -- a plain Python data file you edit, then
+split into the pack the engine loads.
 
-    python3 tools/lang_worksheet.py new <code>     write lang/<code>.worksheet.txt,
-                                                   prefilled with every English UI
-                                                   string + every puzzle's
-                                                   brief/hints/reference
-    python3 tools/lang_worksheet.py apply <code>   split a filled worksheet into
+    python3 tools/lang_worksheet.py new <code>     write lang/<code>.translations.py:
+                                                   a TRANSLATIONS = {...} dict with
+                                                   one entry per translatable piece
+                                                   (the pack name, every UI string,
+                                                   every puzzle's brief/hints/
+                                                   reference), each value prefilled
+                                                   with its English
+    python3 tools/lang_worksheet.py apply <code>   split a filled file into
                                                    lang/<code>/ (pack.json,
                                                    strings.json, chapters/...)
 
-Translate in place -- overwrite the English under each `#@ pyquest:` marker.
-`apply` writes only the entries you actually changed, so a partial translation
-stays partial (every untouched string/file falls back to English, the engine's
-design). The worksheet lives as a loose `lang/<code>.worksheet.txt` file, which
-the engine and the pack checker ignore (they only look at pack directories), so a
-half-finished worksheet never shows up as a broken language.
+You edit one dict: change each value to your language, leave it as the English to
+keep English. Multi-line content is a readable raw triple-quoted string
+(`r\"\"\"...\"\"\"`), so markdown and backslashes (regex `\\d`, ...) survive as-is.
+
+    TRANSLATIONS = {
+        "ui menu.play": "hrát",
+        "1.1 hints": r\"\"\"Která vestavěná funkce vypíše text na obrazovku? ...
+    \"\"\",
+    }
+
+`apply` writes only the values you changed, so a partial translation stays partial
+(every unchanged value falls back to English). The file is read with
+ast.literal_eval -- pure data, never executed -- and lives as a loose
+`lang/<code>.translations.py`, which the engine and the pack checker ignore (they
+only look at pack directories), so a half-finished one is never a broken language.
 """
 
 import ast
@@ -28,28 +39,29 @@ ENGINE_DIR = os.path.join(ROOT, "engine")
 CHAPTERS_DIR = os.path.join(ROOT, "chapters")
 LANG_DIR = os.path.join(ROOT, "lang")
 
-# The content files the engine localizes (mirror of content.LOCALIZED_CONTENT).
-LOCALIZED_CONTENT = ("brief.md", "hints.md", "reference.md")
+# The content files the engine localizes, as (piece-label, filename).
+PIECES = (("brief", "brief.md"), ("hints", "hints.md"),
+          ("reference", "reference.md"))
 
-MARK = "#@ pyquest:"          # an entry header; bodies never start with this
-NAME_PLACEHOLDER = "Your language's own name -- replace this (e.g. Cestina)"
+NAME_PLACEHOLDER = "<your language's own name, e.g. Čeština>"
 
-PREAMBLE = """\
-# PyQuest translation worksheet -- every translatable instance, in one file.
+PREAMBLE = '''\
+# PyQuest translations. Edit the TRANSLATIONS dict below: change each value to
+# your language; leave it unchanged to keep English (apply writes only what you
+# changed). Keep each value's markdown and ``` code blocks exactly -- only the
+# prose is localized, the grader is language-agnostic (literals it checks, like
+# print("Hello, output"), stay as they are).
 #
-# Translate the text UNDER each "%s<kind> <id>" marker, replacing the English in
-# place. Leave anything you don't want to translate as-is: `apply` writes only
-# what you changed, so the rest falls back to English.
+#   "name"          your language's display name
+#   "ui <key>"      a UI string
+#   "<id> <piece>"  a puzzle's brief / hints / reference (e.g. "1.1 hints")
 #
-#   meta name      -> your language's display name (set this first)
-#   string <key>   -> a one-line UI string
-#   file <path>    -> a content file (brief/hints/reference); keep its markdown
-#                     structure and any ``` code blocks exactly -- only the prose
-#                     is localized, the grader is language-agnostic.
+# This file is pure data -- it is read with ast.literal_eval, never executed.
+# Multi-line values are raw triple-quoted strings (r\"\"\"...\"\"\"). Then:
 #
-# Then: python3 tools/lang_worksheet.py apply <code>
-# Lines above the first marker (like these) are ignored.
-""" % MARK
+#     python3 tools/lang_worksheet.py apply <code>
+
+'''
 
 
 # ---- reading the English source -------------------------------------------
@@ -83,68 +95,103 @@ def _ui_strings():
     return sorted(out.items())
 
 
-def _content_files():
-    """Every (relpath, English text) for the localizable content files under
-    chapters/, in a stable walk order."""
+def _puzzles():
+    """[(id, dir), ...] from every chapters/NN_x/MM_y/meta.json, ordered by id."""
     out = []
-    for dirpath, dirs, files in os.walk(CHAPTERS_DIR):
-        dirs[:] = sorted(d for d in dirs if d != "__pycache__")
-        for name in sorted(files):
-            if name in LOCALIZED_CONTENT:
-                full = os.path.join(dirpath, name)
-                rel = os.path.relpath(full, CHAPTERS_DIR).replace(os.sep, "/")
-                with open(full, encoding="utf-8") as f:
-                    out.append((rel, f.read()))
+    for ch in sorted(os.listdir(CHAPTERS_DIR)):
+        chd = os.path.join(CHAPTERS_DIR, ch)
+        if not os.path.isdir(chd) or ch.startswith(("_", ".")):
+            continue
+        for pz in sorted(os.listdir(chd)):
+            meta = os.path.join(chd, pz, "meta.json")
+            if not os.path.isfile(meta):
+                continue
+            try:
+                with open(meta, encoding="utf-8") as f:
+                    pid = json.load(f).get("id")
+            except (ValueError, OSError):
+                continue
+            if pid:
+                out.append((pid, os.path.join(chd, pz)))
+    out.sort(key=lambda t: [int(n) for n in t[0].split(".")])
     return out
 
 
 def _entries():
-    """The ordered (kind, id, English body) of everything translatable."""
-    ents = [("meta", "name", NAME_PLACEHOLDER)]
-    ents += [("string", k, v) for k, v in _ui_strings()]
-    ents += [("file", rel, txt) for rel, txt in _content_files()]
+    """The ordered (label, English) of every translatable piece. The label is the
+    dict key and what `apply` resolves to a destination: `name`, `ui <key>`, or
+    `<id> <piece>`."""
+    ents = [("name", NAME_PLACEHOLDER)]
+    ents += [("ui %s" % k, v) for k, v in _ui_strings()]
+    for pid, d in _puzzles():
+        for piece, fname in PIECES:
+            fp = os.path.join(d, fname)
+            if os.path.isfile(fp):
+                with open(fp, encoding="utf-8") as f:
+                    ents.append(("%s %s" % (pid, piece), f.read()))
     return ents
 
 
-# ---- worksheet (de)serialization ------------------------------------------
-def _norm(body):
-    """A body always ends in exactly one newline, so the next marker sits on its
-    own line (and a one-line string round-trips losslessly)."""
-    return body if body.endswith("\n") else body + "\n"
+def _resolve(label, idmap):
+    """A label -> where its translation belongs: ("name", None),
+    ("string", key), or ("file", relpath). None if it names nothing real."""
+    if label == "name":
+        return ("name", None)
+    parts = label.split(None, 1)
+    if len(parts) == 2 and parts[0] == "ui":
+        return ("string", parts[1])
+    if len(parts) == 2:
+        pid, piece = parts[0], parts[1]
+        fname = dict(PIECES).get(piece)
+        if pid in idmap and fname:
+            rel = os.path.relpath(idmap[pid], CHAPTERS_DIR).replace(os.sep, "/")
+            return ("file", rel + "/" + fname)
+    return None
+
+
+# ---- the Python data file (write / read) ----------------------------------
+def _pyval(s):
+    """A source literal for `s`: a plain string for a simple one-liner, a raw
+    triple-quoted string for multi-line / backslashed prose (readable, and
+    backslashes survive), or repr() for the rare value containing \"\"\"."""
+    if "\n" not in s and '"' not in s and "\\" not in s:
+        return '"%s"' % s
+    if '"""' not in s:
+        return 'r"""%s"""' % (s if s.endswith("\n") else s + "\n")
+    return repr(s)
 
 
 def serialize(entries):
-    parts = [PREAMBLE]
-    for kind, id_, body in entries:
-        parts.append("%s%s %s\n%s" % (MARK, kind, id_, _norm(body)))
-    return "".join(parts)
+    out = [PREAMBLE, "TRANSLATIONS = {\n"]
+    for label, en in entries:
+        out.append('\n"%s": %s,\n' % (label, _pyval(en)))
+    out.append("}\n")
+    return "".join(out)
 
 
 def parse(text):
-    """[(kind, id, body), ...] -- body is the verbatim text under each marker
-    (preamble before the first marker is dropped)."""
-    entries, kind_id, buf = [], None, []
-    for line in text.splitlines(keepends=True):
-        if line.startswith(MARK):
-            if kind_id is not None:
-                entries.append((kind_id[0], kind_id[1], "".join(buf)))
-            head = line[len(MARK):].rstrip("\n")
-            kind, _, id_ = head.partition(" ")
-            kind_id, buf = (kind, id_), []
-        elif kind_id is not None:
-            buf.append(line)
-    if kind_id is not None:
-        entries.append((kind_id[0], kind_id[1], "".join(buf)))
-    return entries
+    """The TRANSLATIONS dict from the file's source -- read as data, never run.
+    Raises SyntaxError (bad edit) or ValueError (no dict)."""
+    tree = ast.parse(text)
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == "TRANSLATIONS"):
+            return ast.literal_eval(node.value)
+    raise ValueError("no TRANSLATIONS = {...} assignment found")
 
 
 # ---- the two commands ------------------------------------------------------
-def _worksheet_path(code):
-    return os.path.join(LANG_DIR, code + ".worksheet.txt")
+def _path(code):
+    return os.path.join(LANG_DIR, code + ".translations.py")
+
+
+def _norm(body):
+    return body if body.endswith("\n") else body + "\n"
 
 
 def new(code):
-    path = _worksheet_path(code)
+    path = _path(code)
     if os.path.exists(path):
         print("refusing to overwrite %s (delete it first to regenerate)"
               % os.path.relpath(path, ROOT))
@@ -153,46 +200,55 @@ def new(code):
     os.makedirs(LANG_DIR, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(serialize(entries))
-    strings = sum(1 for k, _, _ in entries if k == "string")
-    files = sum(1 for k, _, _ in entries if k == "file")
+    ui = sum(1 for label, _ in entries if label.startswith("ui "))
+    content = sum(1 for label, _ in entries
+                  if not label.startswith(("ui ", "name")))
     print("wrote %s" % os.path.relpath(path, ROOT))
-    print("  %d UI string(s) + %d content file(s) to translate"
-          % (strings, files))
-    print("  translate in place, then: python3 tools/lang_worksheet.py apply %s"
-          % code)
+    print("  %d UI string(s) + %d content piece(s); edit the values, then:"
+          % (ui, content))
+    print("  python3 tools/lang_worksheet.py apply %s" % code)
     return 0
 
 
 def apply(code):
-    path = _worksheet_path(code)
+    path = _path(code)
     if not os.path.isfile(path):
-        print("no worksheet at %s -- run `new %s` first"
+        print("no file at %s -- run `new %s` first"
               % (os.path.relpath(path, ROOT), code))
         return 1
-    with open(path, encoding="utf-8") as f:
-        filled = parse(f.read())
-    english = {(k, i): _norm(b) for k, i, b in _entries()}
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = parse(f.read())
+    except (SyntaxError, ValueError) as e:
+        print("couldn't read %s: %s" % (os.path.relpath(path, ROOT), e))
+        return 1
+    if not isinstance(data, dict):
+        print("TRANSLATIONS is not a dict")
+        return 1
 
-    name, strings, files, skipped, unknown = NAME_PLACEHOLDER, {}, [], 0, 0
+    english = dict(_entries())
+    idmap = {pid: d for pid, d in _puzzles()}
     pack = os.path.join(LANG_DIR, code)
-    for kind, id_, body in filled:
-        en = english.get((kind, id_))
-        if en is None:
+    name, strings, files, blank, unknown = code, {}, [], 0, 0
+    for label, en in english.items():
+        val = data.get(label)
+        if val is None or val == en:             # untouched -> falls back
+            blank += 1
+            continue
+        dest = _resolve(label, idmap)
+        if dest is None:
             unknown += 1
             continue
-        if body == en:                       # untranslated -> fall back to English
-            skipped += 1
-            continue
-        if kind == "meta" and id_ == "name":
-            name = body.rstrip("\n")
-        elif kind == "string":
-            strings[id_] = body.rstrip("\n")
-        elif kind == "file":
-            dest = os.path.join(pack, "chapters", id_.replace("/", os.sep))
-            os.makedirs(os.path.dirname(dest), exist_ok=True)
-            with open(dest, "w", encoding="utf-8") as f:
-                f.write(body)
-            files.append(id_)
+        if dest[0] == "name":
+            name = val.strip()
+        elif dest[0] == "string":
+            strings[dest[1]] = val.strip()
+        else:                                    # ("file", relpath)
+            out = os.path.join(pack, "chapters", dest[1].replace("/", os.sep))
+            os.makedirs(os.path.dirname(out), exist_ok=True)
+            with open(out, "w", encoding="utf-8") as f:
+                f.write(_norm(val))
+            files.append(dest[1])
 
     os.makedirs(pack, exist_ok=True)
     with open(os.path.join(pack, "pack.json"), "w", encoding="utf-8") as f:
@@ -204,12 +260,11 @@ def apply(code):
 
     print("wrote lang/%s/ : pack.json, strings.json (%d key(s)), %d content file(s)"
           % (code, len(strings), len(files)))
-    print("  %d entr(y/ies) left English (untranslated)" % skipped)
+    print("  %d value(s) left as English (unchanged)" % blank)
     if unknown:
-        print("  %d entr(y/ies) ignored (no longer in the English source)"
-              % unknown)
-    if name == NAME_PLACEHOLDER:
-        print("  ! set `meta name` in the worksheet to your language's name")
+        print("  %d key(s) ignored (name nothing in the source)" % unknown)
+    if name == code:
+        print("  ! set the \"name\" value to your language's name")
     print("  validate: python3 tools/check_pack.py %s" % code)
     return 0
 

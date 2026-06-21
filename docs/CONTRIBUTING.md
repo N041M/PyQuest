@@ -339,10 +339,11 @@ A new **command** follows the same shape: a `commands/` module + a
   sidestep-proof. See [SCHEMA.md#projects](SCHEMA.md).
 - **Translations** — the i18n plumbing is done (`lang/`, validated by
   `python3 tools/check_pack.py`). Start from the one-file worksheet:
-  `python3 tools/lang_worksheet.py new <code>` writes one file with every English
-  UI string and content file prewritten; translate in place and
-  `... apply <code>` splits it into the pack. Language packs are welcome; nothing
-  is translated yet.
+  `python3 tools/lang_worksheet.py new <code>` writes a `TRANSLATIONS` dict with
+  every piece (UI string + each puzzle's brief/hints/reference) prefilled with
+  its English; edit the values and `... apply <code>` splits it into the pack
+  (`lang/example.translations.py` shows the format). Language packs are welcome;
+  nothing is translated yet.
 
 ---
 
