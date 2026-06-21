@@ -26,6 +26,9 @@ stays partial — everything untouched falls back to English. The worksheet is a
 loose `lang/<code>.worksheet.txt` file (not a pack folder), so a half-finished
 one is invisible to the engine and the checker.
 
+See [`example.worksheet.txt`](example.worksheet.txt) for what one looks like (an
+abbreviated sample — the pack name, the UI strings, and one content file).
+
 (You can also hand-build a pack by creating the files below directly — `apply`
 just produces them for you.)
 
