@@ -321,9 +321,13 @@ What's next:
 - **More projects.** The projects track (`kind` in `meta.json`: `build` /
   `debug` / `capstone`) is built for it — including debug puzzles that ship
   broken code to fix. Adding another is content-only.
-- **More advanced chapters.** Decorators and context managers, `itertools`, and
-  type hints are natural next topics; the construct-check machinery already
-  covers them.
+- **More advanced chapters.** Context managers and `itertools` are natural next
+  topics the construct-check machinery already covers (`uses_with` /
+  `uses_with_open`, `uses_call` / `uses_call_over_param`). Decorators and type
+  hints need a new check first: a liveness-anchored `uses_decorator(name)` (today
+  `@property` is forced with a runtime reflection oracle, as in 15.4), and an
+  AST-based hint check (type hints are erased at runtime, so behavior can't see
+  them).
 - **Community translations.** The i18n plumbing is done (`lang/`, with a
   `tools/check_pack.py` validator); language packs are welcome — nothing is
   translated yet.
