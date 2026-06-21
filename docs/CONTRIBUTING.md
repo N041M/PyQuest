@@ -13,8 +13,8 @@ Read in this order:
 | [README.md](../README.md) | the learner's view + the roadmap |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | the design and its layers |
 | [SCHEMA.md](SCHEMA.md) | the exact file formats and every `T` helper |
-| [architecture/toolkit.md](architecture/toolkit.md) | the checker (`T`), liveness, construct checks |
-| [architecture/audit.md](architecture/audit.md) | the audit: conformance, the adversaries, the guards |
+| [diagrams/toolkit.md](diagrams/toolkit.md) | the checker (`T`), liveness, construct checks |
+| [diagrams/audit.md](diagrams/audit.md) | the audit: conformance, the adversaries, the guards |
 | **this file** | how to collaborate: setup, workflow, the anti-sidestep craft |
 
 Most contributions are **new puzzles** — files on disk, zero engine code. A
@@ -99,12 +99,12 @@ audit with a hollowed-out check is worse than a red one.
 
 ```
 start.py            # entry point
-engine/             # the app (see architecture/engine-core.md)
+engine/             # the app (see diagrams/engine-core.md)
   toolkit/          # the T tester: a new validation helper goes here
   commands/         # the verbs: a new command goes here + a registry row + a dispatch line
 chapters/NN_x/MM_y/ # one puzzle per folder — pure data, no engine code
 tools/audit.py      # conformance + anti-sidestep + the guards + the self-test driver
-docs/architecture/  # hand-maintained diagrams — keep in sync when you rewire structure
+docs/diagrams/  # hand-maintained diagrams — keep in sync when you rewire structure
 ```
 
 A **new puzzle** is files on disk, nothing else. A **new check / command /
@@ -173,7 +173,7 @@ that must not mutate its input (`T.does_not_mutate`). No construct check needed.
 **2 — A liveness-anchored construct check, if the lesson is a construct.** These
 only count a node that is *live* — ablating it must change behavior on the
 recorded inputs, so dead-code decoration can't satisfy them
-([liveness](architecture/toolkit.md) explains the model):
+([liveness](diagrams/toolkit.md) explains the model):
 
 | Group | Checks |
 |---|---|
@@ -320,12 +320,12 @@ five-point change, each pinned against drift:
 3. **The lesson-guard registry** → add the method name to `LESSON_CHECKS` in
    `audit.py`, so the guard counts it and `--prove-checks` strips it.
 4. **The wrapper-guard** → if it anchors a HOF, add it to `_ANCHORED_CHECKS`.
-5. **The diagrams** → update `docs/architecture/toolkit.md` (and `audit.md` if
+5. **The diagrams** → update `docs/diagrams/toolkit.md` (and `audit.md` if
    you touched the guards). A diagram that lies is worse than none.
 
 A new **command** follows the same shape: a `commands/` module + a
 `commands/registry.py` row + one `app.py` dispatch line + a self-test; see
-[architecture/commands.md](architecture/commands.md).
+[diagrams/commands.md](diagrams/commands.md).
 
 ---
 
@@ -356,7 +356,7 @@ A new **command** follows the same shape: a `commands/` module + a
   characters live only in the visual layer.
 - Work is attributed to its **human author**; no AI co-author trailers or
   generated-with lines.
-- Keep the `docs/architecture/` diagrams in sync in the *same* change that
+- Keep the `docs/diagrams/` diagrams in sync in the *same* change that
   rewires structure.
 - A **green audit** — `--sidestep` and `--engine` — is required to merge.
 

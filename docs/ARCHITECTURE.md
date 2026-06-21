@@ -4,7 +4,8 @@ The design reference for PyQuest. Read it before adding a feature, a puzzle,
 a command, or a coat of paint. Its job is to keep PyQuest **modular** so it
 never collapses back into one monolithic file, and so new capabilities
 (randomized inputs, new themes, new question types) slot in cleanly. For file
-formats, see [SCHEMA.md](SCHEMA.md); for usage, see the [README](../README.md).
+formats, see [SCHEMA.md](SCHEMA.md); for usage, see the [README](../README.md);
+for the same design **as diagrams**, see [diagrams/](diagrams/README.md).
 
 If a change you are about to make does not fit one of the modules below, that
 is a signal to discuss the boundary, not to staple the code onto the nearest

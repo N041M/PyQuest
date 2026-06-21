@@ -283,7 +283,7 @@ pyquest/
                      start.py <command> runs one command (check, next, ...)
   engine/            the implementation, split by concern (see docs/ARCHITECTURE.md)
   tools/audit.py       mechanical checks: conformance + anti-sidestep replay attack
-  docs/              ARCHITECTURE.md, SCHEMA.md, CONTRIBUTING.md, architecture/ (UML)
+  docs/              ARCHITECTURE.md, SCHEMA.md, CONTRIBUTING.md, diagrams/ (UML)
   chapters/          the course content, one folder per puzzle, no code
     01_basics/
       01_hello/
@@ -305,7 +305,7 @@ pyquest/
 | [docs/](docs/README.md) | the documentation index — start here, organized by what you want to do |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | a learner's first session, step by step |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | module map, design invariants, how validation works |
-| [docs/architecture/](docs/architecture/README.md) | UML architecture (Mermaid): overview + per‑module diagrams |
+| [docs/diagrams/](docs/diagrams/README.md) | UML architecture (Mermaid): overview + per‑module diagrams |
 | [docs/SCHEMA.md](docs/SCHEMA.md) | file formats for authoring puzzles and projects |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | how to add a puzzle, the audit gate, project conventions |
 | [themes/README.md](themes/README.md) | creating custom colour themes |

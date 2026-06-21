@@ -1,7 +1,8 @@
-# PyQuest: Architecture (UML)
+# PyQuest architecture diagrams
 
-A UML view of PyQuest's design. The diagrams are written in [Mermaid](https://mermaid.js.org)
-so they render directly on GitHub and in most Markdown/IDE viewers.
+The **visual** companion to [`../ARCHITECTURE.md`](../ARCHITECTURE.md) (the prose
+design reference): the same design as UML, written in [Mermaid](https://mermaid.js.org)
+so the diagrams render directly on GitHub and in most Markdown/IDE viewers.
 
 This page is the **overview**. Each module group has its own page with
 module‑level class diagrams and the relevant sequences:

@@ -130,17 +130,23 @@ generated.
 
 ## The static meta‑audits: covering the adversaries' blind spot
 
-The adversaries cannot model an **alternative‑construct** sidestep (a program
-that computes the right answer with a *different* tool) on a **varying‑output**
-puzzle: `synth` only fires on fixed‑output scripts. Two static checks, read from
-each `tests.py` source, close that gap, the one that used to be hunted by hand.
+The adversaries cannot model two kinds of sidestep on a **varying‑output**
+puzzle: an **alternative‑construct** answer (the right output via a *different*
+tool — `synth` only fires on fixed‑output scripts), and a **live‑wrapper** answer
+(the right output computed the forbidden way, then routed through a live no‑op
+HOF — a replay adversary can't reach it, since fresh randomness misses its
+table). Two static checks, read from each `tests.py` source, gate `--sidestep` on
+those; `prove‑checks` is an informational converse.
 
 ```mermaid
 flowchart LR
-    inv["check_inventory(pdir)<br/>«T.* calls from AST»"] --> lg
+    inv["check_inventory(pdir)<br/>«T.* calls from AST»"] --> lg & wg
     lg["lesson_guard(p, rec)"] -->|"teaches + varies + no construct check"| ex["?? UNGUARDED LESSON → audit FAILS"]
     lg -->|"in GUARDED_OK"| okr["(ok by design, with a reason)"]
     lg -->|"pins a construct, or synth covers it"| okc["covered"]
+    wg["wrapper_guard(p)"] -->|"bare uses_call(HOF), not anchored"| exw["!! WRAPPER-EXPOSED → audit FAILS"]
+    wg -->|"in WRAPPER_OK"| okr
+    wg -->|"anchored, or no wrappable HOF"| okc
 ```
 
 - **lesson‑guard** (`--sidestep` gate, `--lessons` table): flags any puzzle that
@@ -149,6 +155,13 @@ flowchart LR
   residuals go in `GUARDED_OK` with a written reason, exactly as `ALLOWED` does
   for the dynamic suite (e.g. 3.1: no single comparison op to pin; 6.1/6.2/6.3/
   6.5: import mode forces `def`/params/`return`).
+- **wrapper‑guard** (`--sidestep` gate): flags a puzzle pinning a **bare
+  `uses_call`** for a wrappable HOF (`sum`/`min`/`max`/`any`/`all`/`map`/
+  `filter`/`reduce`) without an anchored variant — that call is defeated by a
+  live no‑op wrapper around a precomputed answer (`sum([total])`, `any([flag])`,
+  `map(lambda v: v, [comp])`). The fix is an anchored check
+  (`uses_call_over_param`/`uses_call_on_collection`/`uses_predicate_over_param`/
+  `uses_lambda_arg`); residuals go in `WRAPPER_OK` with a reason.
 - **prove‑checks** (`--prove-checks`, informational): the converse. For every
   puzzle with both a construct check and a `dodges.py`, `_strip_lesson_checks`
   AST‑removes the construct layer and confirms a pinned dodge then slips through
@@ -185,6 +198,7 @@ sequenceDiagram
     participant IP as impostor_passes
     participant LG as lesson_guard
     participant D as load_dodges
+    participant WG as wrapper_guard
 
     M->>SR: sidestep_report(p)
     SR->>Rec: run reference solution, record the tape
@@ -201,19 +215,9 @@ sequenceDiagram
         IP-->>SR: must be False
     end
     SR-->>M: breaches, dodge_passes, guard
-    M-->>M: weak++ on any breach/dodge/wrapper-exposed; unguarded++ on exposed
+    M->>WG: wrapper_guard(p) → None / allowed / exposed
+    M-->>M: weak++ on breach/dodge/wrapper-exposed; unguarded++ on exposed
 ```
-
-Two **static** meta‑audits flank the dynamic adversaries. `lesson_guard` flags a
-construct‑teaching, varying‑output puzzle that pins no construct check.
-`wrapper_guard` flags a puzzle pinning a **bare `uses_call`** for a wrappable
-HOF (`sum`/`min`/`max`/`any`/`all`/`map`/`filter`/`reduce`) without an anchored
-variant — that call is defeatable by a live no‑op wrapper around a precomputed
-answer (`sum([total])`, `any([flag])`, `map(lambda v: v, [comp])`), which a
-replay adversary can't demonstrate (fresh randomness misses the table) because
-the real dodge has to compute. The fix is the anchored checks
-(`uses_call_over_param`/`uses_call_on_collection`/`uses_predicate_over_param`/
-`uses_lambda_arg`); residuals go in `WRAPPER_OK` with a reason.
 
 ## `--engine`: the guard's guarantees, pinned (in `audit_selftest.py`)
 

@@ -21,15 +21,15 @@ Start by what you're trying to do.
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — the prose design reference: the five
   concerns, the invariants, the module map, and how validation works. Read it
   before adding a feature.
-- **[architecture/](architecture/README.md)** — the same design as **UML**
+- **[diagrams/](diagrams/README.md)** — the same design as **UML**
   (Mermaid) diagrams, led by a single **[master class
-  diagrams](architecture/README.md#0-master-diagrams-every-module--class)**,
+  diagrams](diagrams/README.md#0-master-diagrams-every-module--class)**,
   then focused per-area pages:
-  [engine-core](architecture/engine-core.md) ·
-  [toolkit](architecture/toolkit.md) ·
-  [commands](architecture/commands.md) ·
-  [visuals](architecture/visuals.md) ·
-  [audit](architecture/audit.md).
+  [engine-core](diagrams/engine-core.md) ·
+  [toolkit](diagrams/toolkit.md) ·
+  [commands](diagrams/commands.md) ·
+  [visuals](diagrams/visuals.md) ·
+  [audit](diagrams/audit.md).
 
 ## I want to *translate or theme* it
 - **[../lang/README.md](../lang/README.md)** — language packs (interface +
