@@ -115,6 +115,14 @@ def header(title, color="cyan"):
     return paint("%s── %s %s" % (PAD, title, "─" * max(0, tail)), color, "bold")
 
 
+def section(title, color="bmagenta"):
+    """A heavier banner that groups chapters under a curriculum category --
+    ═══ ADVANCED ═══════ -- a step above the per-chapter `header`."""
+    label = " %s " % title.upper()
+    tail = WIDTH - len(PAD) - 3 - len(label)
+    return paint("%s═══%s%s" % (PAD, label, "═" * max(0, tail)), color, "bold")
+
+
 def wrap(text, width=None):
     return textwrap.wrap(text, width or (WIDTH - len(PAD) - 1)) or [""]
 

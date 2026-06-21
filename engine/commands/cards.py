@@ -4,10 +4,10 @@ build their screens from these, so they live one layer below both.
 """
 
 from ..config import WIDTH, rel, term_size
-from ..content import load_hints, brief_path
+from ..content import load_hints, brief_path, category
 from ..state import current_puzzle, load_answers, switch_to, work_path
-from ..render import (paint, id_banner, header, field, wrap, cli, nav_row,
-                      pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
+from ..render import (paint, id_banner, header, section, field, wrap, cli,
+                      nav_row, pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
 from .registry import NAV_CLUSTERS, NEEDS_PUZZLE
 from .. import keys
 
@@ -44,8 +44,14 @@ def chapter_tree(puzzles, prog, pickable=False):
     chapters = {}
     for p in puzzles:
         chapters.setdefault(p["ch_num"], []).append(p)
+    prev_cat = None
     for ch in sorted(chapters):
         items = chapters[ch]
+        cat = category(items[0])
+        if cat != prev_cat:                     # a new curriculum category
+            print("")
+            print(section(cat))
+            prev_cat = cat
         print("")
         print(header("%d · %s" % (ch, items[0]["ch_title"])))
         for p in items:

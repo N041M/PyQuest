@@ -9,7 +9,7 @@ import os
 import datetime
 
 from ..config import WIDTH, rel
-from ..content import load_hints, load_reference
+from ..content import load_hints, load_reference, category
 from ..state import (current_puzzle, save_progress, stat, textbook_path,
                      write_textbook, current_user)
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
@@ -332,15 +332,21 @@ def _textbook_md(shown, full, total):
     for p in shown:
         chapters.setdefault(p["ch_num"], []).append(p)
 
-    body, covered = [], 0
+    body, covered, prev_cat = [], 0, None
     for ch in sorted(chapters):
         items = [p for p in chapters[ch] if _has_entry(p)]
         if not items:
             continue                       # nothing to teach here -- skip it
         covered += len(items)
         # A rule before each chapter -- it parts the preamble from the body and
-        # the chapters from one another, with none left dangling at the end.
-        body += ["---", "", "## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
+        # the chapters from one another, with none left dangling at the end. A
+        # category heading is inserted at each curriculum boundary.
+        body += ["---", ""]
+        cat = category(items[0])
+        if cat != prev_cat:
+            body += ["# %s" % cat, ""]
+            prev_cat = cat
+        body += ["## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
         for p in items:
             meta = p["meta"]
             heading = ("`%s`" % meta["syntax"] if meta.get("syntax")

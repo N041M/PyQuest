@@ -55,6 +55,21 @@ def discover():
     return puzzles
 
 
+# Curriculum categories group the chapters in the map and textbook. A chapter's
+# category is a property of its CONTENT, not its number: a project chapter is any
+# whose puzzles carry a `kind`; an advanced chapter declares meta "category";
+# everything else is the default. The order here is the order they're shown.
+CATEGORIES = ("Core", "Advanced", "Projects")
+
+
+def category(puzzle):
+    """The curriculum category a puzzle (hence its chapter) belongs to."""
+    meta = puzzle["meta"]
+    if meta.get("kind"):
+        return "Projects"
+    return meta.get("category") or CATEGORIES[0]
+
+
 # ---- file locations -------------------------------------------------------
 # (The editable workspace, work.py, lives per-user; see state.work_path.)
 def starter_path(puzzle):
