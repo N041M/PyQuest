@@ -1,4 +1,13 @@
+import ast
+
 from engine.inputs import Case, random_int
+
+_COMPS = (ast.GeneratorExp, ast.ListComp, ast.SetComp)
+
+
+def _params(T):
+    return {a.arg for f in ast.walk(T.tree())
+            if isinstance(f, ast.FunctionDef) for a in f.args.args}
 
 
 def cases():
@@ -18,3 +27,23 @@ def check(T):
     T.uses_call("all",
                 because="Use all(...), not a loop-with-a-flag -- the lesson is "
                         "all.")
+    # all() must consume a comprehension/genexpr over the INPUT -- the taught
+    # pattern all(<test> for <item> in nums). A loop-with-a-flag whose result is
+    # wrapped in all([flag]) or all(flag for _ in [0]) does not iterate the
+    # input, so neither counts.
+    params = _params(T)
+
+    def over_input(n):
+        return (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                and n.func.id == "all" and n.args
+                and isinstance(n.args[0], _COMPS) and n.args[0].generators
+                and isinstance(n.args[0].generators[0].iter, ast.Name)
+                and n.args[0].generators[0].iter.id in params)
+
+    live = [i for i, n in enumerate(ast.walk(T.tree())) if over_input(n)]
+    T.require_live("all(<test> for <item> in nums)",
+                   "hand the per-item tests to all() as a comprehension over "
+                   "the input, not a flag a loop precomputed",
+                   live, "expr",
+                   because="The lesson is all over the input, not a "
+                           "loop-with-a-flag wrapped in all().")

@@ -14,4 +14,11 @@ def check(T):
         T.eq(T.attr(r, "area"), new_w * h,
              because="area must recompute after width changes (a property, not "
                      "a value stored once).")
+    # area must be an actual @property descriptor on the class -- not a computed
+    # value, and not __getattr__ faking it (both pass the recompute check above).
+    # The property object lives on the class, so look it up there.
+    Rectangle = T.get("Rectangle")
+    T.true(isinstance(getattr(Rectangle, "area", None), property),
+           because="area must be a @property on the class, not a plain "
+                   "attribute or a __getattr__ stand-in.")
     T.uses_class("Rectangle", because="Rectangle exposes area as a property.")
