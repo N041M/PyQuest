@@ -338,7 +338,11 @@ A new **command** follows the same shape: a `commands/` module + a
   randomized inputs — that, not a construct check, is what keeps them
   sidestep-proof. See [SCHEMA.md#projects](SCHEMA.md).
 - **Translations** — the i18n plumbing is done (`lang/`, validated by
-  `python3 tools/check_pack.py`). Language packs are welcome; nothing is
+  `python3 tools/check_pack.py`). The quickest start is the one-file worksheet:
+  `python3 tools/lang_worksheet.py new <code>` writes one file with every English
+  UI string and content file prewritten; translate in place and
+  `... apply <code>` splits it into the pack. Or hand-build from
+  [`lang/_template/`](../lang/_template/). Language packs are welcome; nothing is
   translated yet.
 
 ---

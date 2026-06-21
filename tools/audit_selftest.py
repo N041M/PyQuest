@@ -957,6 +957,62 @@ def _engine_selftest():
             check_pack.LANG_DIR, check_pack.CHAPTERS_DIR = saved_lang, saved_ch
             shutil.rmtree(root)
 
+    def t_lang_worksheet():
+        """The one-file worksheet round-trips: `new` prefills every English UI
+        string + content file; editing entries and `apply` writes only the
+        changed ones into the pack (untouched entries fall back to English)."""
+        import io
+        import json
+        import shutil
+        import contextlib
+        import lang_worksheet as lw
+        saved = (lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR)
+        root = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        eng = os.path.join(root, "engine")
+        pz = os.path.join(root, "chapters", "01_x", "01_y")
+        lang = os.path.join(root, "lang")
+        os.makedirs(eng)
+        os.makedirs(pz)
+        os.makedirs(lang)
+        with open(os.path.join(eng, "m.py"), "w", encoding="utf-8") as f:
+            f.write('i18n.t("menu.play", "play")\n')
+        with open(os.path.join(pz, "brief.md"), "w", encoding="utf-8") as f:
+            f.write("# Hello\n")
+        with open(os.path.join(pz, "hints.md"), "w", encoding="utf-8") as f:
+            f.write("a hint\n")
+        lw.ENGINE_DIR = eng
+        lw.CHAPTERS_DIR = os.path.join(root, "chapters")
+        lw.LANG_DIR = lang
+        wp = os.path.join(lang, "cs.worksheet.txt")
+        ov = os.path.join(lang, "cs", "chapters", "01_x", "01_y")
+
+        def hush(fn, *a):
+            with contextlib.redirect_stdout(io.StringIO()):
+                return fn(*a)
+        try:
+            assert hush(lw.new, "cs") == 0
+            text = open(wp, encoding="utf-8").read()
+            assert "%sstring menu.play" % lw.MARK in text
+            assert "%sfile 01_x/01_y/brief.md" % lw.MARK in text
+            # translate the name, the string, and brief.md; leave hints.md English
+            text = text.replace(lw.NAME_PLACEHOLDER, "Test")
+            text = text.replace("%sstring menu.play\nplay\n" % lw.MARK,
+                                "%sstring menu.play\nhrat\n" % lw.MARK)
+            text = text.replace("%sfile 01_x/01_y/brief.md\n# Hello\n" % lw.MARK,
+                                "%sfile 01_x/01_y/brief.md\n# Ahoj\n" % lw.MARK)
+            open(wp, "w", encoding="utf-8").write(text)
+            assert hush(lw.apply, "cs") == 0
+            meta = json.load(open(os.path.join(lang, "cs", "pack.json")))
+            assert meta == {"name": "Test", "code": "cs"}, meta
+            strings = json.load(open(os.path.join(lang, "cs", "strings.json")))
+            assert strings == {"menu.play": "hrat"}, strings
+            assert open(os.path.join(ov, "brief.md")).read() == "# Ahoj\n"
+            # the untranslated hint was NOT written -> it falls back to English
+            assert not os.path.exists(os.path.join(ov, "hints.md"))
+        finally:
+            lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR = saved
+            shutil.rmtree(root)
+
     def t_project_checks():
         """The projects framework's conformance rules: a `kind` must be known;
         project puzzles may carry 0-3 hints (lesson puzzles still need exactly
@@ -1022,7 +1078,7 @@ def _engine_selftest():
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
                t_key_decode, t_i18n, t_i18n_content, t_check_pack,
-               t_project_checks):
+               t_lang_worksheet, t_project_checks):
         case(fn.__name__[2:], fn)
 
     bad = 0
