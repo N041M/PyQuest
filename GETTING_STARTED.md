@@ -31,19 +31,22 @@ commands (`check`, `hint`, ...) for this session, and opens the menu. (If you
 would rather not use the shortcuts, `python3 start.py menu` just opens the
 menu.)
 
-This is the main menu, shown before any puzzles. Pick a number:
+This is the main menu, shown before any puzzles. Pick a number (arrow keys work
+too, where your terminal supports them):
 
 ```
 1  start          jump onto the current puzzle
 2  select level   choose where to begin
-3  theme          neon · amber · forest · mono · your own
-4  users          switch or create a profile
-5  shortcuts      enable the short commands (see below)
-6  quit
+3  textbook       the technical reference for what you've reached
+4  stats          your numbers: attempts, hints, clean solves
+5  map            the chapter tree (Core · Advanced · Projects)
+6  settings       theme · difficulty · profiles · shortcuts · language
+0  quit
 ```
 
-The menu is the only interactive screen. Once you pick **1 start**, solving is
-done with short, one-shot commands.
+Once you pick **1 start**, solving is done with short, one-shot commands. (The
+card's bottom row is also arrow-selectable — the "play cockpit" — on a capable
+terminal.)
 
 ## 3. Enable the short commands (recommended)
 

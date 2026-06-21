@@ -49,10 +49,11 @@ audit pass**, fix the root cause.
 
 ## Adding a puzzle
 
-A puzzle is one folder under `chapters/NN_chapter/MM_title/` with six files
-(`brief.md`, `starter.py`, `tests.py`, `hints.md`, `solution.py`, `meta.json`)
-and an optional `dodges.py`. The engine discovers it automatically. See
-[SCHEMA.md](SCHEMA.md) for every field and helper.
+A puzzle is one folder under `chapters/NN_chapter/MM_title/` with six required
+files (`brief.md`, `starter.py`, `tests.py`, `hints.md`, `solution.py`,
+`meta.json`) plus the optional `reference.md` (the textbook entry) and
+`dodges.py`. The engine discovers it automatically. See [SCHEMA.md](SCHEMA.md)
+for every field and helper.
 
 Checklist:
 
@@ -64,7 +65,14 @@ Checklist:
    can't be reached with a different tool. Run behavior assertions *before*
    construct checks (liveness replays the recorded inputs).
 4. Randomize inputs where you can, so answers can't be hardcoded.
-5. Confirm `solution.py` passes, then run `python3 tools/audit.py --sidestep`.
+5. If the puzzle carries a `concept`, write its `reference.md` (the textbook
+   entry) — the audit requires it.
+6. Confirm `solution.py` passes, then run `python3 tools/audit.py --sidestep`.
+
+**Projects** are a different kind of contribution: a chapter that builds an app
+across a few steps to a low-guidance capstone, including `debug` puzzles that
+ship broken code to fix. Their puzzles set `kind` and omit `concept`; see
+[SCHEMA.md#projects](SCHEMA.md#projects).
 
 ## Closing a sidestep
 

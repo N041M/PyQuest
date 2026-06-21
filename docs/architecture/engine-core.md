@@ -131,6 +131,7 @@ classDiagram
         +load_hints(dirpath) list~str~
         +load_reference(dirpath) str
         +load_tests(dirpath) module
+        +category(puzzle) str
     }
     content ..> config : CHAPTERS_DIR
     content ..> i18n : localized(brief · hints · reference)

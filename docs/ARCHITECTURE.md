@@ -104,8 +104,12 @@ theme.py      selectable palettes (THEMES), glyphs, paint(), the logo. The
               visual identity; apply_theme() switches in place.
 render.py     drawing primitives: box, banner, bar, header, wordmark, rule,
               field, wrap, indent, cli(). Pure look; depends on theme + config.
-content.py    Puzzle/Chapter model + discovery + loaders (brief, hints,
-              solution, starter, meta, tests). "The structured question."
+content.py    Puzzle/Chapter model + discovery + loaders (brief, hints, starter,
+              meta, tests, reference) + category(). "The structured question."
+i18n.py       human-language piping: English default + fallback, validated
+              community packs under lang/<code>/. t() localizes a UI string,
+              localized() a content file (brief/hints/reference). content + the
+              read verbs route through it; depends only on config.
 inputs.py     input providers: random_word/int + the Case seam. Hands the same
               data to the runner and the checker. "The input automizer."
 state.py      per-user progress + answers (users/<name>/...) + workspace
@@ -213,15 +217,24 @@ visual layer; no other module knows about them.
 
 ## 6. Adding a puzzle (no code change)
 
-A puzzle is a folder `chapters/NN_chapter/MM_title/` with six files:
+A puzzle is a folder `chapters/NN_chapter/MM_title/` with these files:
 
 - `brief.md`: what the learner reads (house style, §3.4).
 - `starter.py`: the seed loaded into the chapter's `work.py`.
 - `tests.py`: defines `check(T)` and optionally `bonus(T)` (§7).
 - `hints.md`: three hints, escalating, separated by `---`.
 - `solution.py`: reference answer (+ `why` lives in `meta.json`).
-- `meta.json`: `id`, `title`, `chapter`, `concept`, `mode`, `why`.
+- `meta.json`: `id`, `title`, `chapter`, `mode`, and the optional `concept`,
+  `why`, `category` (curriculum tier), and `kind` (marks a project puzzle).
+- `reference.md` *(optional)*: the topic's detailed textbook entry; required
+  when the puzzle carries a `concept`.
 - `dodges.py` *(optional)*: known sidesteps pinned as regressions (§8).
+
+**Projects** (`chapters/NN_project_*/`) are chapters that build an app over a few
+steps to a low-guidance capstone. Their puzzles set `kind`
+(`build` / `debug` / `capstone`) and omit `concept`, so they stay out of the
+textbook and the lesson-guard; a `debug` puzzle ships broken code in `starter.py`
+that the audit requires to *fail* its tests. See [SCHEMA.md](SCHEMA.md#projects).
 
 The engine discovers it automatically. See [SCHEMA.md](SCHEMA.md) for exact
 formats.
@@ -283,9 +296,12 @@ code and raises *translated* failures, so messages stay friendly.
   opened by the `with`, not merely some live `with` elsewhere),
   `T.uses_import(module)`, `T.uses_class(name)` (name the class the tests
   instantiate; AST-only for object puzzles, which have no tape, see runners.py),
-  `T.uses_yield` (live in Chapter 10, generators), `T.uses_lambda` (`lambda`
-  staged for a later chapter),
-  `T.source()`. Require the *kind* of construct, not one exact spelling, so
+  `T.uses_yield` (live in Chapter 10, generators), `T.uses_lambda` (live in
+  Chapter 14, functional tools), `T.source()`. The object/dunder lessons of
+  Chapter 15 (advanced classes) are forced behaviorally — `isinstance` for
+  inheritance, `==`/`<` for `__eq__`/`__lt__`, a mutate-then-read for `@property`
+  — backed by `uses_class`. Require the *kind* of construct, not one exact
+  spelling, so
   legitimate variations still pass (e.g. an `elif` puzzle accepts nested `if`s,
   and `uses_boolop()` accepts a De Morgan `not(a or b)` for an `and`). The
   inverse, a *nesting* puzzle that must reject a flat `elif`, needs
@@ -359,13 +375,15 @@ a fixed puzzle into a randomized one means writing a provider and pointing the t
 at it, no engine change. Fixed-output, no-input puzzles keep using construct
 checks (§7) for integrity instead.
 
-**In use now.** `inputs.py` provides `random_word` / `random_int`, and every
-input-reading puzzle in Chapters 1–2 (e.g. 1.10, 1.11, all of Ch2) feeds
-randomized cases and computes the expected result in `tests.py`. Hardcoding the
-answer is therefore impossible there. The structured-provider/`Case` flow is
-live in Chapter 6+: import-mode tests build a list of `Case`s (fixed edge cases
-plus randomized ones), feed `case.args` to `T.call`, and validate against
-`case.expect`, one source for both the input and the expectation.
+**In use now.** `inputs.py` provides `random_word` / `random_int`, used across
+the course. Script-mode, input-reading puzzles (Ch1–2) feed randomized stdin
+and compute the expected result in `tests.py`. The structured-provider/`Case`
+flow is the norm from Chapter 6 on (functions, and every import-mode chapter
+since): tests build a list of `Case`s (fixed edge cases plus randomized ones),
+feed `case.args` to `T.call`, and validate against `case.expect` — one source for
+both the input and the expectation. Randomized inputs are also what keep the
+**project** chapters robust: they carry no construct check, so changing inputs
+each run is the whole anti-hardcode defense.
 
 **Anti-sidestep policy.** Every puzzle must make its *lesson* unavoidable, not
 just its output. The defenses stack, one per attack class:

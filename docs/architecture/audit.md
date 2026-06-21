@@ -22,10 +22,11 @@ engine that does the grading*:
 
 - **`audit.py`** — conformance, the anti‑sidestep adversaries, and the two
   static meta‑audits (lesson‑guard, prove‑checks). All about the **puzzles**.
-- **`audit_selftest.py`** — `_engine_selftest()`: ~37 direct cases pinning the
-  execution guard, toolkit APIs, and the language-pack plumbing (`i18n`,
-  content overrides, the pack validator). All about the **engine**, and
-  emphatically *not* "safe to delete". `audit.py --engine` dispatches here; the
+- **`audit_selftest.py`** — `_engine_selftest()`: ~38 direct cases pinning the
+  execution guard, toolkit APIs, the language-pack plumbing (`i18n`, content
+  overrides, the pack validator), and the projects conformance rules (`kind`,
+  hint relaxation, the debug starter-must-fail check). All about the **engine**,
+  and emphatically *not* "safe to delete". `audit.py --engine` dispatches here; the
   import is one‑way (`audit.py → audit_selftest`), and the self‑test pulls the
   meta‑audit helpers back from `audit.py` lazily inside `t_meta_audit` (no cycle).
 
@@ -222,5 +223,5 @@ flowchart LR
 ```
 
 Run order in CI‑of‑one: `--engine` after touching `toolkit/`, `--sidestep`
-before any commit; both must be green (current bar: **130/130 conformance,
-0/130 sidesteppable, 0/130 unguarded lessons, 37/37 engine self‑tests**).
+before any commit; both must be green (current bar: **142/142 conformance,
+0/142 sidesteppable, 0/142 unguarded lessons, 38/38 engine self‑tests**).

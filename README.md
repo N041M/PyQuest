@@ -7,10 +7,17 @@ explanation, write a few lines of code in your own editor, and run one command
 to check your answer. Get it right, and the next puzzle unlocks.
 
 It starts at the very beginning, `print("hello")`, and builds up gently
-through **98 puzzles in 10 chapters**: the basics, text, decisions and loops,
-lists and dictionaries, functions, handling errors, files, classes, and
-generators. Each puzzle adds just one new idea, so you're never thrown in the
-deep end.
+through **142 puzzles in 16 chapters**, grouped into three tiers:
+
+- **Core** (Ch 1–14): the basics, text, decisions and loops, lists and
+  dictionaries, power tools, functions, errors, files, classes, generators, the
+  standard library, regular expressions, dates and times, and functional tools.
+- **Advanced** (Ch 15): inheritance, `super`, properties, and the special
+  methods (`__eq__`, `__lt__`, …).
+- **Projects** (Ch 16+): build a small app over a few steps — including
+  fixing broken code — and finish a low-guidance capstone on your own.
+
+Each puzzle adds just one new idea, so you're never thrown in the deep end.
 
 There's nothing to install and no complicated setup. If you have Python 3, or
 just a web browser (see **Run in a Codespace** below), you're ready, even if
@@ -22,8 +29,8 @@ you've never written code before.
 
 ## What you get
 
-- **98 bite-sized puzzles, one idea each**: from `print` all the way to
-  generators, in small steps you can actually keep up with.
+- **142 bite-sized puzzles, one idea each**: from `print` all the way to
+  inheritance and your own small project, in steps you can actually keep up with.
 - **Friendly, plain-English feedback**: when something's wrong, you get a
   clear note about *what* went wrong, not a wall of scary red error text.
 - **You can't fake it**: the checker runs your code and changes the numbers
@@ -31,8 +38,12 @@ you've never written code before.
   only way forward is to genuinely get it, which means you actually learn.
 - **Help when you're stuck**: three hints per puzzle that get more specific,
   plus a full worked solution with a "why it works" explanation when you want it.
+- **A built-in textbook**: `textbook` writes a technical reference for the
+  topics you've reached, so the language is documented as you go.
 - **Go at your own pace**: pick an easier or harder mode, and your progress
   saves automatically, so you can stop and pick up again any time.
+- **Translatable**: the interface and textbook can be localized with drop-in
+  community language packs (`lang/`), English being the default and fallback.
 
 ## Quick start
 
@@ -185,9 +196,9 @@ Two separate verbs, deliberately named so they can't be confused:
   convention is respected.
 - **Frames fit your window.** Boxes and banners size themselves to the live
   terminal width (capped for readability) instead of assuming 80 columns.
-- **Nothing blocks a pipe.** The two interactive moments (`menu` and bare
-  `goto`) degrade to a plain print when stdin is not a terminal, so scripts
-  and tests never hang.
+- **Nothing blocks a pipe.** The interactive surfaces (the `menu`, bare `goto`,
+  and the play cockpit — the card's arrow-selectable nav row) degrade to a plain
+  print when stdin is not a terminal, so scripts and tests never hang.
 - **Shell support.** The shortcuts ship for zsh (`shell/pyquest.zsh`, the macOS
   default), bash (`shell/pyquest.bash`, Linux and Codespaces), and Windows
   PowerShell (`shell/pyquest.ps1`, see above). `setup` installs the file that
@@ -291,29 +302,34 @@ pyquest/
 
 | Document | What it covers |
 |---|---|
+| [docs/](docs/README.md) | the documentation index — start here, organized by what you want to do |
 | [GETTING_STARTED.md](GETTING_STARTED.md) | a learner's first session, step by step |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | module map, design invariants, how validation works |
 | [docs/architecture/](docs/architecture/README.md) | UML architecture (Mermaid): overview + per‑module diagrams |
-| [docs/SCHEMA.md](docs/SCHEMA.md) | file formats for authoring your own puzzles |
+| [docs/SCHEMA.md](docs/SCHEMA.md) | file formats for authoring puzzles and projects |
 | [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) | how to add a puzzle, the audit gate, project conventions |
 | [themes/README.md](themes/README.md) | creating custom colour themes |
+| [lang/README.md](lang/README.md) | translating the interface and textbook (language packs) |
 
 ## Roadmap
 
-The course currently ends at Chapter 10 (generators). The engine was built
-ahead of the content, so the groundwork for what comes next is already in
-place:
+The course now runs through 16 chapters — the standard library, regular
+expressions, dates and times, functional tools, and advanced classes all
+shipped, and the first **project** chapter (build → debug → capstone) is in.
+What's next:
 
-- **Lambdas and the standard library.** Construct checks for `lambda` and
-  per-module `import` are staged for these chapters (generators shipped in
-  Chapter 10, pairing `uses_yield` with the `is_generator` behavioral backstop).
-- **Randomized inputs everywhere.** The structured `Case` provider flow
-  (see [ARCHITECTURE.md §8](docs/ARCHITECTURE.md)) is live in Chapters 1–2 and 6+;
-  remaining fixed-input puzzles will migrate to it where it strengthens the
-  lesson.
+- **More projects.** The projects track (`kind` in `meta.json`: `build` /
+  `debug` / `capstone`) is built for it — including debug puzzles that ship
+  broken code to fix. Adding another is content-only.
+- **More advanced chapters.** Decorators and context managers, `itertools`, and
+  type hints are natural next topics; the construct-check machinery already
+  covers them.
+- **Community translations.** The i18n plumbing is done (`lang/`, with a
+  `tools/check_pack.py` validator); language packs are welcome — nothing is
+  translated yet.
 
-Adding a chapter is content-only, puzzle folders on disk, zero engine
-changes, which is exactly what the architecture was shaped for.
+Adding a chapter is content-only — puzzle folders on disk, zero engine
+changes — which is exactly what the architecture was shaped for.
 
 ## Requirements
 

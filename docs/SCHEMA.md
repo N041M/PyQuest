@@ -2,10 +2,13 @@
 
 The file formats for adding or editing puzzles. For the design rules behind
 them, see [ARCHITECTURE.md](ARCHITECTURE.md). A puzzle is one folder under
-`chapters/NN_title/MM_title/` containing six files: `brief.md`, `starter.py`,
-`tests.py`, `hints.md`, `solution.py`, and `meta.json`, plus an optional
-`dodges.py` of pinned sidesteps (see below). The engine discovers new puzzle
-folders automatically, no code changes needed.
+`chapters/NN_title/MM_title/` containing six required files: `brief.md`,
+`starter.py`, `tests.py`, `hints.md`, `solution.py`, and `meta.json` — plus the
+optional `reference.md` (the textbook entry; required once a puzzle has a
+`concept`) and `dodges.py` (pinned sidesteps). The engine discovers new puzzle
+folders automatically, no code changes needed. For the **projects** track
+(`kind` puzzles, debug puzzles, low-guidance capstones), see
+[Projects](#projects).
 
 ## The workspace model
 
@@ -44,6 +47,12 @@ learner sees its contents in `work.py`.
   puzzle's **Tip** entry in the textbook.
 - A puzzle with neither `concept` nor `why` (a pure drill or capstone) earns no
   textbook entry and is left out of it — not every puzzle has to carry one.
+- `kind` (optional) marks a **project** puzzle — see [Projects](#projects).
+- `category` (optional) groups the chapter under a curriculum **category** in the
+  `map` and textbook (e.g. `"Advanced"`). The default is `"Core"`; a project
+  puzzle (any with `kind`) is `"Projects"` automatically. Category is a property
+  of the chapter's content, set on its puzzles' meta — not derived from the
+  chapter number.
 
 ## tests.py
 
@@ -250,6 +259,34 @@ Rules to follow when authoring tests:
   recorded runs/calls).
 - After adding or changing a puzzle, run `python3 tools/audit.py --sidestep`: the
   attack suite must report it robust (see ARCHITECTURE §8).
+
+## Projects
+
+A **project** is a chapter that builds toward a larger app across a few steps and
+ends in a low-guidance capstone — application rather than instruction. A project
+puzzle sets `"kind"` in `meta.json` and **omits `concept`/`why`** (so it stays out
+of the textbook and is exempt from the lesson-guard: the lesson is the project,
+not one construct). `kind` is one of:
+
+- **`build`** — a component step. Sparser brief and hints than a lesson.
+- **`debug`** — the `starter.py` ships **broken** code the learner must fix
+  (real code with a bug, not a TODO stub). The `solution.py` is the fixed
+  version. The audit **requires the starter to FAIL its tests** — a starter that
+  already passes has no bug to fix and is rejected.
+- **`capstone`** — the final assembly, deliberately with the least guidance.
+
+Project puzzles are otherwise normal: `title` + `mode` required, `solution.py`
+must pass `tests.py`, behaviour is validated with randomized inputs (which is what
+keeps them robust without a construct check). The relaxations are:
+
+- **Hints**: a project puzzle may carry **0–3** hints (`hints.md` may be short or
+  absent), where a lesson puzzle needs exactly 3.
+- **No `reference.md`** (no `concept`), and **no construct/`dodges.py`** is
+  expected — the test is purely behavioural.
+
+Projects are regular chapters (`NN_project_*/`), discovered and played like any
+other; they simply don't appear in the textbook. See `chapters/16_project_cart/`
+for a worked example (build → build → debug → capstone).
 
 ## progress.json
 

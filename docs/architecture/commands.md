@@ -126,10 +126,14 @@ identically from the CLI and the menu. `nav_strip` reads `NAV_CLUSTERS` +
 `NEEDS_PUZZLE` from `registry`, so the strip can never list a verb dispatch
 wouldn't accept.
 
-## The only interactive surface: `menu`
+## The interactive surfaces: `menu` and the play cockpit
 
-Every other verb is one‑shot. `cmd_menu` is the lone read‑loop, and
-they still delegate the real work to the same one‑shot verbs.
+Two surfaces loop for input; every other verb is one‑shot. `cmd_menu` is the
+launcher read‑loop (below), and the **play cockpit** (`cards.nav_select` driven
+by `app._play`) makes the puzzle card's bottom nav row arrow‑selectable. Both
+engage only on a key‑capable TTY (`engine/keys.py`) and degrade to a plain print
+plus the typed verbs otherwise — and both still delegate the real work to the
+same one‑shot verbs.
 
 ```mermaid
 stateDiagram-v2

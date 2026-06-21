@@ -23,6 +23,184 @@ module‑level class diagrams and the relevant sequences:
 
 ---
 
+## 0. Master class diagram (every module & class)
+
+The whole system on one canvas — every engine module (as a «module» box) and
+every genuine class, with their relationships. The numbered sections that follow
+break this into focused, readable slices; this is the single source they
+aggregate. `─▷` (hollow) is inheritance, `┄▷` (dashed) a dependency (import/use),
+`◆──` composition.
+
+```mermaid
+classDiagram
+    direction TB
+
+    %% ===== entry & dispatch =====
+    class app {
+        <<module>>
+        +main()
+    }
+    class session {
+        <<module>>
+        +launch_session()
+    }
+    class commands {
+        <<package>>
+        +status / map / stats / hint / solution / textbook
+        +navigate / profiles / transfer / shortcuts
+        +menu / help / registry / cards
+    }
+
+    %% ===== checking / the tester =====
+    class checker {
+        <<module>>
+        +cmd_check(puzzles, by_id, prog)
+        +fail_nudge(prog, cur)
+    }
+    class Toolkit {
+        <<facade>>
+        +path, mode
+        +_runs, _calls : the tape
+    }
+    class RunnersMixin {
+        +run / call / get / func()
+        +make / method / attr()
+        +put_file / file / source()
+    }
+    class AssertsMixin {
+        +eq / approx / true / is_a()
+        +any_of / unordered / raises()
+        +is_generator / does_not_mutate()
+    }
+    class ConstructsMixin {
+        +uses_op / uses_if / uses_for()
+        +uses_call / uses_import / uses_class()
+        +uses_yield / uses_lambda / uses_comprehension()
+        +prints_computed / assigns_a_variable()
+    }
+    class LinesMixin {
+        +line_uses_op / line_shape()
+        +line_only_literals()
+    }
+    class LivenessMixin {
+        +require_live / tree()
+        -_ablate / _is_live()
+    }
+    class PerfMixin {
+        +time_call / scales()
+    }
+    class ExecutionGuard {
+        +guarded(because, fn) result
+        +sandbox / put_file()
+    }
+    class PuzzleError {
+        <<exception>>
+        +detail
+    }
+    class PuzzleSyntaxError
+    class MissingSymbolError
+    class WrongResultError
+    class LessonNotUsedError
+    class PuzzleCrashError
+
+    %% ===== content · input · state =====
+    class content {
+        <<module>>
+        +discover() list~Puzzle~
+        +category(puzzle) str
+        +read_starter / brief_path()
+        +load_hints / load_reference / load_tests()
+    }
+    class i18n {
+        <<module>>
+        +t(key, default) str
+        +localized(path) str
+        +set_language / validate / available / current()
+    }
+    class inputs {
+        <<module>>
+        +random_word / random_int()
+    }
+    class Case {
+        +stdin, args, kwargs
+        +expect, meta
+    }
+    class state {
+        <<module>>
+        +load_progress / save_progress / stat()
+        +current_puzzle / ensure_workspace / work_path()
+        +list_users / ensure_user / backup_corrupt()
+    }
+
+    %% ===== visuals =====
+    class render {
+        <<module>>
+        +box / header / section / bar()
+        +wordmark / wrap / field / cli()
+    }
+    class theme {
+        <<module>>
+        +THEMES, glyphs, LOGO
+        +paint / apply_theme()
+    }
+
+    %% ===== foundation =====
+    class config {
+        <<module>>
+        +ROOT, CHAPTERS_DIR, WIDTH, TIMEOUT
+        +load_settings / save_settings()
+        +write_json / term_size()
+    }
+
+    %% Toolkit is a facade composed of the mixins (multiple inheritance)
+    RunnersMixin <|-- Toolkit
+    AssertsMixin <|-- Toolkit
+    ConstructsMixin <|-- Toolkit
+    LinesMixin <|-- Toolkit
+    LivenessMixin <|-- Toolkit
+    PerfMixin <|-- Toolkit
+    RunnersMixin ..> ExecutionGuard : runs learner code
+    LivenessMixin ..> ExecutionGuard : ablation re-runs
+    ConstructsMixin ..> LivenessMixin : judged by
+    ExecutionGuard ..> PuzzleError : raises
+    PuzzleError <|-- PuzzleSyntaxError
+    PuzzleError <|-- MissingSymbolError
+    PuzzleError <|-- WrongResultError
+    PuzzleError <|-- PuzzleCrashError
+    WrongResultError <|-- LessonNotUsedError
+
+    %% wiring (A ..> B = "A imports/uses B")
+    app ..> checker
+    app ..> commands
+    app ..> content
+    app ..> state
+    app ..> i18n
+    session ..> config
+    commands ..> content
+    commands ..> state
+    commands ..> render
+    commands ..> i18n
+    checker ..> content
+    checker ..> state
+    checker ..> render
+    checker ..> Toolkit
+    content ..> config
+    content ..> i18n
+    state ..> config
+    state ..> content
+    inputs ..> Case
+    render ..> theme
+    theme ..> config
+    i18n ..> config
+    Toolkit ..> config : TIMEOUT
+```
+
+`inputs` is the authoring seam: no engine module imports it — a puzzle's
+`tests.py` does, building `Case`s and calling the `Toolkit`. Everything bottoms
+out at `config`.
+
+---
+
 ## 1. System context (C4 level 1)
 
 ```mermaid
@@ -43,8 +221,10 @@ flowchart TB
 
 PyQuest is a **stateless command runner**, not a TUI: every invocation is one
 short `python3 start.py <verb>` that reads content + per‑user state from disk,
-does one thing, prints, and exits. The only interactive surface is the `menu`
-menu. There are **no third‑party dependencies** (Python 3.8+ stdlib only).
+does one thing, prints, and exits. The interactive surfaces are the `menu`
+launcher and the **play cockpit** (the card's arrow‑selectable nav row); both
+engage only on a key‑capable TTY and degrade to plain prints otherwise. There
+are **no third‑party dependencies** (Python 3.8+ stdlib only).
 
 ## 2. Containers (C4 level 2)
 
@@ -104,43 +284,14 @@ flowchart TB
 
 ## 4. Engine components (C4 level 3)
 
-The wiring *inside* the `engine/` container, shown as one coarse view plus
-three focused slices so each stays small. Arrows point **toward the dependency**
-(A → B means "A imports B"); verify the edges with
-`grep -rE "^from \.\.?" engine`. `config` is the universal foundation imported
-widely, so it appears only where a slice needs it. The per‑verb edges into the
-data and visual layers live in [commands.md](commands.md); the tester in
+The wiring *inside* the `engine/` container. §0 (the master diagram) is the full
+structural picture; the two flows here add the direction and edge labels a class
+diagram can't carry. Arrows point **toward the dependency** (A → B means "A
+imports B"); verify with `grep -rE "^from \.\.?" engine`. The per‑verb edges into
+the data and visual layers live in [commands.md](commands.md); the tester in
 [toolkit.md](toolkit.md).
 
-### 4.1 At a glance
-
-```mermaid
-flowchart TB
-    play["start.py «entry»"] --> app["app.py «argv dispatch»"]
-    app --> verbs["commands/ «verbs»"]
-    app --> checker["checker.py «one check»"]
-
-    subgraph services["engine services"]
-        direction LR
-        data["content + state «data»"]
-        vis["render + theme «visuals»"]
-        toolkit["toolkit/ «T tester»"]
-    end
-
-    verbs --> services
-    checker --> services
-    services --> config["config.py «foundation»"]
-
-    classDef base fill:#eef,stroke:#557;
-    class config base;
-```
-
-Four tiers, no cycles: the **entry** starts **dispatch**, which routes each
-command to the **verbs** or the **checker**; both lean on the shared **services**
-(data, visuals, the tester), and everything bottoms out at **config**. The three
-slices below zoom in, including which services each branch imports.
-
-### 4.2 Dispatch & verbs
+### 4.1 Dispatch & verbs
 
 ```mermaid
 flowchart TB
@@ -165,7 +316,7 @@ Only `cards` is shared and `menu` composes the other verbs, so adding a verb
 touches one module plus one `elif` in `app.main()`. (Each verb's edges to
 `content`/`state`/`render` are in [commands.md](commands.md).)
 
-### 4.3 The check path
+### 4.2 The check path
 
 ```mermaid
 flowchart LR
@@ -180,56 +331,10 @@ flowchart LR
 ```
 
 `checker` is the only module that touches the `toolkit`; the §6 sequence traces
-this path end to end.
-
-### 4.4 Data, visuals & foundation
-
-```mermaid
-flowchart TB
-    state["state.py «progress/answers/work.py»"] --> content["content.py «discovery + loaders»"]
-    state --> config["config.py «paths · atomic write · WIDTH»"]
-    content --> config
-    content --> i18n["i18n.py «language packs»"]
-    i18n --> config
-    render["render.py «primitives»"] --> theme["theme.py «palette · glyphs · paint»"]
-    theme --> config
-    inputs["inputs.py «input seam»"]
-    tests["a puzzle's tests.py"] -. imports .-> inputs
-    classDef base fill:#eef,stroke:#557;
-    class config base;
-    classDef seam fill:#efe,stroke:#575,stroke-dasharray:3 3;
-    class inputs seam;
-    class tests seam;
-```
-
-The bottom layers. `inputs` is intentionally an island, no engine module
-imports it; only a puzzle's `tests.py` does (the authoring seam, dashed).
-
-### 4.5 Inside the toolkit
-
-The `toolkit/` box is itself a small package: a thin `Toolkit` facade that
-composes method groups (mixins) over one shared sandbox. Coarse shape here; the
-class‑level composition and the run/liveness sequences are in
-[toolkit.md](toolkit.md).
-
-```mermaid
-flowchart TB
-    facade["Toolkit «facade»<br/>composes the mixins, owns the tape"]
-    facade --> behavior["runners + asserts<br/>«run code · assert behavior»"]
-    facade --> integrity["constructs + lines<br/>«was the lesson used?»"]
-    facade --> perf["perf «bonus timing»"]
-    integrity --> liveness["liveness<br/>«ablation engine»"]
-    behavior --> guard["ExecutionGuard<br/>«the one in-process sandbox»"]
-    liveness --> guard
-    guard --> base["errors + textutil<br/>«translated failures · helpers»"]
-    classDef found fill:#eef,stroke:#557;
-    class base found;
-```
-
-The dependency spine runs downward: the integrity checks lean on `liveness`
-(does ablating the construct change behavior?), and every run of learner code,
-behavior assertion or liveness re‑run, funnels through the single
-`ExecutionGuard`. `perf` is the optional, advisory `bonus(T)` branch.
+this path end to end. The data, visual, and foundation wiring (`state`→`content`,
+`content`→`i18n`/`config`, `render`→`theme`, the `inputs` seam) and the toolkit's
+internal composition are in §0's master diagram; [toolkit.md](toolkit.md) zooms
+into the tester.
 
 ## 5. Domain model (the data a check moves through)
 
@@ -250,6 +355,8 @@ classDiagram
         +str concept
         +str mode  "script | import"
         +str why
+        +str category  "Core | Advanced | Projects"
+        +str kind  "build | debug | capstone (projects)"
     }
     class Progress {
         +int version
@@ -282,7 +389,7 @@ classDiagram
 
 ### How the system consumes a puzzle
 
-A puzzle is just seven files on disk; each has exactly one job and one reader.
+A puzzle is a handful of files on disk; each has exactly one job and one reader.
 This is the whole interaction surface between the engine and the content.
 
 ```mermaid
@@ -295,7 +402,8 @@ flowchart LR
         hints["hints.md"]
         solution["solution.py"]
         brief["brief.md"]
-        dodges["dodges.py"]
+        reference["reference.md (opt)"]
+        dodges["dodges.py (opt)"]
     end
 
     subgraph loop["engine, the learner loop"]
@@ -305,6 +413,7 @@ flowchart LR
         check["checker → Toolkit.check"]
         hint["cmd_hint"]
         sol["cmd_solution"]
+        book["cmd_textbook"]
     end
 
     editor["the learner's editor"]
@@ -315,17 +424,19 @@ flowchart LR
     tests -->|on check| check
     hints -->|on hint| hint
     solution -->|on solution| sol
+    reference -->|on textbook| book
     brief -->|"path shown, never parsed"| editor
     tests --> audit
     solution --> audit
+    starter -->|"--sidestep: debug must fail"| audit
     dodges -->|"--sidestep only"| audit
 ```
 
-`meta.json` is the only file loaded for *every* puzzle (discovery reads id,
-mode, why); `brief.md` is never parsed, the engine just shows its path and the
-learner opens it; `tests.py`, `solution.py`, and `dodges.py` are also what
-`audit.py` grades against. Adding a puzzle is dropping these files on disk,
-zero code changes.
+`meta.json` is the only file loaded for *every* puzzle (discovery reads id, mode,
+category, kind); `brief.md` is never parsed — the engine shows its path and the
+learner opens it; `reference.md` feeds the textbook; `tests.py`, `solution.py`,
+`starter.py` (for debug puzzles), and `dodges.py` are what `audit.py` grades
+against. Adding a puzzle is dropping these files on disk, zero code changes.
 
 ## 6. Key runtime sequence: `python3 start.py check`
 
