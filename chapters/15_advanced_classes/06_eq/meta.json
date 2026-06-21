@@ -1,0 +1,10 @@
+{
+  "id": "15.6",
+  "title": "__eq__: value equality",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "__eq__(self, other) defines what == means for your objects",
+  "syntax": "def __eq__(self, other): return self.cents == other.cents",
+  "mode": "import",
+  "why": "By default == compares object identity (are they the same object?). Defining __eq__ lets two distinct objects count as equal when their values match -- value equality."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "15.3",
+  "title": "Overriding: a child's own version",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "A subclass can redefine a parent method; its version wins for its instances",
+  "syntax": "class Cat(Animal): def speak(self): ...",
+  "mode": "import",
+  "why": "When a subclass defines a method the parent already has, the subclass's version is used for its instances -- polymorphism: the same call does the right thing for each type."
+}

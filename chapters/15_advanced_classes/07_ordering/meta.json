@@ -1,0 +1,10 @@
+{
+  "id": "15.7",
+  "title": "__lt__: make objects sortable",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "__lt__(self, other) defines <, which is what sorted() and min/max use",
+  "syntax": "def __lt__(self, other): return self.degrees < other.degrees",
+  "mode": "import",
+  "why": "sorted, min and max order things with the < operator; defining __lt__ tells Python how to compare your objects, so a list of them can be sorted directly."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "15.5",
+  "title": "@classmethod: an alternative constructor",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "@classmethod receives the class as cls; handy for building instances differently",
+  "syntax": "@classmethod\\ndef from_tuple(cls, pair): return cls(...)",
+  "mode": "import",
+  "why": "A classmethod is bound to the class, not an instance; its cls parameter lets it construct objects, so you can offer named alternative constructors like Point.from_tuple(...)."
+}

@@ -1,0 +1,10 @@
+{
+  "id": "15.1",
+  "title": "Inheritance: build on a base class",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "class Child(Parent) inherits the parent's methods and adds its own",
+  "syntax": "class Dog(Animal):",
+  "mode": "import",
+  "why": "A subclass automatically gets the base class's methods, so shared behaviour is written once in the parent; the child only adds what is special to it, and is-a the parent."
+}

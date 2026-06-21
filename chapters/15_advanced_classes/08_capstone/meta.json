@@ -1,0 +1,10 @@
+{
+  "id": "15.8",
+  "title": "Capstone: a shape hierarchy",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "Combine inheritance, super, a property and dunders into one class",
+  "syntax": "class Rectangle(Shape): @property area; __eq__; __lt__",
+  "mode": "import",
+  "why": "Real classes blend the tools: inherit a base, extend its __init__ with super, expose a computed property, and define equality and ordering so the objects behave like built-in values."
+}

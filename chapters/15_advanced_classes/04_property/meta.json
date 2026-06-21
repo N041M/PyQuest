@@ -1,0 +1,10 @@
+{
+  "id": "15.4",
+  "title": "@property: a computed attribute",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "@property turns a method into a read-only attribute, computed on access",
+  "syntax": "@property\\ndef area(self): ...",
+  "mode": "import",
+  "why": "A property is read like an attribute (no parentheses) but runs a method each time, so a derived value such as area stays correct when the data it depends on changes."
+}

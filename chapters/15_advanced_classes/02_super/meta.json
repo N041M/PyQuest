@@ -1,0 +1,10 @@
+{
+  "id": "15.2",
+  "title": "super(): extend the parent",
+  "chapter": "Advanced Classes",
+  "category": "Advanced",
+  "concept": "super().__init__(...) runs the parent's __init__, then the child adds more",
+  "syntax": "super().__init__(name)",
+  "mode": "import",
+  "why": "A child often needs the parent's set-up plus its own; super() calls the parent's method so you extend it instead of rewriting it, keeping the parent's logic in one place."
+}
