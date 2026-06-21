@@ -8,11 +8,11 @@ translate the interface and the textbook content into another human language.
 Translating Python itself is *not* the goal: the grader is language-agnostic,
 only the presentation is localized.
 
-## Two ways to start
+## Start with the one-file worksheet
 
-**Recommended — the one-file worksheet.** Generate a single file with *every*
-translatable instance (all UI strings + every puzzle's brief/hints/reference),
-English prewritten, then translate in place and split it back into a pack:
+Generate a single file with *every* translatable instance (all UI strings + every
+puzzle's brief/hints/reference), English prewritten, then translate in place and
+split it back into a pack:
 
 ```
 python3 tools/lang_worksheet.py new <code>     # writes lang/<code>.worksheet.txt
@@ -26,16 +26,12 @@ stays partial — everything untouched falls back to English. The worksheet is a
 loose `lang/<code>.worksheet.txt` file (not a pack folder), so a half-finished
 one is invisible to the engine and the checker.
 
-**By hand — the structural template.** Prefer to build the pack folder directly?
-Copy [`_template/`](_template/) to `lang/<code>/` and fill it in; its
-[README](_template/README.md) walks through the format below. Folder names
-starting with `_` (or `.`) are scaffolding: the engine never lists them as a
-language and the checker skips them, so the template can live here without
-becoming a selectable "language."
+(You can also hand-build a pack by creating the files below directly — `apply`
+just produces them for you.)
 
 ## Layout
 
-Either way, a pack ends up as:
+A pack is:
 
 ```
 lang/<code>/
