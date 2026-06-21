@@ -372,12 +372,10 @@ flowchart LR
         tests["tests.py"]
         hints["hints.md"]
         solution["solution.py"]
-        brief["brief.md"]
         reference["reference.md (opt)"]
-        dodges["dodges.py (opt)"]
+        brief["brief.md"]
     end
-
-    subgraph loop["engine, the learner loop"]
+    subgraph loop["engine · the learner loop"]
         direction TB
         discover["content.discover()"]
         ws["state → work.py"]
@@ -386,28 +384,23 @@ flowchart LR
         sol["cmd_solution"]
         book["cmd_textbook"]
     end
-
     editor["the learner's editor"]
-    audit["audit.py"]
-
     meta -->|always| discover
-    starter -->|"seed work.py on start"| ws
+    starter -->|seed on start| ws
     tests -->|on check| check
     hints -->|on hint| hint
     solution -->|on solution| sol
     reference -->|on textbook| book
-    brief -->|"path shown, never parsed"| editor
-    tests --> audit
-    solution --> audit
-    starter -->|"--sidestep: debug must fail"| audit
-    dodges -->|"--sidestep only"| audit
+    brief -->|path shown| editor
 ```
 
 `meta.json` is the only file loaded for *every* puzzle (discovery reads id, mode,
 category, kind); `brief.md` is never parsed — the engine shows its path and the
-learner opens it; `reference.md` feeds the textbook; `tests.py`, `solution.py`,
-`starter.py` (for debug puzzles), and `dodges.py` are what `audit.py` grades
-against. Adding a puzzle is dropping these files on disk, zero code changes.
+learner opens it; `reference.md` feeds the textbook. Adding a puzzle is dropping
+these files on disk, zero code changes. **`audit.py`** (the test harness, §7) is
+the second reader of a few of them: it grades `tests.py` against `solution.py`,
+requires a `debug` puzzle's `starter.py` to *fail*, and runs every pinned
+`dodges.py` sidestep.
 
 ## 6. Key runtime sequence: `python3 start.py check`
 
