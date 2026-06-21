@@ -428,6 +428,26 @@ def sidestep_report(p):
     return breaches, dodge_passes, guard
 
 
+# Project puzzles (a build-up arc that ends in a low-guidance capstone) carry a
+# `kind` instead of teaching one construct. They are deliberately sparse: fewer
+# hints, no `concept` (so they're out of the textbook and exempt from the
+# lesson-guard -- the lesson is the project, not a single tool). `debug` puzzles
+# ship broken code to fix, so their starter must FAIL the tests.
+PROJECT_KINDS = {"build", "debug", "capstone"}
+
+
+def _passes_tests(path, mode, dirpath):
+    """Run dirpath's tests.py against `path` (a starter or solution). True if it
+    passes cleanly, False if any puzzle/test failure is raised. Used to assert a
+    debug puzzle's starter is actually broken."""
+    try:
+        tests = load_tests(dirpath)
+        tests.check(Toolkit(path, mode))
+        return True
+    except Exception:
+        return False
+
+
 # ---- conformance (every solution passes its own tests) ---------------------
 def conformance_issues(p):
     issues = []
@@ -451,8 +471,17 @@ def conformance_issues(p):
     if meta.get("concept") and not os.path.isfile(
             os.path.join(p["dir"], "reference.md")):
         issues.append("has a concept but no reference.md")
+    kind = meta.get("kind")
+    if kind and kind not in PROJECT_KINDS:
+        issues.append("unknown kind %r (want one of %s)"
+                      % (kind, ", ".join(sorted(PROJECT_KINDS))))
+    # Lesson puzzles carry exactly 3 escalating hints; project puzzles are
+    # low-guidance, so they may carry 0-3.
     hints = load_hints(p["dir"])
-    if len(hints) != 3:
+    if kind in PROJECT_KINDS:
+        if len(hints) > 3:
+            issues.append("%d hints (project puzzles allow 0-3)" % len(hints))
+    elif len(hints) != 3:
         issues.append("%d hints (want 3)" % len(hints))
     sol = os.path.join(p["dir"], "solution.py")
     try:
@@ -477,6 +506,14 @@ def conformance_issues(p):
                 fn(T)
             except Exception as e:
                 issues.append("BONUS FAILS for solution: %s" % e)
+    # A debug puzzle ships broken code: its starter must FAIL the tests, or there
+    # is nothing to fix and the lesson is empty.
+    if kind == "debug":
+        starter = os.path.join(p["dir"], "starter.py")
+        if not os.path.isfile(starter):
+            issues.append("debug puzzle has no starter.py to fix")
+        elif _passes_tests(starter, meta.get("mode"), p["dir"]):
+            issues.append("debug starter already passes (no bug to fix)")
     return issues
 
 

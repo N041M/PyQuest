@@ -863,6 +863,56 @@ def _engine_selftest():
             check_pack.LANG_DIR, check_pack.CHAPTERS_DIR = saved_lang, saved_ch
             shutil.rmtree(root)
 
+    def t_project_checks():
+        """The projects framework's conformance rules: a `kind` must be known;
+        project puzzles may carry 0-3 hints (lesson puzzles still need exactly
+        3); and a `debug` puzzle's starter MUST fail its tests -- a starter that
+        already passes means there is no bug to fix."""
+        import shutil
+        from audit import conformance_issues, PROJECT_KINDS
+        assert "debug" in PROJECT_KINDS
+        root = tempfile.mkdtemp(prefix="pyquest_selftest_")
+
+        def setup(meta_extra, starter_src, n_hints):
+            # a fresh dir per scenario: distinct file paths, so re-running with
+            # different source can't hit a same-path bytecode-cache artifact
+            # (real puzzles always have distinct solution.py / starter.py paths).
+            d = tempfile.mkdtemp(dir=root)
+            with open(os.path.join(d, "tests.py"), "w") as f:
+                f.write("def check(T):\n    T.eq(T.call('f'), 1)\n")
+            with open(os.path.join(d, "solution.py"), "w") as f:
+                f.write("def f():\n    return 1\n")
+            with open(os.path.join(d, "starter.py"), "w") as f:
+                f.write(starter_src)
+            with open(os.path.join(d, "brief.md"), "w") as f:
+                f.write("brief\n")
+            with open(os.path.join(d, "hints.md"), "w") as f:
+                f.write("\n\n---\n\n".join("h%d" % i for i in range(n_hints)))
+            meta = {"id": "9.9", "title": "t", "mode": "import"}
+            meta.update(meta_extra)
+            return {"id": "9.9", "dir": d, "meta": meta}
+
+        passes = "def f():\n    return 1\n"          # matches tests -> passes
+        broken = "def f():\n    return 2\n"          # fails tests -> a real bug
+        try:
+            # debug starter that already passes -> flagged
+            iss = conformance_issues(setup({"kind": "debug"}, passes, 1))
+            assert any("already passes" in i for i in iss), iss
+            # debug starter that is broken -> clean (1 hint is fine for a project)
+            iss = conformance_issues(setup({"kind": "debug"}, broken, 1))
+            assert not any("already passes" in i or "hints" in i for i in iss), iss
+            # unknown kind -> flagged
+            iss = conformance_issues(setup({"kind": "frob"}, broken, 3))
+            assert any("unknown kind" in i for i in iss), iss
+            # project puzzle with 0 hints -> no hint complaint
+            iss = conformance_issues(setup({"kind": "build"}, passes, 0))
+            assert not any("hints" in i for i in iss), iss
+            # lesson puzzle (no kind) with 0 hints -> hint complaint
+            iss = conformance_issues(setup({}, passes, 0))
+            assert any("hints" in i for i in iss), iss
+        finally:
+            shutil.rmtree(root)
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -876,7 +926,8 @@ def _engine_selftest():
                t_username_validation, t_user_lifecycle,
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
-               t_key_decode, t_i18n, t_i18n_content, t_check_pack):
+               t_key_decode, t_i18n, t_i18n_content, t_check_pack,
+               t_project_checks):
         case(fn.__name__[2:], fn)
 
     bad = 0
