@@ -23,19 +23,24 @@ module‑level class diagrams and the relevant sequences:
 
 ---
 
-## 0. Master class diagram (every module & class)
+## 0. Master diagrams (every module & class)
 
-The whole system on one canvas — every engine module (as a «module» box) and
-every genuine class, with their relationships. The numbered sections that follow
-break this into focused, readable slices; this is the single source they
-aggregate. `─▷` (hollow) is inheritance, `┄▷` (dashed) a dependency (import/use),
-`◆──` composition.
+The whole system as two clean panels — split so the layout stays untangled:
+**0.1** the engine modules (the import graph) and **0.2** the tester
+(`Toolkit`) class hierarchy. Together they cover every module and genuine class;
+the per-area pages below add the per-verb and run/liveness detail. `─▷` (hollow
+arrow) is inheritance, `┄▷` (dashed) a dependency (import/use).
+
+### 0.1 Engine modules
+
+«module» boxes and their import graph, reading left to right: entry → dispatch →
+services → foundation. `i18n` localizes content and UI strings; `inputs` is the
+authoring seam — no engine module imports it, a puzzle's `tests.py` does, building
+`Case`s. Everything bottoms out at `config`. (`checker` → `toolkit/` is in §4.2.)
 
 ```mermaid
 classDiagram
-    direction TB
-
-    %% ===== entry & dispatch =====
+    direction LR
     class app {
         <<module>>
         +main()
@@ -46,121 +51,117 @@ classDiagram
     }
     class commands {
         <<package>>
-        +status / map / stats / hint / solution / textbook
-        +navigate / profiles / transfer / shortcuts
-        +menu / help / registry / cards
+        +verbs · cards · registry
     }
-
-    %% ===== checking / the tester =====
     class checker {
         <<module>>
-        +cmd_check(puzzles, by_id, prog)
-        +fail_nudge(prog, cur)
+        +cmd_check()
     }
+    class content {
+        <<module>>
+        +discover() category()
+        +load_tests() load_reference()
+    }
+    class state {
+        <<module>>
+        +load_progress() current_puzzle()
+        +ensure_workspace()
+    }
+    class i18n {
+        <<module>>
+        +t() localized()
+    }
+    class inputs {
+        <<module>>
+        +random_word() random_int()
+    }
+    class Case {
+        +stdin args kwargs expect
+    }
+    class render {
+        <<module>>
+        +box() header() section()
+    }
+    class theme {
+        <<module>>
+        +paint() THEMES
+    }
+    class config {
+        <<module>>
+        +write_json() term_size()
+        +ROOT WIDTH TIMEOUT
+    }
+    app ..> commands
+    app ..> checker
+    commands ..> content
+    commands ..> state
+    commands ..> render
+    checker ..> content
+    checker ..> state
+    checker ..> render
+    content ..> i18n
+    content ..> config
+    state ..> content
+    state ..> config
+    render ..> theme
+    theme ..> config
+    i18n ..> config
+    session ..> config
+    inputs ..> Case
+```
+
+### 0.2 The tester (`Toolkit`) classes
+
+The genuine classes behind a `check`: the `Toolkit` facade composes six method
+mixins; every run of learner code funnels through the one `ExecutionGuard`; and
+failures are the translated `PuzzleError` hierarchy (`LessonNotUsedError` is a
+`WrongResultError`, so its `except` must come first). `checker` is the only
+module that touches this package.
+
+```mermaid
+classDiagram
+    direction TB
     class Toolkit {
         <<facade>>
-        +path, mode
-        +_runs, _calls : the tape
+        +path mode
+        +_runs _calls
     }
     class RunnersMixin {
-        +run / call / get / func()
-        +make / method / attr()
-        +put_file / file / source()
+        +run() call() make() method()
     }
     class AssertsMixin {
-        +eq / approx / true / is_a()
-        +any_of / unordered / raises()
-        +is_generator / does_not_mutate()
+        +eq() approx() raises()
     }
     class ConstructsMixin {
-        +uses_op / uses_if / uses_for()
-        +uses_call / uses_import / uses_class()
-        +uses_yield / uses_lambda / uses_comprehension()
-        +prints_computed / assigns_a_variable()
+        +uses_op() uses_call() uses_class()
     }
     class LinesMixin {
-        +line_uses_op / line_shape()
-        +line_only_literals()
+        +line_uses_op() line_shape()
     }
     class LivenessMixin {
-        +require_live / tree()
-        -_ablate / _is_live()
+        +require_live() tree()
     }
     class PerfMixin {
-        +time_call / scales()
+        +time_call() scales()
     }
     class ExecutionGuard {
-        +guarded(because, fn) result
-        +sandbox / put_file()
+        +guarded() sandbox()
     }
     class PuzzleError {
         <<exception>>
-        +detail
     }
     class PuzzleSyntaxError
     class MissingSymbolError
     class WrongResultError
-    class LessonNotUsedError
     class PuzzleCrashError
-
-    %% ===== content · input · state =====
-    class content {
-        <<module>>
-        +discover() list~Puzzle~
-        +category(puzzle) str
-        +read_starter / brief_path()
-        +load_hints / load_reference / load_tests()
-    }
-    class i18n {
-        <<module>>
-        +t(key, default) str
-        +localized(path) str
-        +set_language / validate / available / current()
-    }
-    class inputs {
-        <<module>>
-        +random_word / random_int()
-    }
-    class Case {
-        +stdin, args, kwargs
-        +expect, meta
-    }
-    class state {
-        <<module>>
-        +load_progress / save_progress / stat()
-        +current_puzzle / ensure_workspace / work_path()
-        +list_users / ensure_user / backup_corrupt()
-    }
-
-    %% ===== visuals =====
-    class render {
-        <<module>>
-        +box / header / section / bar()
-        +wordmark / wrap / field / cli()
-    }
-    class theme {
-        <<module>>
-        +THEMES, glyphs, LOGO
-        +paint / apply_theme()
-    }
-
-    %% ===== foundation =====
-    class config {
-        <<module>>
-        +ROOT, CHAPTERS_DIR, WIDTH, TIMEOUT
-        +load_settings / save_settings()
-        +write_json / term_size()
-    }
-
-    %% Toolkit is a facade composed of the mixins (multiple inheritance)
+    class LessonNotUsedError
     RunnersMixin <|-- Toolkit
     AssertsMixin <|-- Toolkit
     ConstructsMixin <|-- Toolkit
     LinesMixin <|-- Toolkit
     LivenessMixin <|-- Toolkit
     PerfMixin <|-- Toolkit
-    RunnersMixin ..> ExecutionGuard : runs learner code
-    LivenessMixin ..> ExecutionGuard : ablation re-runs
+    Toolkit ..> ExecutionGuard : runs code
     ConstructsMixin ..> LivenessMixin : judged by
     ExecutionGuard ..> PuzzleError : raises
     PuzzleError <|-- PuzzleSyntaxError
@@ -168,37 +169,7 @@ classDiagram
     PuzzleError <|-- WrongResultError
     PuzzleError <|-- PuzzleCrashError
     WrongResultError <|-- LessonNotUsedError
-
-    %% wiring (A ..> B = "A imports/uses B")
-    app ..> checker
-    app ..> commands
-    app ..> content
-    app ..> state
-    app ..> i18n
-    session ..> config
-    commands ..> content
-    commands ..> state
-    commands ..> render
-    commands ..> i18n
-    checker ..> content
-    checker ..> state
-    checker ..> render
-    checker ..> Toolkit
-    content ..> config
-    content ..> i18n
-    state ..> config
-    state ..> content
-    inputs ..> Case
-    render ..> theme
-    theme ..> config
-    i18n ..> config
-    Toolkit ..> config : TIMEOUT
 ```
-
-`inputs` is the authoring seam: no engine module imports it — a puzzle's
-`tests.py` does, building `Case`s and calling the `Toolkit`. Everything bottoms
-out at `config`.
-
 ---
 
 ## 1. System context (C4 level 1)
@@ -356,7 +327,7 @@ classDiagram
         +str mode  "script | import"
         +str why
         +str category  "Core | Advanced | Projects"
-        +str kind  "build | debug | capstone (projects)"
+        +str kind  "projects: build | debug | capstone"
     }
     class Progress {
         +int version

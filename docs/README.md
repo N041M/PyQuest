@@ -23,7 +23,7 @@ Start by what you're trying to do.
   before adding a feature.
 - **[architecture/](architecture/README.md)** — the same design as **UML**
   (Mermaid) diagrams, led by a single **[master class
-  diagram](architecture/README.md#0-master-class-diagram-every-module--class)**,
+  diagrams](architecture/README.md#0-master-diagrams-every-module--class)**,
   then focused per-area pages:
   [engine-core](architecture/engine-core.md) ·
   [toolkit](architecture/toolkit.md) ·
