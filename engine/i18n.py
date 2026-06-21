@@ -104,16 +104,25 @@ def _load_json(path):
         return "could not read %s (%s)" % (os.path.basename(path), e)
 
 
+def is_scaffolding(code):
+    """Directories under lang/ whose name starts with '_' or '.' are scaffolding
+    (the `_template` starter, editor dotfiles), not language packs -- a real
+    language code never starts that way. Discovery skips them, so the template
+    never shows up as a selectable language or trips the pack checker."""
+    return code.startswith(("_", "."))
+
+
 def available():
     """English plus every pack under lang/ that validates: [(code, name), ...].
     Broken packs are simply left out of the list (a select would also reject)."""
     langs = [("en", "English")]
     if os.path.isdir(LANG_DIR):
         for code in sorted(os.listdir(LANG_DIR)):
-            if os.path.isdir(_pack_dir(code)):
-                ok, name = validate(code)
-                if ok:
-                    langs.append((code, name))
+            if is_scaffolding(code) or not os.path.isdir(_pack_dir(code)):
+                continue
+            ok, name = validate(code)
+            if ok:
+                langs.append((code, name))
     return langs
 
 

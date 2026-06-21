@@ -847,6 +847,12 @@ def _engine_selftest():
             pack("zz", {"pack.json": "{ not json"})
             ok, msg = i18n.set_language("zz")
             assert not ok and "JSON" in msg and i18n.current() == "en", msg
+            # scaffolding ('_'-prefixed, e.g. the _template starter) is not a
+            # pack: even when it validates, it never appears as a language
+            pack("_template", {"pack.json": '{"name": "T", "code": "_template"}',
+                               "strings.json": "{}"})
+            assert i18n.validate("_template")[0]                # would validate
+            assert not any(c == "_template" for c, _ in i18n.available())
         finally:
             i18n.LANG_DIR = saved
             i18n.set_language("en")

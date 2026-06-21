@@ -78,10 +78,11 @@ def check(code):
 
 def main(argv):
     if argv:
-        codes = argv
+        codes = argv                              # explicit: check even _template
     else:
         codes = sorted(c for c in os.listdir(LANG_DIR)
-                       if os.path.isdir(os.path.join(LANG_DIR, c))) \
+                       if os.path.isdir(os.path.join(LANG_DIR, c))
+                       and not i18n.is_scaffolding(c)) \
             if os.path.isdir(LANG_DIR) else []
         if not codes:
             print("No packs under lang/ -- nothing to check. (English is "

@@ -8,6 +8,12 @@ translate the interface and the textbook content into another human language.
 Translating Python itself is *not* the goal: the grader is language-agnostic,
 only the presentation is localized.
 
+**Start from the template:** copy [`_template/`](_template/) to `lang/<code>/`
+and fill it in — its [README](_template/README.md) walks through every step.
+Folder names starting with `_` (or `.`) are scaffolding: the engine never lists
+them as a language and the checker skips them, so the template can live here
+without becoming a selectable "language."
+
 ## Layout
 
 ```
