@@ -11,4 +11,15 @@ DODGES = [
      "        hi = x\n"
      "print(lo)\n"
      "print(hi)\n"),
+    ("manual tracking, min([lo])/max([hi]) wrap to fake the built-ins",
+     "n = int(input())\n"
+     "nums = [int(input()) for _ in range(n)]\n"
+     "lo = hi = nums[0]\n"
+     "for x in nums:\n"
+     "    if x < lo:\n"
+     "        lo = x\n"
+     "    if x > hi:\n"
+     "        hi = x\n"
+     "print(min([lo]))\n"
+     "print(max([hi]))\n"),
 ]

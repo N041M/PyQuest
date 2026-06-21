@@ -137,9 +137,30 @@ class RunnersMixin:
             raise PuzzleCrashError(short_tb(), because=because)
 
     # ---- classes & objects (for the OOP chapters) ----------------------------
-    # NOTE: make/method aren't on the tape yet, so liveness degrades to the
-    # plain AST check for puzzles validated only through objects. Extend the
-    # tape (and the replay in liveness.py) when the OOP chapters land.
+    # make/method/attr are recorded on the OBJECT tape (self._ops) in call
+    # order; liveness.py replays it to judge constructs in object puzzles.
+    # Objects the tape itself created get a sequential index; a method/attr on
+    # any other object (one a test built directly, e.g. via an operator or a
+    # subclass) marks the tape unreplayable, and liveness degrades safely to
+    # the plain AST check rather than risk a misaligned replay.
+    def _register_obj(self, obj):
+        """Give a tape-made object the next index (make + method results, in
+        order, so record and replay stay in lockstep)."""
+        self._obj_index[id(obj)] = self._obj_seq
+        self._obj_seq += 1
+
+    def _obj_ref(self, obj):
+        idx = self._obj_index.get(id(obj))
+        if idx is None:
+            self._ops_replayable = False
+        return idx
+
+    def _copy_args(self, args, kwargs):
+        try:
+            return copy.deepcopy(args), copy.deepcopy(kwargs)
+        except Exception:
+            return args, kwargs
+
     def make(self, classname, *args, **kwargs):
         """Instantiate the learner's class; translated failures throughout."""
         cls = self.get(classname)
@@ -147,11 +168,15 @@ class RunnersMixin:
             raise MissingSymbolError(classname)
         because = "while creating %s(%s)" % (classname, fmt_args(args, kwargs))
         try:
-            return self._guarded(because, cls, *args, **kwargs)
+            obj = self._guarded(because, cls, *args, **kwargs)
         except PuzzleCrashError:
             raise
         except Exception:
             raise PuzzleCrashError(short_tb(), because=because)
+        ca, ck = self._copy_args(args, kwargs)
+        self._ops.append(("make", classname, ca, ck))
+        self._register_obj(obj)
+        return obj
 
     def method(self, obj, name, *args, **kwargs):
         """Call a method on an instance made by make()."""
@@ -159,15 +184,21 @@ class RunnersMixin:
         if not callable(m):
             raise MissingSymbolError(name)
         because = "while calling .%s(%s)" % (name, fmt_args(args, kwargs))
+        ref = self._obj_ref(obj)
         try:
-            return self._guarded(because, m, *args, **kwargs)
+            result = self._guarded(because, m, *args, **kwargs)
         except PuzzleCrashError:
             raise
         except Exception:
             raise PuzzleCrashError(short_tb(), because=because)
+        ca, ck = self._copy_args(args, kwargs)
+        self._ops.append(("method", ref, name, ca, ck))
+        self._register_obj(result)
+        return result
 
     def attr(self, obj, name):
         """An attribute of an instance, or a translated 'missing piece'."""
         if not hasattr(obj, name):
             raise MissingSymbolError(name)
+        self._ops.append(("attr", self._obj_ref(obj), name))
         return getattr(obj, name)

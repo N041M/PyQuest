@@ -13,5 +13,7 @@ def check(T):
         stdin = "%d\n" % k + "".join("%d\n" % x for x in nums)
         T.eq(T.run(stdin=stdin), "%d" % sum(nums),
              because="sum of %r" % nums)
-    T.uses_call("sum", because="The lesson is the built-in sum() -- "
-                               "let it replace the accumulator loop.")
+    T.uses_call_on_collection("sum",
+                              because="The lesson is the built-in sum() over the "
+                                      "numbers -- let it replace the accumulator "
+                                      "loop, not sum([total]) wrapping one.")

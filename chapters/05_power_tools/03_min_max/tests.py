@@ -11,5 +11,9 @@ def check(T):
         stdin = "%d\n" % k + "".join("%d\n" % x for x in nums)
         T.eq(T.run(stdin=stdin), "%d\n%d" % (min(nums), max(nums)),
              because="min then max of %r" % nums)
-    T.uses_call("min", because="Use the built-in min().")
-    T.uses_call("max", because="Use the built-in max().")
+    T.uses_call_on_collection("min", because="Use the built-in min() over the "
+                                             "numbers, not min([lo]) wrapping a "
+                                             "hand-tracked value.")
+    T.uses_call_on_collection("max", because="Use the built-in max() over the "
+                                             "numbers, not max([hi]) wrapping a "
+                                             "hand-tracked value.")

@@ -84,7 +84,9 @@ ALLOWED = {
 LESSON_CHECKS = {
     "uses_op", "uses_if", "uses_for", "uses_while", "uses_loop", "uses_break",
     "uses_continue", "uses_in", "uses_index", "uses_negative_index",
-    "uses_slice", "uses_call", "uses_import", "uses_class", "uses_comprehension",
+    "uses_slice", "uses_call", "uses_call_over_param", "uses_call_on_collection",
+    "uses_predicate_over_param", "uses_lambda_arg",
+    "uses_import", "uses_class", "uses_comprehension",
     "uses_dict", "uses_set", "uses_fstring", "uses_lambda", "uses_try",
     "uses_raise", "uses_with", "uses_with_open", "uses_yield", "uses_unpacking",
     "uses_boolop", "uses_nested_if", "uses_default_param",
@@ -261,6 +263,62 @@ def build_synth(rec, named=False):
         for line in outs.pop().split("\n"):
             body.append("print(%s)" % _synth_expr(line))
     return "\n".join(body) + "\n"
+
+
+# ---- meta-audit: the live-wrapper guard ------------------------------------
+# Higher-order functions whose result a solution returns/prints as-is, so the
+# answer can be computed the forbidden way and routed through a LIVE no-op
+# wrapper -- sum([total]), any([flag]), list(map(lambda v: v, [comp])). The
+# wrapper is live (removing it changes the output) yet does no real work, so a
+# bare uses_call(HOF) is satisfied without the lesson. (sorted/min-by-order are
+# absent: their only live form reorders, which changes the output, so they
+# cannot be wrapped invisibly -- a bare uses_call is fine for them.)
+#
+# A replay-table adversary cannot demonstrate this: fresh randomized inputs miss
+# the table. The real dodge has to COMPUTE the answer, which is puzzle-specific.
+# So the guard is STATIC -- like lesson_guard: a wrappable HOF pinned only via a
+# bare uses_call (no anchored variant) is flagged, to be anchored or justified.
+WRAPPABLE_HOFS = {"sum", "min", "max", "any", "all", "map", "filter", "reduce"}
+
+# Checks that anchor a HOF to its input/role, making the wrapper fail.
+_ANCHORED_CHECKS = {"uses_call_over_param", "uses_call_on_collection",
+                    "uses_predicate_over_param", "uses_lambda_arg"}
+
+# Wrapper-exposed puzzles that are an accepted ceiling (mirrors ALLOWED /
+# GUARDED_OK). Empty today: every wrappable HOF lesson is anchored.
+WRAPPER_OK = {}
+
+
+def _pinned_call_names(pdir, methods):
+    """The string first-argument of every `T.<method>("name")` in tests.py for
+    method in `methods` -- the call names a puzzle pins through those checks."""
+    names = set()
+    src = open(os.path.join(pdir, "tests.py")).read()
+    for n in ast.walk(ast.parse(src)):
+        if (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                and isinstance(n.func.value, ast.Name) and n.func.value.id == "T"
+                and n.func.attr in methods and n.args
+                and isinstance(n.args[0], ast.Constant)
+                and isinstance(n.args[0].value, str)):
+            names.add(n.args[0].value)
+    return names
+
+
+def wrapper_exposed_names(p):
+    """Wrappable HOFs this puzzle pins via a bare uses_call but does NOT anchor
+    -- each defeatable by a live no-op wrapper around a precomputed answer."""
+    bare = _pinned_call_names(p["dir"], {"uses_call"}) & WRAPPABLE_HOFS
+    anchored = _pinned_call_names(p["dir"], _ANCHORED_CHECKS)
+    return bare - anchored
+
+
+def wrapper_guard(p):
+    """Static cover for the live-wrapper sidestep. Returns None (no wrappable
+    HOF left bare), "allowed" (exposed but a documented residual), or "exposed"
+    (a hole: anchor the HOF or record it in WRAPPER_OK)."""
+    if not wrapper_exposed_names(p):
+        return None
+    return "allowed" if p["id"] in WRAPPER_OK else "exposed"
 
 
 def load_dodges(pdir):
@@ -613,6 +671,12 @@ def main():
             elif breaches:
                 weak += 1
                 verdict = "  !! SIDESTEPPABLE by: %s" % ", ".join(breaches)
+            elif wrapper_guard(p) == "exposed":
+                weak += 1
+                verdict = ("  !! WRAPPER-EXPOSED: bare uses_call(%s) is defeated "
+                           "by a live no-op wrapper -- anchor it "
+                           "(uses_call_over_param / uses_call_on_collection)"
+                           % ", ".join(sorted(wrapper_exposed_names(p))))
             elif guard == "exposed":
                 unguarded += 1
                 verdict = ("  ?? UNGUARDED LESSON: teaches a construct, varies "

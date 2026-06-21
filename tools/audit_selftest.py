@@ -305,6 +305,94 @@ def _engine_selftest():
             return
         raise AssertionError("an unrelated `with` satisfied uses_with_open")
 
+    def t_hof_role_checks():
+        """The higher-order-function role checks anchor a HOF to the lesson:
+        the call must work over the INPUT (uses_call_over_param /
+        uses_predicate_over_param) or carry the lambda in the right slot
+        (uses_lambda_arg). A live wrapper around a precomputed answer, or a
+        named function plus a decoy lambda, satisfies the bare uses_call /
+        uses_lambda but must fail these -- the ch.14 holes the playbook found."""
+        from engine.toolkit import LessonNotUsedError
+
+        def fails(call):
+            try:
+                call()
+            except LessonNotUsedError:
+                return
+            raise AssertionError("a sidestep satisfied a HOF role check")
+
+        # map over the input passes; map(identity, [comprehension]) does not
+        path, T = learner("def squares(nums):\n"
+                          "    return list(map(lambda x: x * x, nums))\n")
+        assert T.call("squares", [1, 2, 3]) == [1, 4, 9]
+        T.uses_call_over_param("map")
+        os.unlink(path)
+        path, T = learner("def squares(nums):\n"
+                          "    return list(map(lambda v: v, [x * x for x in nums]))\n")
+        assert T.call("squares", [1, 2, 3]) == [1, 4, 9]
+        T.uses_call("map")                       # the bare check is fooled
+        fails(lambda: T.uses_call_over_param("map"))
+        os.unlink(path)
+
+        # any over a genexpr on the input passes; any([flag]) from a loop fails
+        path, T = learner("def has_neg(nums):\n"
+                          "    return any(n < 0 for n in nums)\n")
+        assert T.call("has_neg", [1, -2]) is True
+        T.uses_predicate_over_param("any")
+        os.unlink(path)
+        path, T = learner("def has_neg(nums):\n"
+                          "    flag = False\n"
+                          "    for n in nums:\n"
+                          "        if n < 0:\n"
+                          "            flag = True\n"
+                          "    return any([flag])\n")
+        assert T.call("has_neg", [1, -2]) is True
+        T.uses_call("any")                       # the bare check is fooled
+        fails(lambda: T.uses_predicate_over_param("any"))
+        os.unlink(path)
+
+        # a sort key=lambda passes; a named key + decoy lambda fails
+        path, T = learner("def by_last(words):\n"
+                          "    return sorted(words, key=lambda w: w[-1])\n")
+        assert T.call("by_last", ["bc", "a"]) == ["a", "bc"]
+        T.uses_lambda_arg("sorted", keyword="key")
+        os.unlink(path)
+        path, T = learner("def _k(w):\n    return w[-1]\n"
+                          "def by_last(words):\n"
+                          "    return sorted(words, key=_k)\n"
+                          "_decoy = lambda: 0\n")
+        assert T.call("by_last", ["bc", "a"]) == ["a", "bc"]
+        T.uses_lambda()                          # the bare check is fooled
+        fails(lambda: T.uses_lambda_arg("sorted", keyword="key"))
+        os.unlink(path)
+
+    def t_object_liveness():
+        """make/method/attr are on the tape now, so liveness judges object
+        puzzles instead of degrading to AST presence: the class the tests
+        instantiate is live (ablating it breaks make), a decoy class beside it
+        is dead. A method/attr on an object the tape never made turns replay
+        off (safe degrade)."""
+        import ast as _ast
+        from engine.toolkit import LessonNotUsedError
+        code = ("class Thing:\n"
+                "    def __init__(self, n):\n        self.n = n\n"
+                "    def doubled(self):\n        return self.n * 2\n"
+                "class Decoy:\n    pass\n")
+        path, T = learner(code)
+        t = T.make("Thing", 5)
+        assert T.method(t, "doubled") == 10
+        assert T.attr(t, "n") == 5
+        T.uses_class("Thing")                    # live: make/method need it
+        decoy = [i for i, n in enumerate(_ast.walk(T.tree()))
+                 if isinstance(n, _ast.ClassDef) and n.name == "Decoy"]
+        try:
+            T.require_live("the Decoy class", "decoy is dead", decoy, "stmt")
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        os.unlink(path)
+        raise AssertionError("a decoy class was judged live in an object puzzle")
+
     def t_raises_still_works():
         path, T = learner("def f(x):\n    if x < 0:\n"
                           "        raise ValueError('no')\n    return x\n")
@@ -919,6 +1007,7 @@ def _engine_selftest():
                t_does_not_mutate, t_does_not_mutate_uncopyable,
                t_eq_case_sensitive, t_deep_approx, t_new_constructs,
                t_generator_backstop, t_uses_yield_scoped, t_with_open_construct,
+               t_hof_role_checks, t_object_liveness,
                t_raises_still_works, t_liveness_dead_chaff,
                t_liveness_real_constructs, t_line_checks, t_lesson_not_used,
                t_structural_checks,

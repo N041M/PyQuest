@@ -39,7 +39,7 @@ flags language-pack content overrides mirroring no real puzzle file).
 flowchart TB
     main["audit.main()"] --> conf["conformance_issues<br/>«default»"]
     main --> side["sidestep_report<br/>«--sidestep»"]
-    main --> les["lesson_guard / _lessons_report<br/>«--sidestep / --lessons»"]
+    main --> les["lesson_guard / wrapper_guard<br/>«--sidestep / --lessons»"]
     main --> prove["prove_checks / _prove_report<br/>«--prove-checks»"]
     main --> eng["audit_selftest._engine_selftest<br/>«--engine»"]
     conf --> tk["Toolkit.check"]
@@ -68,6 +68,7 @@ classDiagram
     class audit {
         <<module>>
         +ALLOWED · CHAFF · LESSON_CHECKS · GUARDED_OK
+        +WRAPPABLE_HOFS · WRAPPER_OK
         +build_impostor(rec)
         +build_synth(rec, named)
         +load_dodges(pdir)
@@ -76,6 +77,7 @@ classDiagram
         +conformance_issues(p)
         +check_inventory(pdir)
         +lesson_guard(p, rec)
+        +wrapper_guard(p)
         +_strip_lesson_checks(src)
         +prove_checks(p)
         +main()
@@ -199,17 +201,29 @@ sequenceDiagram
         IP-->>SR: must be False
     end
     SR-->>M: breaches, dodge_passes, guard
-    M-->>M: weak++ on any breach/dodge; unguarded++ on exposed
+    M-->>M: weak++ on any breach/dodge/wrapper-exposed; unguarded++ on exposed
 ```
+
+Two **static** meta‑audits flank the dynamic adversaries. `lesson_guard` flags a
+construct‑teaching, varying‑output puzzle that pins no construct check.
+`wrapper_guard` flags a puzzle pinning a **bare `uses_call`** for a wrappable
+HOF (`sum`/`min`/`max`/`any`/`all`/`map`/`filter`/`reduce`) without an anchored
+variant — that call is defeatable by a live no‑op wrapper around a precomputed
+answer (`sum([total])`, `any([flag])`, `map(lambda v: v, [comp])`), which a
+replay adversary can't demonstrate (fresh randomness misses the table) because
+the real dodge has to compute. The fix is the anchored checks
+(`uses_call_over_param`/`uses_call_on_collection`/`uses_predicate_over_param`/
+`uses_lambda_arg`); residuals go in `WRAPPER_OK` with a reason.
 
 ## `--engine`: the guard's guarantees, pinned (in `audit_selftest.py`)
 
-`_engine_selftest()` runs ~34 direct cases asserting each promise the
+`_engine_selftest()` runs ~40 direct cases asserting each promise the
 [ExecutionGuard](toolkit.md) and toolkit make: `exit()`/hang/stray‑`input()`
 translation, stdout capture, the file sandbox never leaking into the project,
 class/mutation/`approx`/case‑sensitive‑`eq` behavior, liveness killing dead
 chaff while honest constructs pass, the `line_*` checks, the structural checks
-(`uses_nested_if`, `uses_default_param`, `uses_with_open`, `uses_class(name)`),
+(`uses_nested_if`, `uses_default_param`, `uses_with_open`, `uses_class(name)`,
+the HOF role checks, and object‑tape liveness judging a class live vs a decoy),
 atomic JSON writes, corrupt‑file backup, username validation, discovery
 tolerating bad meta, the command registry staying in lock‑step with `app.py`
 dispatch, the profile‑import sanitizers scrubbing a stale or hand‑edited export
@@ -224,4 +238,4 @@ flowchart LR
 
 Run order in CI‑of‑one: `--engine` after touching `toolkit/`, `--sidestep`
 before any commit; both must be green (current bar: **142/142 conformance,
-0/142 sidesteppable, 0/142 unguarded lessons, 38/38 engine self‑tests**).
+0/142 sidesteppable, 0/142 unguarded lessons, 40/40 engine self‑tests**).

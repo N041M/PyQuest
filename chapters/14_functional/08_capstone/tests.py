@@ -1,5 +1,3 @@
-import ast
-
 from engine.inputs import Case, random_word, random_int
 
 
@@ -28,29 +26,14 @@ def check(T):
         T.eq(T.call("passing", *c.args), c.expect,
              because="passing(%r, %r) -> %r" % (c.args + (c.expect,)))
     # Each pipeline stage must use a lambda in its role -- a decoy lambda parked
-    # elsewhere while named functions (filter/sort) or a comprehension (map) do
-    # the work no longer counts. Each call must also be live.
-    def live_calls(name, pred):
-        return [i for i, n in enumerate(ast.walk(T.tree()))
-                if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
-                and n.func.id == name and pred(n)]
-
-    def first_is_lambda(n):
-        return bool(n.args) and isinstance(n.args[0], ast.Lambda)
-
-    def key_is_lambda(n):
-        return any(k.arg == "key" and isinstance(k.value, ast.Lambda)
-                   for k in n.keywords)
-
-    T.require_live("filter(lambda r: ..., records)",
-                   "filter's predicate must be an inline lambda",
-                   live_calls("filter", first_is_lambda), "expr",
-                   because="Select the qualifying records with a filter lambda.")
-    T.require_live("sorted(..., key=lambda r: ..., reverse=True)",
-                   "the sort key must be an inline lambda",
-                   live_calls("sorted", key_is_lambda), "expr",
-                   because="Rank with sorted(..., key=lambda, reverse=True).")
-    T.require_live("map(lambda r: r[0], ranked)",
-                   "map out the names with a lambda, not a comprehension",
-                   live_calls("map", first_is_lambda), "expr",
-                   because="Map out the names with a lambda -- the map stage.")
+    # elsewhere while named functions or comprehensions do the work no longer
+    # counts. filter must also run over the input records, not a comprehension.
+    T.uses_call_over_param("filter",
+                           because="Select the qualifying records by filtering "
+                                   "the input, not a comprehension.")
+    T.uses_lambda_arg("filter", pos=0,
+                      because="filter's predicate is an inline lambda.")
+    T.uses_lambda_arg("sorted", keyword="key",
+                      because="Rank with sorted(..., key=lambda, reverse=True).")
+    T.uses_lambda_arg("map", pos=0,
+                      because="Map out the names with a lambda -- the map stage.")

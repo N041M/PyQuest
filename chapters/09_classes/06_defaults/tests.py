@@ -17,6 +17,8 @@ def check(T):
              "%s, %s!" % (greeting, name),
              because="Custom greeting %r for %r." % (greeting, name))
     T.uses_class('Greeter', because="Greeter is a `class`.")
-    T.uses_default_param(because="The greeting must be a default PARAMETER "
-                                 "(greeting=\"Hello\"), not an if-check inside "
-                                 "__init__.")
+    T.uses_default_param("__init__",
+                         because="The greeting must be a default PARAMETER of "
+                                 "__init__ (greeting=\"Hello\"), not an if-check "
+                                 "inside it or *args -- and a decoy default on "
+                                 "some other function doesn't count.")

@@ -61,6 +61,8 @@ classDiagram
     class ConstructsMixin {
         +uses_op / uses_if / uses_for / uses_while ...
         +uses_with / uses_with_open / uses_call ...
+        +uses_call_over_param / uses_predicate_over_param ...
+        +uses_lambda_arg(name, key/pos) ...
         +uses_class(name) / uses_default_param ...
         +print_* · prints_* · assigns_* checks
         +30+ checks (liveness-judged where it can)
@@ -195,13 +197,25 @@ means a write‑only `with` looks dead, which is exactly why the files chapter
 uses `uses_with_open` anchored on a *read* whose removal crashes downstream (see
 [audit.md](audit.md)).
 
-A second gap: `make`/`method`/`attr` (the object helpers) are **not on the
-tape**, so the OOP chapters have no liveness at all. There, construct checks
-degrade to plain AST presence, which a decoy `class X: pass` could satisfy, so
-`uses_class(name)` takes the class name the tests instantiate, and the lessons
-lean on randomized `make`/`method` arguments plus hand‑pinned `dodges.py`.
-Recording the object tape (and replaying it in liveness) is the remaining work
-flagged in `runners.py`.
+A live construct can still be **decorative in spirit**: a bare `uses_call("map")`
+is satisfied by `map(lambda v: v, [x*x for x in nums])`, where a comprehension
+did the work and `map` is a no‑op wrapper liveness still calls live (removing it
+changes the output shape). The higher‑order‑function role checks anchor the call
+to its lesson instead: `uses_call_over_param`/`uses_predicate_over_param` require
+the HOF to run over the *input parameter* (not a comprehension or literal that
+already computed the answer), and `uses_lambda_arg` pins the lambda to the sort
+key / predicate / map slot so a named function plus a decoy lambda fails.
+
+For the OOP chapters, `make`/`method`/`attr` record an **object tape**
+(`self._ops`, ordered ops referencing tape‑made objects by index); liveness
+replays it like the call tape, so `uses_class` and in‑method construct checks
+are liveness‑judged there too (ablating the class the tests instantiate breaks
+`make`, a decoy `class X: pass` beside it stays dead). If a test touches an
+object the tape never made — built via an operator, a subclass, or a direct
+`Cls.method(...)` — the tape marks itself unreplayable and liveness degrades
+safely to plain AST presence rather than risk a misaligned replay; those
+puzzles still lean on `uses_class(name)`, randomized arguments, behavioral
+oracles, and hand‑pinned `dodges.py`.
 
 ## Three layers of construct strength
 

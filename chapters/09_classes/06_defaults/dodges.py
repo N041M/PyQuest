@@ -12,4 +12,12 @@ DODGES = [
      "        self.greeting = greeting\n"
      "    def greet(self, name):\n"
      "        return f'{self.greeting}, {name}!'\n"),
+    ("*args + if for the real work, a decoy default param elsewhere fakes it",
+     "class Greeter:\n"
+     "    def __init__(self, *args):\n"
+     "        self.greeting = args[0] if args else 'Hello'\n"
+     "    def greet(self, name):\n"
+     "        return f'{self.greeting}, {name}!'\n"
+     "def _decoy(x=0):\n"
+     "    return x\n"),
 ]

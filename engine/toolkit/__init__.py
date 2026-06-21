@@ -55,6 +55,13 @@ class Toolkit(RunnersMixin, AssertsMixin, LivenessMixin, ConstructsMixin,
         # re-runs (and for audit.py's replay attack)
         self._runs = []             # script mode: (stdin, files, stdout)
         self._calls = []            # import mode: (name, args, kwargs)
+        # the OBJECT tape: ordered make/method/attr ops for the OOP chapters, so
+        # liveness can replay class/method usage (object helpers used to be off
+        # the tape, degrading those puzzles to plain AST presence).
+        self._ops = []              # (kind, ...) in call order; see runners.py
+        self._obj_index = {}        # id(obj) -> its sequential index on the tape
+        self._obj_seq = 0           # next index to hand out (make/method result)
+        self._ops_replayable = True # a touched object the tape never made -> off
         self._live_base = None      # cached baseline behavior signature
         self._live_base_done = False
 

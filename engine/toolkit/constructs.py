@@ -216,6 +216,120 @@ class ConstructsMixin:
                            "%s() wasn't used" % name,
                            self._find(ok), "expr", because)
 
+    # ---- higher-order-function checks (anchor the call to the INPUT) ---------
+    # The bare uses_call(name) is satisfied by ANY live call to name -- even a
+    # decorative one wrapped around a precomputed answer (map(lambda v: v,
+    # [x * x for x in nums]) reads the squares off a comprehension, so map does
+    # nothing). These pin the HOF to its lesson role: it must work over the
+    # function's input, or carry the lesson's lambda in the right slot.
+    _REPACKAGING = (ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp,
+                    ast.List, ast.Tuple, ast.Set, ast.Dict)
+
+    def _param_names(self):
+        """Every def/lambda's parameter names -- the inputs a HOF should
+        consume."""
+        names = set()
+        for f in ast.walk(self.tree()):
+            if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                a = f.args
+                for grp in (a.posonlyargs, a.args, a.kwonlyargs):
+                    names.update(x.arg for x in grp)
+        return names
+
+    @staticmethod
+    def _call_named(n, name):
+        return (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+                and n.func.id == name)
+
+    def _refs_param(self, node, params):
+        return any(isinstance(x, ast.Name) and x.id in params
+                   for x in ast.walk(node))
+
+    def uses_call_over_param(self, name, because=""):
+        """A live call to `name` whose iterable argument IS the function's input
+        -- the parameter, or an expression derived from it (list(nums),
+        reversed(nums)) -- and NOT a comprehension or display literal that
+        already did the lesson's work. Closes the 'wrap a comprehension in a
+        live HOF' dodge for map/filter/reduce: the HOF must do the transform /
+        selection / fold over the input itself."""
+        params = self._param_names()
+
+        def ok(n):
+            if not self._call_named(n, name):
+                return False
+            return any(not isinstance(a, self._REPACKAGING)
+                       and self._refs_param(a, params) for a in n.args)
+
+        self._require_live(
+            "%s(...) applied to the input itself" % name,
+            "%s must work over the input, not wrap a comprehension or literal "
+            "that already computed the answer" % name,
+            self._find(ok), "expr", because)
+
+    def uses_call_on_collection(self, name, because=""):
+        """A live call to `name` whose argument is a real collection -- a
+        variable, a comprehension, or a derived call -- NOT a freshly built
+        display literal holding a precomputed answer. Closes the wrapper dodge
+        sum([total]) / min([lo]) / max([hi]), where an accumulator loop did the
+        work and the builtin is a live no-op around a one-element list. Unlike
+        uses_call_over_param this needs no parameter, so it fits script-mode
+        puzzles (the input arrives on stdin, not as an argument)."""
+        displays = (ast.List, ast.Tuple, ast.Set, ast.Dict)
+
+        def ok(n):
+            return (self._call_named(n, name) and n.args
+                    and not isinstance(n.args[0], displays))
+
+        self._require_live(
+            "%s(...) over a real collection" % name,
+            "%s must run over the input collection, not a literal holding an "
+            "answer a loop already computed" % name,
+            self._find(ok), "expr", because)
+
+    def uses_predicate_over_param(self, name, because=""):
+        """A live call to `name` (any/all) fed a comprehension/generator
+        expression that iterates the function's input -- the taught
+        any(<test> for <item> in nums) pattern. Rejects any([flag]) and
+        any(flag for _ in [0]): neither iterates the input, so the answer came
+        from a loop-with-a-flag, not from any/all over the items."""
+        params = self._param_names()
+        comps = (ast.GeneratorExp, ast.ListComp, ast.SetComp)
+
+        def ok(n):
+            if not (self._call_named(n, name) and n.args):
+                return False
+            a = n.args[0]
+            return (isinstance(a, comps) and a.generators
+                    and self._refs_param(a.generators[0].iter, params))
+
+        self._require_live(
+            "%s(<test> for <item> in input)" % name,
+            "hand the per-item tests to %s() as a comprehension over the input, "
+            "not a flag a loop precomputed" % name,
+            self._find(ok), "expr", because)
+
+    def uses_lambda_arg(self, name, keyword=None, pos=0, because=""):
+        """A live call to `name` carrying a lambda in a specific slot -- the
+        sort key (keyword="key"), the filter predicate or map function (pos=0).
+        Anchors the lambda to its role, so a decoy lambda elsewhere (which
+        satisfies the bare uses_lambda) plus a named function in the slot no
+        longer passes."""
+        slot = "key=" if keyword else "argument %d" % pos
+
+        def ok(n):
+            if not self._call_named(n, name):
+                return False
+            if keyword is not None:
+                return any(k.arg == keyword and isinstance(k.value, ast.Lambda)
+                           for k in n.keywords)
+            return len(n.args) > pos and isinstance(n.args[pos], ast.Lambda)
+
+        self._require_live(
+            "a lambda as the %s of %s(...)" % (slot, name),
+            "the %s of %s must be an inline lambda, not a named function with a "
+            "decoy lambda elsewhere" % (slot, name),
+            self._find(ok), "expr", because)
+
     def uses_dict(self, because=""):
         """A dict literal {...} or dict()."""
         def ok(n):

@@ -19,7 +19,9 @@ def check(T):
     for c in cases():
         T.approx(T.call("average", *c.args), c.expect,
                  because="average(%r) should be %r." % (c.args[0], c.expect))
-    T.uses_call("sum",
-                because="The lesson is bundling the built-ins (sum(nums) / "
-                        "len(nums)) -- a hand-written accumulator loop is the "
-                        "long way this puzzle is replacing.")
+    T.uses_call_over_param("sum",
+                           because="The lesson is bundling the built-ins "
+                                   "(sum(nums) / len(nums)) over the input -- a "
+                                   "hand-written accumulator loop, even wrapped "
+                                   "in sum([total]), is the long way this puzzle "
+                                   "replaces.")

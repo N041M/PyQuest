@@ -111,6 +111,52 @@ class LivenessMixin:
                 sig.append(name + ":\x00CRASH")
             except Exception as e:
                 sig.append("%s:raises %s" % (name, type(e).__name__))
+        sig.extend(self._object_sig(g))
+        return sig
+
+    def _object_sig(self, g):
+        """Replay the object tape (make/method/attr) against re-imported module
+        globals `g`, threading tape-made objects through an index list so the
+        indices recorded in call order line up. Each op contributes its result
+        (or a crash marker) to the signature. Empty when the tape isn't
+        replayable -- some op touched an object the tape never made."""
+        if not self._ops or not self._ops_replayable:
+            return []
+        sig, objs = [], []
+        for op in self._ops:
+            kind = op[0]
+            try:
+                if kind == "make":
+                    _, cls, args, kwargs = op
+                    c = g.get(cls)
+                    if not isinstance(c, type):
+                        sig.append("make:%s:missing" % cls)
+                        objs.append(None)
+                        continue
+                    a, k = copy.deepcopy(args), copy.deepcopy(kwargs)
+                    o = self._guarded("liveness", c, *a, **k)
+                    objs.append(o)
+                    sig.append("make:%s:ok" % cls)
+                elif kind == "method":
+                    _, ref, name, args, kwargs = op
+                    o = objs[ref]
+                    m = getattr(o, name, None)
+                    a, k = copy.deepcopy(args), copy.deepcopy(kwargs)
+                    r = self._guarded("liveness", m, *a, **k)
+                    objs.append(r)
+                    sig.append("method:%s:%r|%s"
+                               % (name, r, normalize(self.printed)))
+                else:                                    # attr
+                    _, ref, name = op
+                    sig.append("attr:%s:%r" % (name, getattr(objs[ref], name)))
+            except PuzzleCrashError:
+                sig.append(kind + ":\x00CRASH")
+                if kind == "method":
+                    objs.append(None)
+            except Exception as e:
+                sig.append("%s:raises %s" % (kind, type(e).__name__))
+                if kind == "method":
+                    objs.append(None)
         return sig
 
     def _signature(self, tree):
@@ -128,7 +174,10 @@ class LivenessMixin:
         cannot run (nothing recorded / not reproducible) -- degrade safely."""
         if not self._live_base_done:
             self._live_base_done = True
-            has = self._runs if self.mode == "script" else self._calls
+            if self.mode == "script":
+                has = self._runs
+            else:
+                has = self._calls or (self._ops if self._ops_replayable else [])
             if has:
                 try:
                     base = self._signature(copy.deepcopy(self.tree()))
