@@ -388,10 +388,41 @@ def _engine_selftest():
         try:
             T.require_live("the Decoy class", "decoy is dead", decoy, "stmt")
         except LessonNotUsedError:
+            pass
+        else:
             os.unlink(path)
-            return
+            raise AssertionError("a decoy class was judged live in an object "
+                                 "puzzle")
         os.unlink(path)
-        raise AssertionError("a decoy class was judged live in an object puzzle")
+
+        # the tricky tape patterns must not break the replay or false-reject:
+        # a method returning self (id reuse), a method returning None, and an
+        # unrecorded direct mutation between recorded ops.
+        tricky = ("class Counter:\n"
+                  "    def __init__(self, start=0):\n        self.n = start\n"
+                  "    def inc(self):\n        self.n += 1\n        return self\n"
+                  "    def add(self, k):\n        self.n += k\n"
+                  "    def value(self):\n        return self.n\n")
+        path, T = learner(tricky)
+        c = T.make("Counter", 5)
+        T.method(c, "inc")                       # returns self -> id reuse
+        T.method(c, "add", 3)                    # returns None
+        assert T.method(c, "value") == 9
+        c.n = 100                                # unrecorded direct mutation
+        assert T.attr(c, "n") == 100
+        T.uses_class("Counter")                  # still live -> no false reject
+        os.unlink(path)
+
+        # touching an object the tape never made turns replay off (degrade to
+        # AST presence) instead of crashing or rejecting honest code.
+        off = ("class P:\n    def __init__(self, x):\n        self.x = x\n"
+               "    @classmethod\n    def from_x(cls, x):\n        return cls(x)\n")
+        path, T = learner(off)
+        p = T.get("P").from_x(7)                  # built off the tape
+        T.attr(p, "x")
+        assert T._ops_replayable is False
+        T.uses_class("P")                        # degrades, still passes
+        os.unlink(path)
 
     def t_raises_still_works():
         path, T = learner("def f(x):\n    if x < 0:\n"
