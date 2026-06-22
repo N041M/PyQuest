@@ -11,6 +11,19 @@ course has today (currently: 1 debug, 0 of the rest).
 > be reordered and projects slotted between them; the engine ties ids to folder
 > order, so renumbering is free until a puzzle ships.
 
+## Status: complete and paused
+
+PyQuest **v1.0.0** is a finished course — 142 puzzles, 16 chapters. Everything
+mapped below is a **deferred** expansion, not committed work. I'll resume it only
+if the project:
+
+1. **gains more public recognition**,
+2. **is adopted in an actual academic setting**, or
+3. **I simply have more time** for it.
+
+Until one of those, treat this as **done, not abandoned**: the course is complete
+and the audit keeps it honest; this roadmap is the plan for if/when it resumes.
+
 ## Where we are
 
 142 puzzles, 16 chapters. **Variety is the gap:** 141 are `concept` lessons,

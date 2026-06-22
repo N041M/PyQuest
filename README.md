@@ -47,8 +47,10 @@ you've never written code before.
 
 ## Quick start
 
-Open a terminal (the text window where you type commands), go into the PyQuest
-folder, and run:
+Get the code — clone the repo, or download the **Source code (zip)** from the
+[latest release](https://github.com/N041M/PyQuest/releases/latest) and unzip it.
+Then open a terminal (the text window where you type commands), go into the
+PyQuest folder, and run:
 
 ```
 cd pyquest
@@ -313,13 +315,17 @@ pyquest/
 
 ## Roadmap
 
-The course now runs through 16 chapters — the standard library, regular
-expressions, dates and times, functional tools, and advanced classes all
-shipped, and the first **project** chapter (build → debug → capstone) is in.
+**Status: complete and paused (v1.0.0).** PyQuest is a finished course — 142
+puzzles, 16 chapters. The expansion below is a *deferred* plan, not committed
+work: I'll pick it back up only if the project (1) gains more public recognition,
+(2) is adopted in an actual academic setting, or (3) I simply have more time for
+it. Until then, treat it as **done, not abandoned** — the course is complete and
+the audit keeps it honest.
+
 The detailed plan — ~300 more puzzles mapped out (new concept chapters, a
 **data-structures & algorithms** track, real-world stdlib like sqlite/CLI/
 concurrency, ten projects, and far more debug/extend/refactor puzzles) — is in
-[docs/ROADMAP.md](docs/ROADMAP.md). In brief, what's next:
+[docs/ROADMAP.md](docs/ROADMAP.md). If it resumes, what's next:
 
 - **More projects.** The projects track (`kind` in `meta.json`: `build` /
   `debug` / `capstone`) is built for it — including debug puzzles that ship
