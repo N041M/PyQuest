@@ -221,7 +221,7 @@ sequenceDiagram
 
 ## `--engine`: the guard's guarantees, pinned (in `audit_selftest.py`)
 
-`_engine_selftest()` runs ~40 direct cases asserting each promise the
+`_engine_selftest()` runs ~43 direct cases asserting each promise the
 [ExecutionGuard](toolkit.md) and toolkit make: `exit()`/hang/stray‑`input()`
 translation, stdout capture, the file sandbox never leaking into the project,
 class/mutation/`approx`/case‑sensitive‑`eq` behavior, liveness killing dead
@@ -242,4 +242,4 @@ flowchart LR
 
 Run order in CI‑of‑one: `--engine` after touching `toolkit/`, `--sidestep`
 before any commit; both must be green (current bar: **142/142 conformance,
-0/142 sidesteppable, 0/142 unguarded lessons, 40/40 engine self‑tests**).
+0/142 sidesteppable, 0/142 unguarded lessons, 43/43 engine self‑tests**).

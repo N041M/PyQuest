@@ -1045,6 +1045,58 @@ def _engine_selftest():
             lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR = saved
             shutil.rmtree(root)
 
+    def t_new_puzzle():
+        """The scaffolder stamps the required files: a lesson puzzle gets
+        concept + reference.md, a project puzzle gets a kind and neither."""
+        import json
+        import shutil
+        import new_puzzle as npz
+        root = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        try:
+            lesson = os.path.join(root, "17_demo", "01_thing")
+            npz.scaffold(lesson, "17.1", "A thing", mode="import",
+                         concept="x does y", why="because")
+            for name in npz.REQUIRED + ("reference.md", "dodges.py"):
+                assert os.path.isfile(os.path.join(lesson, name)), name
+            meta = json.load(open(os.path.join(lesson, "meta.json")))
+            assert meta["id"] == "17.1" and meta["mode"] == "import"
+            assert meta.get("concept") and meta["chapter"] == "Demo"
+            # a project step: kind, no concept, no reference.md
+            step = os.path.join(root, "18_proj", "01_step")
+            npz.scaffold(step, "18.1", "Step", kind="build")
+            m2 = json.load(open(os.path.join(step, "meta.json")))
+            assert m2.get("kind") == "build" and "concept" not in m2
+            assert not os.path.exists(os.path.join(step, "reference.md"))
+            # never clobbers
+            try:
+                npz.scaffold(step, "18.1", "Step", kind="build")
+            except FileExistsError:
+                pass
+            else:
+                raise AssertionError("scaffold overwrote an existing folder")
+        finally:
+            shutil.rmtree(root)
+
+    def t_seed_reproducible():
+        """init_seed records the seed (PYQUEST_SEED or an auto-picked one) so a
+        run is reproducible: the same seed replays the same 'random' inputs, and
+        even with no env var a (random) seed is still recorded in ACTIVE_SEED."""
+        from engine import inputs
+        try:
+            assert inputs.init_seed({"PYQUEST_SEED": "42"}) == 42
+            assert inputs.ACTIVE_SEED == 42
+            a = [inputs.random_int(0, 10 ** 6) for _ in range(5)]
+            a.append(inputs.random_word())
+            inputs.init_seed({"PYQUEST_SEED": "42"})
+            b = [inputs.random_int(0, 10 ** 6) for _ in range(5)]
+            b.append(inputs.random_word())
+            assert a == b, (a, b)
+            # no env var -> still records a seed, so the run is replayable
+            auto = inputs.init_seed({})
+            assert isinstance(auto, int) and inputs.ACTIVE_SEED == auto
+        finally:
+            inputs.init_seed({})                           # restore randomness
+
     def t_project_checks():
         """The projects framework's conformance rules: a `kind` must be known;
         project puzzles may carry 0-3 hints (lesson puzzles still need exactly
@@ -1110,7 +1162,8 @@ def _engine_selftest():
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
                t_key_decode, t_i18n, t_i18n_content, t_check_pack,
-               t_lang_worksheet, t_project_checks):
+               t_lang_worksheet, t_new_puzzle, t_seed_reproducible,
+               t_project_checks):
         case(fn.__name__[2:], fn)
 
     bad = 0

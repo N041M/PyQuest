@@ -87,11 +87,19 @@ The current green bar:
 
 ```
 142/142 conformance, 0/142 sidesteppable, 0/142 unguarded lessons,
-40/40 engine self-tests
+43/43 engine self-tests
 ```
 
 **Never weaken a check to make the audit pass.** Fix the root cause. A green
 audit with a hollowed-out check is worse than a red one.
+
+Randomized inputs are fresh each run (that's what defeats hardcoding), but the
+seed is **recorded** so a failure is never lost: the audit prints
+`discovered … (seed N)` and, on any failure, a `reproduce this run:
+PYQUEST_SEED=N python3 tools/audit.py …` line. Re-run with that `PYQUEST_SEED`
+to replay the exact inputs. CI
+([`.github/workflows/audit.yml`](../.github/workflows/audit.yml)) runs
+`--sidestep` and `--engine` on every push and PR, on Python 3.8 and 3.12.
 
 ---
 
@@ -136,6 +144,17 @@ omits `concept` and stays out of both. Full field reference:
 ---
 
 ## Authoring a puzzle, step by step
+
+Scaffold the six files (plus `reference.md` / `dodges.py` where they apply) with:
+
+```bash
+python3 tools/new_puzzle.py chapters/NN_chapter/MM_slug \
+    --id NN.MM --title "..." --concept "what it teaches"   # lesson puzzle
+python3 tools/new_puzzle.py chapters/NN_project/MM_slug \
+    --id NN.MM --title "..." --kind build                  # project step
+```
+
+It stamps house-style TODO templates; fill them in following the steps below.
 
 1. **Name the one lesson** the puzzle must force — the construct, not the
    output. Write it down; every later decision serves it.

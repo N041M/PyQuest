@@ -654,8 +654,10 @@ def main():
     if "--prove-checks" in sys.argv:
         return _prove_report(puzzles)
     sidestep = "--sidestep" in sys.argv
-    print("discovered %d puzzles%s"
-          % (len(puzzles), " (with sidestep attack suite)" if sidestep else ""))
+    from engine import inputs
+    print("discovered %d puzzles%s  (seed %s)"
+          % (len(puzzles), " (with sidestep attack suite)" if sidestep else "",
+             inputs.ACTIVE_SEED))
     bad = weak = unguarded = 0
     for p in puzzles:
         issues = conformance_issues(p)
@@ -696,6 +698,9 @@ def main():
     if sidestep:
         print("%d/%d puzzles sidesteppable" % (weak, len(puzzles)))
         print("%d/%d puzzles with an unguarded lesson" % (unguarded, len(puzzles)))
+    if bad or weak or unguarded:
+        print("\nreproduce this run: PYQUEST_SEED=%s python3 tools/audit.py %s"
+              % (inputs.ACTIVE_SEED, " ".join(sys.argv[1:])))
     return 1 if (bad or weak or unguarded) else 0
 
 
