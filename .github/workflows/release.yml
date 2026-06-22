@@ -1,0 +1,31 @@
+name: release
+
+# Push a semver tag (e.g. v0.1.0) to cut a GitHub Release. The audit must be
+# green first; then the Release is published with auto-generated notes. GitHub
+# attaches the source zip/tarball automatically -- that source IS the
+# distributable (PyQuest is stdlib-only and runs from its own directory, where
+# it stores progress, so there is nothing to package or install).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write          # required to create the Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Gate on the audit
+        run: |
+          python tools/audit.py --sidestep
+          python tools/audit.py --engine
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${GITHUB_REF_NAME}" --generate-notes --verify-tag
