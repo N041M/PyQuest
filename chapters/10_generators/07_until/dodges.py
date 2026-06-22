@@ -11,7 +11,7 @@ DODGES = [
      'from itertools import takewhile\n'
      'def until_zero(nums):\n'
      '    return (n for n in takewhile(lambda n: n != 0, nums))\n'),
-    # Manual sidestep (playbook): genexpr target + a decoy yield elsewhere fools
+    # Manual sidestep: genexpr target + a decoy yield elsewhere fools
     # a file-level uses_yield. Defeated by uses_yield("until_zero").
     ("genexpr target + decoy yield in another function",
      'from itertools import takewhile\n'

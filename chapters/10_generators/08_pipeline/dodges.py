@@ -21,7 +21,7 @@ DODGES = [
      '            yield x\n'
      'def labelled(stream):\n'
      '    return ["#%d" % x for x in stream]\n'),
-    # Manual sidestep (playbook): a genexpr stage with a DEAD yield in a nested,
+    # Manual sidestep: a genexpr stage with a DEAD yield in a nested,
     # uncalled inner function -- defeats a naive per-function ast.walk scan that
     # descends into nested scopes. Defeated by uses_yield(name), which only
     # counts a yield in the stage's OWN body (nested defs are a different scope).

@@ -230,8 +230,8 @@ def _engine_selftest():
         """uses_yield(name) pins yield to the lesson's role: the named function's
         OWN body must yield. A genexpr target with a decoy yield parked in
         another function (or a dead yield in a nested inner function) passes the
-        file-level uses_yield() but must fail the scoped uses_yield(name) -- the
-        Ch10 generator hole found by the sidestep playbook."""
+        file-level uses_yield() but must fail the scoped uses_yield(name) -- a
+        known Ch10 generator hole."""
         from engine.toolkit import LessonNotUsedError
         # a real yield in the named function passes both forms
         path, T = learner("def gen(n):\n    for i in range(n):\n        yield i\n")
@@ -311,7 +311,7 @@ def _engine_selftest():
         uses_predicate_over_param) or carry the lambda in the right slot
         (uses_lambda_arg). A live wrapper around a precomputed answer, or a
         named function plus a decoy lambda, satisfies the bare uses_call /
-        uses_lambda but must fail these -- the ch.14 holes the playbook found."""
+        uses_lambda but must fail these -- known ch.14 holes."""
         from engine.toolkit import LessonNotUsedError
 
         def fails(call):

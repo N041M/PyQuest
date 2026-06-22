@@ -8,7 +8,7 @@ DODGES = [
     ("a filtering generator expression, no yield",
      'def evens(nums):\n'
      '    return (n for n in nums if n % 2 == 0)\n'),
-    # Manual sidestep (playbook): genexpr target + a decoy yield elsewhere fools
+    # Manual sidestep: genexpr target + a decoy yield elsewhere fools
     # a file-level uses_yield. Defeated by uses_yield("evens").
     ("genexpr target + decoy yield in another function",
      'def _decoy():\n'

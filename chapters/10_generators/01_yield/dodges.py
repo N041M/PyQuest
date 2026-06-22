@@ -9,7 +9,7 @@ DODGES = [
     ("a bare generator expression, no yield",
      'def count_down(n):\n'
      '    return (i for i in range(n, 0, -1))\n'),
-    # Manual sidestep (playbook): genexpr target passes is_generator, and a
+    # Manual sidestep: genexpr target passes is_generator, and a
     # yield parked in an UNRELATED function satisfies a file-level uses_yield.
     # Defeated by scoping the check: uses_yield("count_down").
     ("genexpr target + decoy yield in another function",

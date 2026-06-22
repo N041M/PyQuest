@@ -6,7 +6,7 @@ DODGES = [
     ("a bare generator expression, no yield",
      'def squares(n):\n'
      '    return (i * i for i in range(n))\n'),
-    # Manual sidestep (playbook): genexpr target + a decoy yield elsewhere fools
+    # Manual sidestep: genexpr target + a decoy yield elsewhere fools
     # a file-level uses_yield. Defeated by uses_yield("squares").
     ("genexpr target + decoy yield in another function",
      'def _decoy():\n'

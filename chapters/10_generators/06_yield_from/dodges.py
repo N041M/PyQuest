@@ -6,7 +6,7 @@ DODGES = [
     ("a bare generator expression, no yield",
      'def chain(a, b):\n'
      '    return (x for x in list(a) + list(b))\n'),
-    # Manual sidestep (playbook): genexpr target + a decoy yield elsewhere fools
+    # Manual sidestep: genexpr target + a decoy yield elsewhere fools
     # a file-level uses_yield. Defeated by uses_yield("chain").
     ("genexpr target + decoy yield in another function",
      'def _decoy():\n'

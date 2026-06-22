@@ -10,7 +10,7 @@ DODGES = [
      'from itertools import count\n'
      'def naturals():\n'
      '    return (i for i in count())\n'),
-    # Manual sidestep (playbook): lazy genexpr target + a decoy yield elsewhere
+    # Manual sidestep: lazy genexpr target + a decoy yield elsewhere
     # fools a file-level uses_yield. Defeated by uses_yield("naturals").
     ("genexpr target + decoy yield in another function",
      'from itertools import count\n'

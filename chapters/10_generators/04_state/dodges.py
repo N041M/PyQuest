@@ -15,7 +15,7 @@ DODGES = [
      'from itertools import accumulate\n'
      'def running_total(nums):\n'
      '    return (t for t in accumulate(nums))\n'),
-    # Manual sidestep (playbook): genexpr target + a decoy yield elsewhere fools
+    # Manual sidestep: genexpr target + a decoy yield elsewhere fools
     # a file-level uses_yield. Defeated by uses_yield("running_total").
     ("genexpr target + decoy yield in another function",
      'from itertools import accumulate\n'

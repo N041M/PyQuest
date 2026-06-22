@@ -166,8 +166,8 @@ sidesteppable, so back them with behavior:
   `uses_yield("fn")` requires the yield in *that function's own body*, because
   bare `uses_yield()` is file-level — a genexpr-returning solution can satisfy
   it with a decoy `yield` parked in an unrelated (or nested) function and still
-  pass `is_generator` (the Ch10 hole the sidestep playbook found; pinned by the
-  per-puzzle `dodges.py` and the `uses_yield_scoped` engine self-test). If the
+  pass `is_generator` (a known Ch10 hole; pinned by the per-puzzle `dodges.py`
+  and the `uses_yield_scoped` engine self-test). If the
   lesson is *laziness*, probe it (e.g. `islice` an effectively endless source)
   rather than materializing the whole thing.
 - **Lambdas** (`lambda`): a lambda and a `def` compile to identical callables,

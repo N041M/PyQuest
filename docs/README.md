@@ -12,10 +12,9 @@ Start by what you're trying to do.
 - **[SCHEMA.md](SCHEMA.md)** — every file and field: `meta.json`, `tests.py`
   and the `T` helpers, hints, dodges, the **projects** track (`kind`, debug
   puzzles, low-guidance capstones), and the `category` tier.
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — the workflow, ground rules, and the
-  audit gate every change must pass.
-- **[SIDESTEP_PLAYBOOK.md](SIDESTEP_PLAYBOOK.md)** — how to make a lesson
-  *unavoidable*, not just its output — the anti-cheat discipline.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — the workflow, ground rules, the audit
+  gate every change must pass, and the anti-sidestep discipline: how to make a
+  lesson *unavoidable*, not just its output.
 
 ## I want to *understand or change the engine*
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — the prose design reference: the five
