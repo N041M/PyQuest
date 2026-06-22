@@ -1,9 +1,11 @@
 # PyQuest content roadmap
 
 The detailed planning companion to the public roadmap in the
-[README](../README.md#roadmap). It maps the next **~150–200 puzzles** across new
-concept chapters, more projects, and — deliberately — far more **debug** and
-**extend** puzzles than the course has today.
+[README](../README.md#roadmap). It maps the next **~300 puzzles** — new concept
+chapters, a **data-structures & algorithms** track, **real-world stdlib**
+(sqlite, CLI, logging, concurrency), and ten **projects** — with deliberately far
+more **debug**, **extend**, **refactor**, and **optimize** puzzles than the
+course has today (currently: 1 debug, 0 of the rest).
 
 > Numbers (`17.x`, `PR-A`, …) are a **proposal**, not a commitment. Chapters can
 > be reordered and projects slotted between them; the engine ties ids to folder
@@ -24,12 +26,19 @@ that imbalance as much as it adds new material.
 | **[drill]** | neither | practice, no new syntax, out of the textbook |
 | **[D] debug** | `kind: debug` | `starter.py` ships broken code to fix (audit enforces it fails) |
 | **[X] extend** | `kind: build` *(or a concept with a full starter)* | given working code, add a method/feature |
+| **[R] refactor** | `kind: build` | given working-but-ugly code, improve it — behaviour preserved (tests pin behaviour, not shape) |
+| **[O] optimize** | `kind: build` | same output, make it faster / scale (pinned with `scales` / `time_call`) |
 | **[B] build** | `kind: build` | one component step of a project |
 | **[K] capstone** | `kind: capstone` | low-guidance final assembly |
 
-Mix across the ~201 additions: **~53%** concept (106), **~15%** build (30),
-**~14%** capstone (28), **~10%** debug (21), **~8%** extend (16) — so "find a
-bug" and "add to existing code" stop being rare (today: 1 debug, 0 extend).
+[R] and [O] need **no engine change** — both fit script/import grading today.
+Sprinkle them where natural (a refactor step in each project; an optimize step in
+the DS&A and performance chapters).
+
+Mix across the ~299 additions: **~59%** concept (175), **~14%** capstone (42),
+**~11%** debug (34), **~10%** build (30), **~6%** extend (17), plus refactor &
+optimize sprinkled — so "find a bug" / "add to / improve existing code" stop being
+rare (today: 1 debug, 0 of the rest).
 
 ## Design rules (unchanged, see [CONTRIBUTING](CONTRIBUTING.md))
 
@@ -238,6 +247,152 @@ Build on functions (6), classes (9), generators (10), functional (14).
 
 ---
 
+## Tier E — data structures & algorithms (CS foundations, ch. 35–43)
+
+The biggest gap today: the course *uses* Python's built-in structures but never
+has you **implement or reason about** them. Pure stdlib, ideal for the puzzle
+format, and the bridge from "writes Python" to "solves problems." Builds on
+collections (4), recursion (30), and the perf helpers (`scales`/`time_call`).
+
+### 35 · Complexity & big-O (6)
+- 35.1 Counting the operations [C]
+- 35.2 O(1) vs O(n) vs O(n²) [C]
+- 35.3 Why `dict`/`set` lookup is O(1) [C]
+- 35.4 Measuring growth (`timeit` / `scales`) [C]
+- 35.5 Debug: an accidental O(n²) (membership test inside a loop) [D]
+- 35.6 Capstone: pick the faster approach and prove it scales [K]
+
+### 36 · Stacks & queues (6)
+- 36.1 A stack on a `list` (push / pop) [C]
+- 36.2 Using a stack: balanced brackets [C]
+- 36.3 A queue on a `deque` [C]
+- 36.4 Why a `list` is a bad queue (O(n) `pop(0)`) [C]
+- 36.5 Debug: a stack that pops the wrong end [D]
+- 36.6 Capstone: an undo / redo history [K]
+
+### 37 · Linked lists (8)
+- 37.1 A `Node` (value + next) [C]
+- 37.2 Build & traverse a singly linked list [C]
+- 37.3 Insert at head / tail [C]
+- 37.4 Delete a value [C]
+- 37.5 Reverse the list [C]
+- 37.6 Make it iterable (`__iter__`) [X]
+- 37.7 Debug: a traversal that skips the head (or loops forever) [D]
+- 37.8 Capstone: a doubly linked list [K]
+
+### 38 · Trees & BSTs (8)
+- 38.1 A binary-tree node [C]
+- 38.2 Build a tree [C]
+- 38.3 Recursive traversal (in / pre / post-order) [C]
+- 38.4 Level-order (BFS with a queue) [C]
+- 38.5 Binary search tree: insert [C]
+- 38.6 BST: search, min, max [C]
+- 38.7 Debug: BST insert on the wrong side [D]
+- 38.8 Capstone: height & "is balanced?" [K]
+
+### 39 · Hashing & hash maps (6)
+- 39.1 What a hash is [C]
+- 39.2 Buckets & collisions [C]
+- 39.3 Implement a tiny hash map (put / get) [C]
+- 39.4 Resizing & load factor [C]
+- 39.5 Debug: collisions overwrite instead of chaining [D]
+- 39.6 Capstone: a `set` built on your hash map [K]
+
+### 40 · Graphs: BFS & DFS (8)
+- 40.1 Represent a graph (adjacency list) [C]
+- 40.2 Neighbours & edges [C]
+- 40.3 Depth-first search (recursive) [C]
+- 40.4 Breadth-first search (queue) [C]
+- 40.5 Shortest path on an unweighted graph (BFS) [C]
+- 40.6 Cycle detection [C]
+- 40.7 Debug: BFS with no `visited` set (infinite loop) [D]
+- 40.8 Capstone: connected components / topological sort [K]
+
+### 41 · Searching & sorting algorithms (8)
+- 41.1 Linear search [C]
+- 41.2 Binary search (sorted input) [C]
+- 41.3 Bubble sort (and why it's slow) [C]
+- 41.4 Insertion sort [C]
+- 41.5 Merge sort (divide & conquer) [C]
+- 41.6 Quicksort (partition) [C]
+- 41.7 Debug: binary search off-by-one (miss / infinite loop) [D]
+- 41.8 Capstone: sort, then binary-search a dataset [K]
+
+### 42 · Heaps & priority queues (6)
+- 42.1 The heap property [C]
+- 42.2 `heapq`: push / pop [C]
+- 42.3 A priority queue [C]
+- 42.4 Top-K with a heap [C]
+- 42.5 Debug: a max-heap built with min-heap logic [D]
+- 42.6 Capstone: merge K sorted lists [K]
+
+### 43 · Dynamic programming (8)
+- 43.1 Overlapping subproblems (naive Fibonacci) [C]
+- 43.2 Memoization (top-down) [C]
+- 43.3 Tabulation (bottom-up) [C]
+- 43.4 Grid paths [C]
+- 43.5 Coin change [C]
+- 43.6 Longest common subsequence [C]
+- 43.7 Debug: a DP table indexed off-by-one [D]
+- 43.8 Capstone: 0/1 knapsack [K]
+
+**DS&A subtotal (35–43): 64 puzzles** — 45 [C], 9 [D], 1 [X], 9 [K].
+
+---
+
+## Tier F — real-world standard library (ch. 44–48)
+
+The everyday skills a working Python dev uses that the course never touches — all
+stdlib, all gradeable in script/import mode.
+
+### 44 · Databases with `sqlite3` (8)
+- 44.1 Connect & create a table [C]
+- 44.2 INSERT rows [C]
+- 44.3 SELECT & fetch [C]
+- 44.4 WHERE & ORDER BY [C]
+- 44.5 Parameterized queries (the safe way) [C]
+- 44.6 UPDATE & DELETE [C]
+- 44.7 Debug: SQL injection via string formatting [D]
+- 44.8 Capstone: a small SQL-backed app [K]
+
+### 45 · Command-line tools (6)
+- 45.1 `sys.argv` [C]
+- 45.2 `argparse`: positional & optional args [C]
+- 45.3 Flags, defaults, types [C]
+- 45.4 Exit codes & `sys.exit` [C]
+- 45.5 Debug: a tool that crashes instead of a clean error [D]
+- 45.6 Capstone: a CLI utility (e.g. a word-count tool) [K]
+
+### 46 · Logging & configuration (6)
+- 46.1 `logging` basics (levels) [C]
+- 46.2 Formatting & handlers [C]
+- 46.3 `configparser` [C]
+- 46.4 Environment variables (`os.environ`) [C]
+- 46.5 Debug: logs vanish (no handler / wrong level) [D]
+- 46.6 Capstone: a configurable, logged tool [K]
+
+### 47 · Concurrency (8)
+- 47.1 `threading` basics [C]
+- 47.2 Shared state & locks [C]
+- 47.3 `queue.Queue` (thread-safe hand-off) [C]
+- 47.4 `multiprocessing` (CPU-bound work) [C]
+- 47.5 `concurrent.futures` pools [C]
+- 47.6 `asyncio`: async / await [C]
+- 47.7 Debug: a race condition (unlocked counter) [D]
+- 47.8 Capstone: a worker pool [K]
+
+### 48 · Performance & profiling (6)
+- 48.1 `timeit` [C]
+- 48.2 Find the bottleneck (`cProfile`) [C]
+- 48.3 The right structure (set vs list membership) [C]
+- 48.4 Caching for speed (`lru_cache`) [C]
+- 48.5 Optimize: O(n²) → O(n), same output [O]
+- 48.6 Capstone: profile & speed up a slow script [K]
+
+**Real-world stdlib subtotal (44–48): 34 puzzles** — 24 [C], 4 [D], 1 [O], 5 [K].
+
+---
+
 ## Tier D — projects (full apps; build / debug / extend / capstone heavy)
 
 Each project is a short chapter that builds an app and ends in a low-guidance
@@ -342,15 +497,50 @@ includes at least one **[D]** and one **[X]** step.
 
 ## Totals
 
-| Source | Puzzles | of which [D] | of which [X] | of which [K] |
+| Source | Puzzles | [D] | [X] | [K] |
 |---|---:|---:|---:|---:|
-| Concept chapters 17–34 | 142 | 11 | 7 | 18 |
-| Projects PR-A…PR-J | 59 | 10 | 9 | 10 |
-| **New total** | **201** | **21** | **16** | **28** |
+| Concept chapters 17–34 (Tiers A–C) | 142 | 11 | 7 | 18 |
+| DS&A 35–43 (Tier E) | 64 | 9 | 1 | 9 |
+| Real-world stdlib 44–48 (Tier F) | 34 | 4 | — | 5 |
+| Projects PR-A…PR-J (Tier D) | 59 | 10 | 9 | 10 |
+| **New total** | **299** | **34** | **17** | **42** |
 
-Course after: **142 → ~343 puzzles, 16 → 44 chapters** (18 concept + 10 project
-chapters added). A ~100-puzzle first slice ≈ Tier A (68) + ~5 projects; the full
-set is ~201 (195 without the optional ch.34).
+Course after: **142 → ~441 puzzles, 16 → 58 chapters** (32 concept/DS&A/stdlib +
+10 project chapters added). A ~100-puzzle first slice ≈ Tier A (68) + ~5 projects;
+the full set is ~299.
+
+## Beyond the language — what's still left (and where it lives)
+
+Even after all of the above, "the full package" has pieces that **don't fit the
+current format** (stdlib-only, single `work.py`, you-write-code grading). Being
+honest about them is part of the plan.
+
+**Needs an engine/format change first:**
+
+| Want | Blocked by | What it would take |
+|---|---|---|
+| Packages, modules, the **import system**, real project layout | single-file `work.py` | a **multi-file workspace** (the biggest engine investment, but it unlocks a whole dimension of "real Python") |
+| **Read-code / predict-the-output** puzzles (comprehension, not production) | you can only *submit code* today | a **checked-answer question type** (typed answer or MCQ) in the engine |
+| Realistic **testing workflow** (fixtures, mocking, a test suite) | single file + no third party | partly the multi-file workspace; mocking via `unittest.mock` (stdlib) is doable now |
+
+**Out of scope by design — belongs in a "graduation" guide, not puzzles.** A
+short `docs/NEXT_STEPS.md` ("PyQuest taught you the language; here's the
+ecosystem, in order") is the right artifact:
+
+- **Tooling:** `pip`, virtual environments, `pyproject`/packaging & publishing,
+  `git`; linters/formatters/type-checkers (`ruff`, `black`, `mypy`); `pytest`.
+- **Third-party libraries** the stdlib-only rule excludes: `requests`, `numpy`/
+  `pandas`, a web framework (Flask/Django/FastAPI), `pydantic`.
+- **Domains & next directions:** web, data/ML, automation & scraping,
+  deployment (Docker/CI). Point at each, don't teach it here.
+
+**The learning arc (format-friendly, worth planning):**
+
+- **Spaced / mixed-practice review** chapters that interleave earlier concepts
+  (interleaving beats block practice for retention).
+- A **challenge / "boss" puzzle** at the end of each tier.
+- One **large integrative capstone** — a portfolio-worthy app bigger than the ten
+  small projects, pulling DS&A + stdlib + OOP together.
 
 ## Engine work this unlocks (do before the chapter that needs it)
 
@@ -398,7 +588,13 @@ and pin it in `dodges.py` (the workflow in [CONTRIBUTING](CONTRIBUTING.md)).
 10 generators ─> 21 itertools ─> PR-D / PR-H
 11 stdlib ───> 22 collections / 24 enums / 27 stdlib+ ─> PR-B / PR-C / PR-I
 8 files ─────> 26 pathlib ─> PR-E / PR-G
+4 collections ─> 35 big-O ─> 36 stacks/queues ─> 37 lists ─> 38 trees ─> 42 heaps
+30 recursion ──> 40 graphs / 41 search+sort / 43 DP
+8 files / 11 stdlib ─> 44 sqlite / 45 CLI / 46 logging / 47 concurrency / 48 perf
 ```
+
+DS&A (Tier E) can slot much earlier — big-O and stacks/queues work right after
+ch.4/ch.30; only trees/graphs/DP need recursion. Tier F is independent breadth.
 
 Roughly: ship Tier A first (it has the highest "new language power" per puzzle
 and unlocks the most projects), interleave PR-A/PR-D early for variety, then
@@ -406,7 +602,7 @@ Tiers B–C as breadth.
 
 ## Open decisions
 
-1. **Scope:** ~100 (Tier A + ~5 projects) vs the full ~201? 
+1. **Scope:** ~100 (Tier A + DS&A essentials + a few projects) vs the full ~299? 
 2. **`extend` kind:** new `meta.kind`, or keep using `build`/full-starter lessons?
 3. **Tier C depth:** is ch.34 (descriptors) too advanced for this course's
    audience, or a good "expert" capstone chapter?

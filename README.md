@@ -316,8 +316,9 @@ pyquest/
 The course now runs through 16 chapters — the standard library, regular
 expressions, dates and times, functional tools, and advanced classes all
 shipped, and the first **project** chapter (build → debug → capstone) is in.
-The detailed plan — ~200 more puzzles mapped out (new concept chapters, ten
-projects, and far more debug/extend puzzles) — is in
+The detailed plan — ~300 more puzzles mapped out (new concept chapters, a
+**data-structures & algorithms** track, real-world stdlib like sqlite/CLI/
+concurrency, ten projects, and far more debug/extend/refactor puzzles) — is in
 [docs/ROADMAP.md](docs/ROADMAP.md). In brief, what's next:
 
 - **More projects.** The projects track (`kind` in `meta.json`: `build` /
