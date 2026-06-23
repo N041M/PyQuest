@@ -89,23 +89,38 @@ def _launch(kind, exe):
     tmp = tempfile.mkdtemp(prefix="pyquest_start_")
     try:
         if kind == "zsh":
+            # Open the menu just before the FIRST prompt (a one-shot precmd
+            # hook), not inline during rc sourcing. Sourcing runs before the
+            # shell takes interactive control of the terminal, so a menu started
+            # there can't engage raw-key (arrow) input and falls back to the
+            # typed prompt; deferring it makes it a normal interactive foreground
+            # job -- the same context the in-session `menu` verb runs in -- so
+            # the arrow selector engages identically. The hook removes itself
+            # after the first run.
             body = (
                 '[ -f "$HOME/.zshenv" ] && source "$HOME/.zshenv"\n'
                 '[ -f "$HOME/.zshrc" ] && source "$HOME/.zshrc"\n'
                 'source "%s"\n'
                 'export PYQUEST_SHELL=1\n'
-                '"%s" "%s" menu\n' % (rc_src, py, ENTRY))
+                'autoload -Uz add-zsh-hook\n'
+                '_pq_open_menu() { add-zsh-hook -d precmd _pq_open_menu; '
+                '"%s" "%s" menu; }\n'
+                'add-zsh-hook precmd _pq_open_menu\n' % (rc_src, py, ENTRY))
             with open(os.path.join(tmp, ".zshrc"), "w") as f:
                 f.write(body)
             env = dict(os.environ, ZDOTDIR=tmp)
             return subprocess.call([exe, "-i"], env=env)
-        # bash
+        # bash: same deferral via a one-shot PROMPT_COMMAND, restoring the
+        # user's own PROMPT_COMMAND afterward (see the zsh note above).
         rc = os.path.join(tmp, "rc")
         body = (
             '[ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"\n'
             'source "%s"\n'
             'export PYQUEST_SHELL=1\n'
-            '"%s" "%s" menu\n' % (rc_src, py, ENTRY))
+            '_pq_old_pc="$PROMPT_COMMAND"\n'
+            '_pq_open_menu() { PROMPT_COMMAND="$_pq_old_pc"; unset _pq_old_pc; '
+            'unset -f _pq_open_menu; "%s" "%s" menu; }\n'
+            'PROMPT_COMMAND="_pq_open_menu"\n' % (rc_src, py, ENTRY))
         with open(rc, "w") as f:
             f.write(body)
         return subprocess.call([exe, "--rcfile", rc, "-i"])
