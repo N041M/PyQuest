@@ -1,32 +1,40 @@
-"""One-file translation worksheet -- a plain Python data file you edit, then
-split into the pack the engine loads.
+"""Per-chapter translation worksheet -- a folder of plain Python data files you
+edit, then split into the pack the engine loads.
 
-    python3 tools/lang_worksheet.py new <code>     write lang/<code>.translations.py:
-                                                   a TRANSLATIONS = {...} dict with
+    python3 tools/lang_worksheet.py new <code>     write lang/<code>.translations/:
+                                                   one file per chapter (plus
+                                                   00_meta.py for the pack name and
+                                                   UI strings), each a
+                                                   TRANSLATIONS = {...} dict with
                                                    one entry per translatable piece
-                                                   (the pack name, every UI string,
-                                                   every puzzle's brief/hints/
-                                                   reference), each value prefilled
-                                                   with its English
-    python3 tools/lang_worksheet.py apply <code>   split a filled file into
-                                                   lang/<code>/ (pack.json,
-                                                   strings.json, chapters/...)
+                                                   (every puzzle's brief/hints/
+                                                   reference), prefilled with English
+    python3 tools/lang_worksheet.py apply <code>   merge the folder's files and
+                                                   split them into lang/<code>/
+                                                   (pack.json, strings.json,
+                                                   chapters/...)
+    python3 tools/lang_worksheet.py split <code>   convert an old single-file
+                                                   lang/<code>.translations.py into
+                                                   the per-chapter folder
 
-You edit one dict: change each value to your language, leave it as the English to
-keep English. Multi-line content is a readable raw triple-quoted string
-(`r\"\"\"...\"\"\"`), so markdown and backslashes (regex `\\d`, ...) survive as-is.
+You edit small dicts -- one file per chapter -- changing each value to your
+language, or leaving it as the English to keep English. Multi-line content is a
+readable raw triple-quoted string (`r\"\"\"...\"\"\"`), so markdown and backslashes
+(regex `\\d`, ...) survive as-is.
 
+    # lang/<code>.translations/01_basics.py
     TRANSLATIONS = {
-        "ui menu.play": "hrát",
         "1.1 hints": r\"\"\"Která vestavěná funkce vypíše text na obrazovku? ...
     \"\"\",
     }
 
 `apply` writes only the values you changed, so a partial translation stays partial
-(every unchanged value falls back to English). The file is read with
-ast.literal_eval -- pure data, never executed -- and lives as a loose
-`lang/<code>.translations.py`, which the engine and the pack checker ignore (they
-only look at pack directories), so a half-finished one is never a broken language.
+(every unchanged value, and any chapter file you don't supply, falls back to
+English). The files are read with ast.literal_eval -- pure data, never executed --
+and live as a loose `lang/<code>.translations/` folder, which the engine and the
+pack checker ignore (they only look at pack directories), so a half-finished one is
+never a broken language. (`apply` also still reads a single legacy
+`lang/<code>.translations.py` if no folder is present.)
 """
 
 import ast
@@ -45,23 +53,7 @@ PIECES = (("brief", "brief.md"), ("hints", "hints.md"),
 
 NAME_PLACEHOLDER = "<your language's own name, e.g. Čeština>"
 
-PREAMBLE = '''\
-# PyQuest translations. Edit the TRANSLATIONS dict below: change each value to
-# your language; leave it unchanged to keep English (apply writes only what you
-# changed). Keep each value's markdown and ``` code blocks exactly -- only the
-# prose is localized, the grader is language-agnostic (literals it checks, like
-# print("Hello, output"), stay as they are).
-#
-#   "name"          your language's display name
-#   "ui <key>"      a UI string
-#   "<id> <piece>"  a puzzle's brief / hints / reference (e.g. "1.1 hints")
-#
-# This file is pure data -- it is read with ast.literal_eval, never executed.
-# Multi-line values are raw triple-quoted strings (r\"\"\"...\"\"\"). Then:
-#
-#     python3 tools/lang_worksheet.py apply <code>
-
-'''
+META_STEM = "00_meta"   # the file holding the pack name + UI strings
 
 
 # ---- reading the English source -------------------------------------------
@@ -149,7 +141,34 @@ def _resolve(label, idmap):
     return None
 
 
-# ---- the Python data file (write / read) ----------------------------------
+# ---- grouping into per-chapter files --------------------------------------
+def _chapter_dirs():
+    """pid -> its chapter's top-level directory basename, e.g. '1.1' ->
+    '01_basics'. The worksheet files are named after these, parallel to the
+    pack's chapters/."""
+    out = {}
+    for pid, d in _puzzles():
+        rel = os.path.relpath(d, CHAPTERS_DIR).replace(os.sep, "/")
+        out[pid] = rel.split("/")[0]
+    return out
+
+
+def _group(entries):
+    """Ordered {stem: [(label, value), ...]}: '00_meta' for name/ui, the chapter
+    directory basename for each puzzle piece. Entry order is preserved within a
+    file; stems come out sorted (00_meta first, then chapters in order)."""
+    chap = _chapter_dirs()
+    groups = {}
+    for label, val in entries:
+        if label == "name" or label.startswith("ui "):
+            stem = META_STEM
+        else:
+            stem = chap.get(label.split(None, 1)[0], META_STEM)
+        groups.setdefault(stem, []).append((label, val))
+    return {k: groups[k] for k in sorted(groups)}
+
+
+# ---- the Python data files (write / read) ---------------------------------
 def _pyval(s):
     """A source literal for `s`: a plain string for a simple one-liner, a raw
     triple-quoted string for multi-line / backslashed prose (readable, and
@@ -161,8 +180,23 @@ def _pyval(s):
     return repr(s)
 
 
-def serialize(entries):
-    out = [PREAMBLE, "TRANSLATIONS = {\n"]
+def _header(code, stem):
+    """The comment block atop each worksheet file."""
+    what = ("pack name + UI strings" if stem == META_STEM else
+            "chapter %s -- each puzzle's brief / hints / reference" % stem)
+    return (
+        "# PyQuest translations -- language '%s' -- %s.\n"
+        "# Edit each value to your language; leave it as the English to keep\n"
+        "# English. Keep each value's markdown and ``` code blocks exactly -- only\n"
+        "# the prose is localized (literals the grader checks, like\n"
+        '#   print("Hello, output"), stay as they are).\n'
+        "# Pure data: read with ast.literal_eval, never executed. This folder is\n"
+        "# one file per chapter; after editing any of them run:\n"
+        "#     python3 tools/lang_worksheet.py apply %s\n\n" % (code, what, code))
+
+
+def serialize(entries, header=""):
+    out = [header, "TRANSLATIONS = {\n"]
     for label, en in entries:
         out.append('\n"%s": %s,\n' % (label, _pyval(en)))
     out.append("}\n")
@@ -170,7 +204,7 @@ def serialize(entries):
 
 
 def parse(text):
-    """The TRANSLATIONS dict from the file's source -- read as data, never run.
+    """The TRANSLATIONS dict from a file's source -- read as data, never run.
     Raises SyntaxError (bad edit) or ValueError (no dict)."""
     tree = ast.parse(text)
     for node in tree.body:
@@ -181,49 +215,127 @@ def parse(text):
     raise ValueError("no TRANSLATIONS = {...} assignment found")
 
 
-# ---- the two commands ------------------------------------------------------
-def _path(code):
-    return os.path.join(LANG_DIR, code + ".translations.py")
-
-
 def _norm(body):
     return body if body.endswith("\n") else body + "\n"
 
 
+def _dir(code):
+    return os.path.join(LANG_DIR, code + ".translations")
+
+
+def _file(code):
+    return os.path.join(LANG_DIR, code + ".translations.py")   # legacy single file
+
+
+def _write_split(code, entries):
+    """Write the per-chapter folder for `entries`. Returns the {stem: [...]} map."""
+    d = _dir(code)
+    os.makedirs(d, exist_ok=True)
+    groups = _group(entries)
+    for stem, ents in groups.items():
+        with open(os.path.join(d, stem + ".py"), "w", encoding="utf-8") as f:
+            f.write(serialize(ents, _header(code, stem)))
+    return groups
+
+
+def _load(code):
+    """The merged TRANSLATIONS dict for `code`. Prefers the per-chapter folder
+    lang/<code>.translations/ (every file's TRANSLATIONS merged, duplicate keys
+    rejected); falls back to a legacy single lang/<code>.translations.py. Raises
+    ValueError with a human message on any problem."""
+    d = _dir(code)
+    if os.path.isdir(d):
+        merged = {}
+        for fn in sorted(os.listdir(d)):
+            fp = os.path.join(d, fn)
+            if not (fn.endswith(".py") and os.path.isfile(fp)):
+                continue
+            with open(fp, encoding="utf-8") as f:
+                try:
+                    part = parse(f.read())
+                except SyntaxError as e:
+                    raise ValueError("%s: %s" % (os.path.relpath(fp, ROOT), e))
+            if not isinstance(part, dict):
+                raise ValueError("%s: TRANSLATIONS is not a dict"
+                                 % os.path.relpath(fp, ROOT))
+            dup = sorted(set(part) & set(merged))
+            if dup:
+                raise ValueError("%s: key(s) already defined in another file: %s"
+                                 % (os.path.relpath(fp, ROOT), ", ".join(dup)))
+            merged.update(part)
+        return merged
+    single = _file(code)
+    if os.path.isfile(single):
+        with open(single, encoding="utf-8") as f:
+            data = parse(f.read())
+        if not isinstance(data, dict):
+            raise ValueError("%s: TRANSLATIONS is not a dict"
+                             % os.path.relpath(single, ROOT))
+        return data
+    raise ValueError("no lang/%s.translations/ folder (or legacy "
+                     "lang/%s.translations.py) -- run `new %s` first"
+                     % (code, code, code))
+
+
+# ---- the commands ----------------------------------------------------------
+def _report_written(code, groups):
+    chapters = len(groups) - (1 if META_STEM in groups else 0)
+    print("wrote lang/%s.translations/ : %d file(s) (%s + %d chapter file(s))"
+          % (code, len(groups), META_STEM, chapters))
+
+
 def new(code):
-    path = _path(code)
-    if os.path.exists(path):
-        print("refusing to overwrite %s (delete it first to regenerate)"
-              % os.path.relpath(path, ROOT))
-        return 1
+    for existing in (_dir(code), _file(code)):
+        if os.path.exists(existing):
+            print("refusing to overwrite %s (delete it first to regenerate)"
+                  % os.path.relpath(existing, ROOT))
+            return 1
     entries = _entries()
     os.makedirs(LANG_DIR, exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(serialize(entries))
+    groups = _write_split(code, entries)
     ui = sum(1 for label, _ in entries if label.startswith("ui "))
     content = sum(1 for label, _ in entries
                   if not label.startswith(("ui ", "name")))
-    print("wrote %s" % os.path.relpath(path, ROOT))
+    _report_written(code, groups)
     print("  %d UI string(s) + %d content piece(s); edit the values, then:"
           % (ui, content))
     print("  python3 tools/lang_worksheet.py apply %s" % code)
     return 0
 
 
-def apply(code):
-    path = _path(code)
-    if not os.path.isfile(path):
-        print("no file at %s -- run `new %s` first"
-              % (os.path.relpath(path, ROOT), code))
+def split(code):
+    """Convert a legacy single lang/<code>.translations.py into the folder form."""
+    single = _file(code)
+    if not os.path.isfile(single):
+        print("no lang/%s.translations.py to split" % code)
+        return 1
+    if os.path.isdir(_dir(code)):
+        print("lang/%s.translations/ already exists (delete it first)" % code)
         return 1
     try:
-        with open(path, encoding="utf-8") as f:
+        with open(single, encoding="utf-8") as f:
             data = parse(f.read())
     except (SyntaxError, ValueError) as e:
-        print("couldn't read %s: %s" % (os.path.relpath(path, ROOT), e))
+        print("couldn't read %s: %s" % (os.path.relpath(single, ROOT), e))
         return 1
-    if not isinstance(data, dict):
-        print("TRANSLATIONS is not a dict")
+    canonical = _entries()                       # canonical label order
+    entries = [(label, data[label]) for label, _ in canonical if label in data]
+    extra = sorted(set(data) - {label for label, _ in canonical})
+    groups = _write_split(code, entries)
+    os.remove(single)
+    _report_written(code, groups)
+    print("  removed %s" % os.path.relpath(single, ROOT))
+    if extra:
+        print("  ! dropped %d key(s) that name nothing in the source: %s"
+              % (len(extra), ", ".join(extra)))
+    return 0
+
+
+def apply(code):
+    try:
+        data = _load(code)
+    except (SyntaxError, ValueError) as e:
+        print("couldn't read translations for '%s': %s" % (code, e))
         return 1
 
     english = dict(_entries())
@@ -270,8 +382,9 @@ def apply(code):
 
 
 def main(argv):
-    if len(argv) == 2 and argv[0] in ("new", "apply"):
-        return (new if argv[0] == "new" else apply)(argv[1])
+    cmds = {"new": new, "apply": apply, "split": split}
+    if len(argv) == 2 and argv[0] in cmds:
+        return cmds[argv[0]](argv[1])
     print(__doc__)
     return 2
 

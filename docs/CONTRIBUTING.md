@@ -357,12 +357,14 @@ A new **command** follows the same shape: a `commands/` module + a
   randomized inputs — that, not a construct check, is what keeps them
   sidestep-proof. See [SCHEMA.md#projects](SCHEMA.md).
 - **Translations** — the i18n plumbing is done (`lang/`, validated by
-  `python3 tools/check_pack.py`). Start from the one-file worksheet:
-  `python3 tools/lang_worksheet.py new <code>` writes a `TRANSLATIONS` dict with
-  every piece (UI string + each puzzle's brief/hints/reference) prefilled with
-  its English; edit the values and `... apply <code>` splits it into the pack
-  (`lang/example.translations.py` shows the format). Language packs are welcome;
-  nothing is translated yet.
+  `python3 tools/check_pack.py`). Start from the per-chapter worksheet:
+  `python3 tools/lang_worksheet.py new <code>` writes `lang/<code>.translations/`,
+  one file per chapter (plus `00_meta.py` for the pack name + UI strings), each
+  piece prefilled with its English; edit a chapter file, then `... apply <code>`
+  merges the folder into the pack (`lang/example.translations/` shows the format,
+  and `lang/cs/` is a complete Czech pack). Untranslated values — and whole
+  chapter files you leave out — fall back to English, so you can ship one chapter
+  at a time. More languages welcome.
 
 ---
 

@@ -8,18 +8,29 @@ translate the interface and the textbook content into another human language.
 Translating Python itself is *not* the goal: the grader is language-agnostic,
 only the presentation is localized.
 
-## Start with the one-file worksheet
+## Start with the per-chapter worksheet
 
-Generate a single Python data file listing *every* translatable piece (the pack
-name, all UI strings, and every puzzle's brief/hints/reference) as one
-`TRANSLATIONS` dict, each value prefilled with its English — then edit the values
-and split it into a pack:
+Generate a **folder of Python data files** — one per chapter, plus `00_meta.py`
+for the pack name and UI strings — listing *every* translatable piece (every
+puzzle's brief/hints/reference) as a `TRANSLATIONS` dict, each value prefilled
+with its English. Edit the files, then split them into a pack:
 
 ```
-python3 tools/lang_worksheet.py new <code>     # writes lang/<code>.translations.py
+python3 tools/lang_worksheet.py new <code>     # writes lang/<code>.translations/
 # ... change each value to your language (leave it to keep English) ...
-python3 tools/lang_worksheet.py apply <code>   # builds lang/<code>/ from it
+python3 tools/lang_worksheet.py apply <code>   # builds lang/<code>/ from the folder
 python3 tools/check_pack.py <code>             # validate
+```
+
+The folder mirrors the pack's chapters, so you translate one small file at a
+time:
+
+```
+lang/<code>.translations/
+  00_meta.py          the pack name + every UI string
+  01_basics.py        chapter 1's puzzles (brief / hints / reference)
+  02_strings.py       chapter 2's puzzles
+  ...
 ```
 
 Each piece is one dict entry, keyed by what it is. Multi-line content is a raw
@@ -27,25 +38,29 @@ triple-quoted string, so markdown and backslashes (regex `\d`, ...) survive as
 typed:
 
 ```python
+# lang/<code>.translations/01_basics.py
 TRANSLATIONS = {
-    "ui menu.play": "hrát",
     "1.1 hints": r"""Která vestavěná funkce vypíše text na obrazovku? ...
 """,
 }
 ```
 
-`apply` writes only the values you changed, so a partial translation stays
-partial — every unchanged value falls back to English. Keep each value's markdown
-and ``` code blocks exactly; only the prose is localized (literals the grader
-checks stay as-is). The file is **pure data** — read with `ast.literal_eval`,
-never executed — and lives as a loose `lang/<code>.translations.py` (not a pack
-folder), so a half-finished one is invisible to the engine and the checker.
+`apply` merges all the files and writes only the values you changed, so a partial
+translation stays partial — every unchanged value, **and any chapter file you
+leave out**, falls back to English (so you can translate and ship one chapter at a
+time). Keep each value's markdown and ``` code blocks exactly; only the prose is
+localized (literals the grader checks stay as-is). The files are **pure data** —
+read with `ast.literal_eval`, never executed — and live as a loose
+`lang/<code>.translations/` folder (not a pack folder), so a half-finished one is
+invisible to the engine and the checker.
 
-See [`example.translations.py`](example.translations.py) — a complete file with a
-few values translated to Czech (the name, the UI strings, and `1.1 hints`) to show
-the format.
+See [`example.translations/`](example.translations/) — a complete worksheet (every
+piece present, with the name, the UI strings, and `1.1 hints` translated to Czech)
+to show the format.
 
-(`apply` produces the pack files below; you can also hand-build them.)
+(`apply` produces the pack files below; you can also hand-build them. An older
+single-file `lang/<code>.translations.py` still works with `apply`; run
+`python3 tools/lang_worksheet.py split <code>` to convert one into the folder.)
 
 ## Layout
 

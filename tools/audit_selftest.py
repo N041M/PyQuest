@@ -983,11 +983,13 @@ def _engine_selftest():
             shutil.rmtree(root)
 
     def t_lang_worksheet():
-        """The one-file TRANSLATIONS data file round-trips: `new` lists every
-        piece (UI string + each puzzle's brief/hints/reference, by id) as a dict
-        keyed by label, each value prefilled with the English; editing a value
-        and `apply` writes just that piece, unchanged values staying English.
-        Read with ast.literal_eval, so a value's backslashes survive verbatim."""
+        """The per-chapter TRANSLATIONS folder round-trips: `new` writes one file
+        per chapter (plus 00_meta.py for the pack name + UI strings), each value
+        prefilled with the English; editing values and `apply` merges the files
+        and writes just the changed pieces, unchanged values staying English.
+        Read with ast.literal_eval, so a value's backslashes survive verbatim. A
+        legacy single lang/<code>.translations.py still applies, and `split`
+        converts one into the folder."""
         import io
         import json
         import shutil
@@ -1012,27 +1014,35 @@ def _engine_selftest():
         lw.ENGINE_DIR = eng
         lw.CHAPTERS_DIR = os.path.join(root, "chapters")
         lw.LANG_DIR = lang
-        wp = os.path.join(lang, "cs.translations.py")
+        wdir = os.path.join(lang, "cs.translations")             # the folder
+        meta_f = os.path.join(wdir, "00_meta.py")                # name + ui
+        chap_f = os.path.join(wdir, "01_x.py")                   # chapter 01_x
         ov = os.path.join(lang, "cs", "chapters", "01_x", "01_y")
 
         def hush(fn, *a):
             with contextlib.redirect_stdout(io.StringIO()):
                 return fn(*a)
         try:
+            # new -> a folder: 00_meta.py (name + ui) + one file per chapter
             assert hush(lw.new, "cs") == 0
-            entries = lw._entries()                          # [(label, english)]
-            labels = {label for label, _ in entries}
-            assert {"name", "ui menu.play", "1.1 brief", "1.1 hints"} <= labels
+            assert os.path.isdir(wdir) and not os.path.exists(wdir + ".py")
+            assert os.path.isfile(meta_f) and os.path.isfile(chap_f)
+            meta_data = lw.parse(open(meta_f, encoding="utf-8").read())
+            chap_data = lw.parse(open(chap_f, encoding="utf-8").read())
+            assert "name" in meta_data and "ui menu.play" in meta_data
+            assert "1.1 brief" not in meta_data        # content lives per chapter
+            assert {"1.1 brief", "1.1 hints"} <= set(chap_data)
             # values start as the English -- and a backslash survives parsing
-            data = lw.parse(open(wp, encoding="utf-8").read())
-            assert data["1.1 hints"] == "a hint\n"
-            assert data["ui menu.play"] == "play"
-            assert data["1.1 brief"] == "regex `\\d` keeps its backslash\n"
+            assert chap_data["1.1 hints"] == "a hint\n"
+            assert meta_data["ui menu.play"] == "play"
+            assert chap_data["1.1 brief"] == "regex `\\d` keeps its backslash\n"
+            # _load merges every file in the folder into one dict
+            merged = lw._load("cs")
+            assert {"name", "ui menu.play", "1.1 brief"} <= set(merged)
             # translate name, the string, and brief; leave 1.1 hints English
             fill = {"name": "Test", "ui menu.play": "hrat", "1.1 brief": "# Ahoj\n"}
-            text = lw.serialize([(label, fill.get(label, en))
-                                 for label, en in entries])
-            open(wp, "w", encoding="utf-8").write(text)
+            lw._write_split("cs", [(label, fill.get(label, en))
+                                   for label, en in lw._entries()])
             assert hush(lw.apply, "cs") == 0
             meta = json.load(open(os.path.join(lang, "cs", "pack.json")))
             assert meta == {"name": "Test", "code": "cs"}, meta
@@ -1041,6 +1051,29 @@ def _engine_selftest():
             assert open(os.path.join(ov, "brief.md")).read() == "# Ahoj\n"
             # the untranslated hint was NOT written -> it falls back to English
             assert not os.path.exists(os.path.join(ov, "hints.md"))
+            # duplicate key across two files is rejected by _load
+            with open(os.path.join(wdir, "99_dup.py"), "w", encoding="utf-8") as f:
+                f.write('TRANSLATIONS = {"1.1 brief": "x"}\n')
+            try:
+                lw._load("cs")
+                assert False, "expected a duplicate-key error"
+            except ValueError as e:
+                assert "1.1 brief" in str(e), e
+            os.remove(os.path.join(wdir, "99_dup.py"))
+
+            # legacy single file: `apply` still reads it, and `split` converts it
+            shutil.rmtree(wdir)
+            single = os.path.join(lang, "cs.translations.py")
+            open(single, "w", encoding="utf-8").write(
+                lw.serialize([(label, fill.get(label, en))
+                              for label, en in lw._entries()]))
+            assert hush(lw.apply, "cs") == 0          # legacy path still works
+            assert json.load(open(os.path.join(lang, "cs", "pack.json")))["name"] \
+                == "Test"
+            assert hush(lw.split, "cs") == 0          # convert to the folder
+            assert os.path.isdir(wdir) and not os.path.exists(single)
+            after = lw._load("cs")
+            assert after["name"] == "Test" and after["1.1 brief"] == "# Ahoj\n"
         finally:
             lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR = saved
             shutil.rmtree(root)
