@@ -8,6 +8,7 @@ from ..content import load_hints, brief_path, category
 from ..state import current_puzzle, load_answers, switch_to, work_path
 from ..render import (paint, id_banner, header, section, field, wrap, cli,
                       nav_row, pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
+from ..i18n import t
 from .registry import NAV_CLUSTERS, NEEDS_PUZZLE
 from .. import keys
 
@@ -63,7 +64,7 @@ def chapter_tree(puzzles, prog, pickable=False):
                 title = paint(title, "gray")
             tail = ""
             if pickable and p["index"] > prog["highest"] and prog["mode"] != "easy":
-                tail = paint("   locked", "gray")
+                tail = paint("   " + t("card.locked", "locked"), "gray")
             print("%s  %s  %s  %s%s"
                   % (PAD, mark, paint("%-5s" % p["id"], "gray"), title, tail))
 
@@ -132,9 +133,9 @@ def nav_select(prog, cur, puzzles=None):
             for cl in clusters:
                 painted, plain = [], []
                 for v in cl:
-                    p, t = cell(v, i)
+                    p, t_ = cell(v, i)
                     painted.append(p)
-                    plain.append(t)
+                    plain.append(t_)
                     i += 1
                 groups.append(" · ".join(painted))
                 plains.append(" · ".join(plain))
@@ -143,8 +144,8 @@ def nav_select(prog, cur, puzzles=None):
                 rows = [PAD + "   ".join([head] + groups)]        # fits one line
             else:
                 rows = [PAD + head] + [PAD + g for g in groups]   # stack to fit
-        hint = PAD + paint("arrows move · Enter runs it · type a verb · "
-                           "Esc to the shell", "gray")
+        hint = PAD + paint(t("cockpit.footer", "arrows move · Enter runs it · "
+                           "type a verb · Esc to the shell"), "gray")
         return rows + [hint]
 
     try:
@@ -168,30 +169,34 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
     title = "%s   %s" % (paint(cur["id"], "byellow", "bold"),
                          paint(meta.get("title", ""), "bold", "white"))
     if solved:
-        title += paint("   " + OK + " solved", "green")
+        title += paint("   " + OK + " " + t("card.solved", "solved"), "green")
     print("")
     print(PAD + title)
-    print(PAD + paint("chapter %d · %s" % (cur["ch_num"], cur["ch_title"]),
-                      "gray"))
+    print(PAD + paint(t("card.chapter", "chapter %d · %s")
+                      % (cur["ch_num"], cur["ch_title"]), "gray"))
     print("")
     for line in wrap(meta.get("concept", "")):
         print(PAD + line)
     print("")
-    print(field("read", paint(rel(brief_path(cur["dir"])), "blue")))
-    print(field("edit", paint(rel(work_path()), "blue", "bold")
-                + paint("   (save before checking)", "gray")))
+    print(field(t("card.f_read", "read"), paint(rel(brief_path(cur["dir"])),
+                "blue")))
+    print(field(t("card.f_edit", "edit"), paint(rel(work_path()), "blue", "bold")
+                + paint("   " + t("card.save_before", "(save before checking)"),
+                        "gray")))
     note = load_answers().get(cur["id"], {}).get("note")
     if note:
         print("")
         for i, line in enumerate(wrap(note, WIDTH - len(PAD) - 8)):
-            lead = paint("note  ", "magenta", "bold") if i == 0 else " " * 6
+            lead = paint(t("card.note_lead", "note  "), "magenta", "bold") \
+                if i == 0 else " " * 6
             print(PAD + lead + line)
     if show_pointer:
         hints = load_hints(cur["dir"])
         if hints:
             print("")
             for i, line in enumerate(wrap(hints[0], WIDTH - len(PAD) - 8)):
-                lead = paint("hint  ", "yellow", "bold") if i == 0 else " " * 6
+                lead = paint(t("card.hint_lead", "hint  "), "yellow", "bold") \
+                    if i == 0 else " " * 6
                 print(PAD + lead + line)
     print("")
     play.card_drawn = True          # a card reached the screen -> cockpit may open
@@ -201,7 +206,7 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
 
 def _goto_list(puzzles, by_id, prog, note=None, footer=True):
     """Show every puzzle as a pickable list (used when `goto` has no/bad id)."""
-    print(pane_open("goto · choose a puzzle", prog["mode"],
+    print(pane_open(t("goto.title", "goto · choose a puzzle"), prog["mode"],
                     len(prog["completed"]), len(puzzles)))
     if note:
         print("")
@@ -209,7 +214,8 @@ def _goto_list(puzzles, by_id, prog, note=None, footer=True):
     chapter_tree(puzzles, prog, pickable=True)
     print("")
     if footer:
-        print(PAD + "run  %s   e.g.  %s   (a bare chapter number works too: %s)"
+        print(PAD + t("goto.footer", "run  %s   e.g.  %s   (a bare chapter "
+              "number works too: %s)")
               % (paint(cli("goto <id>"), "cyan", "bold"), cli("goto 2.1"),
                  cli("goto 2")))
 
@@ -237,19 +243,22 @@ def _jump(target, puzzles, by_id, prog):
     One door, one lock -- pickers must never bypass what goto enforces."""
     forward = target["index"] > prog["highest"]
     if forward and prog["mode"] != "easy":
-        print(paint("  %s '%s' is locked." % (NO, target["id"]), "red", "bold"))
-        print("  In %s mode you can only revisit unlocked puzzles."
+        print(paint("  %s " % NO + t("jump.locked", "'%s' is locked.")
+                    % target["id"], "red", "bold"))
+        print("  " + t("jump.locked_2",
+              "In %s mode you can only revisit unlocked puzzles.")
               % prog["mode"])
-        print("  Use %s to advance one, or switch to easy mode."
+        print("  " + t("jump.locked_3",
+              "Use %s to advance one, or switch to easy mode.")
               % paint(cli("next"), "yellow"))
         return False
     answers = load_answers()
     switch_to(target, prog, by_id, puzzles, answers)
     restored = bool(answers.get(target["id"], {}).get("code"))
-    print(paint("  %s Now on %s -- %s%s"
-                % (ARROW, target["id"], target["meta"].get("title", ""),
-                   "  (your saved code was restored)" if restored else ""),
-                "cyan", "bold"))
+    print(paint("  %s " % ARROW + t("jump.now_on", "Now on %s -- %s%s")
+                % (target["id"], target["meta"].get("title", ""),
+                   t("jump.restored", "  (your saved code was restored)")
+                   if restored else ""), "cyan", "bold"))
     print_current_card(prog, target, arriving=True, puzzles=puzzles)
     return True
 
@@ -263,29 +272,34 @@ def _advance_one(puzzles, by_id, prog, force):
         or not. Hard mode forbids it -- there you must genuinely solve."""
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
-        print("No current puzzle.")
+        print(t("ui.no_current", "No current puzzle."))
         return
     solved = cur["id"] in prog["completed"]
     if not solved:
         if not force:
-            print(paint("  %s %s isn't solved yet." % (NO, cur["id"]),
-                        "yellow", "bold"))
-            print("  Run %s until it passes, or %s to move on without solving."
+            print(paint("  %s " % NO + t("nav.not_solved", "%s isn't solved yet.")
+                        % cur["id"], "yellow", "bold"))
+            print("  " + t("nav.not_solved_2",
+                  "Run %s until it passes, or %s to move on without solving.")
                   % (cli("check"), cli("skip")))
             return
         if prog["mode"] == "hard":
-            print(paint("  %s Hard mode: you must solve %s before moving on."
-                        % (NO, cur["id"]), "red", "bold"))
-            print("  Switch to an easier mode to skip:  %s" % cli("mode normal"))
+            print(paint("  %s " % NO + t("nav.hard_solve",
+                        "Hard mode: you must solve %s before moving on.")
+                        % cur["id"], "red", "bold"))
+            print("  " + t("nav.hard_skip",
+                  "Switch to an easier mode to skip:  %s") % cli("mode normal"))
             return
     nxt = next((p for p in puzzles if p["index"] == cur["index"] + 1), None)
     if nxt is None:
-        print(paint("  %s  That was the last puzzle in the course." % STAR,
+        print(paint("  %s  " % STAR + t("nav.last_puzzle",
+                    "That was the last puzzle in the course."),
                     "green", "bold"))
         return
     answers = load_answers()
     switch_to(nxt, prog, by_id, puzzles, answers, unlock=True)
-    word = "Moved on from" if solved else "Skipped (not solved)"
+    word = (t("nav.moved_on", "Moved on from") if solved
+            else t("nav.skipped", "Skipped (not solved)"))
     print(paint("  %s %s %s" % (ARROW, word, cur["id"]),
                 "cyan" if solved else "yellow", "bold"))
     print_current_card(prog, nxt, arriving=True, puzzles=puzzles)

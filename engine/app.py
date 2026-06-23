@@ -7,6 +7,7 @@ from .content import discover
 from .state import (load_progress, current_puzzle, ensure_workspace,
                     load_answers, migrate_legacy)
 from .render import paint, cli, STAR, NO, PAD
+from .i18n import t
 from .checker import cmd_check
 from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
                        cmd_solution, cmd_textbook, cmd_next, cmd_resume,
@@ -107,12 +108,15 @@ def dispatch(args, puzzles, by_id, prog):
     else:
         near = suggest(raw)
         if near:
-            print(paint("  Unknown command '%s'. Did you mean  %s ?"
+            print(paint("  " + t("app.unknown_suggest",
+                        "Unknown command '%s'. Did you mean  %s ?")
                         % (raw, cli(near)), "yellow"))
-            print(PAD + paint("run  %s  for the full list." % cli("help"),
+            print(PAD + paint(t("app.run_full_list",
+                              "run  %s  for the full list.") % cli("help"),
                               "gray"))
         else:
-            print(paint("  Unknown command '%s'." % raw, "yellow"))
+            print(paint("  " + t("app.unknown", "Unknown command '%s'.") % raw,
+                        "yellow"))
             cmd_help(prog)
     return prog
 
@@ -137,7 +141,8 @@ def _play(puzzles, by_id, prog):
 def main():
     puzzles = discover()
     if not puzzles:
-        print("No puzzles found under %s" % rel(CHAPTERS_DIR))
+        print(t("app.no_puzzles", "No puzzles found under %s")
+              % rel(CHAPTERS_DIR))
         return
     by_id = {p["id"]: p for p in puzzles}
     # Hidden shell-completion hook: emit candidates and exit before any side
@@ -180,19 +185,22 @@ def main():
     # First run: greet the learner wherever a bare launch lands them. That is
     # the menu now, but an explicit `status` should still welcome too.
     if fresh and cmd in ("status", "menu"):
-        print(paint("  %s  Welcome to PyQuest!" % STAR, "cyan", "bold"))
+        print(paint("  %s  " % STAR + t("app.welcome", "Welcome to PyQuest!"),
+                    "cyan", "bold"))
         if cmd == "status":
-            print("  Open the menu to set up and pick a level:  %s\n"
+            print("  " + t("app.open_menu_status",
+                  "Open the menu to set up and pick a level:  %s\n")
                   % cli("menu"))
         else:
-            print("  Set up and pick a level from the menu below.\n")
+            print("  " + t("app.setup_below",
+                  "Set up and pick a level from the menu below.\n"))
 
     # Context gate: the puzzle-logic verbs only mean something with a puzzle
     # loaded. Without one the learner is between the two command sets, so route
     # them to the menu (the home base) rather than dead-ending on a message.
     if cmd in NEEDS_PUZZLE and not prog.get("active"):
-        print(paint("  %s  No puzzle loaded yet -- here's the menu." % NO,
-                    "yellow"))
+        print(paint("  %s  " % NO + t("app.no_loaded_menu",
+                    "No puzzle loaded yet -- here's the menu."), "yellow"))
         cmd_menu(puzzles, by_id, prog)
         return
 

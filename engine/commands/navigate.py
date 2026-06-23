@@ -13,6 +13,7 @@ from ..content import read_starter
 from ..state import (current_puzzle, load_answers, save_answers, save_progress,
                      archive_current, switch_to, write_work)
 from ..render import paint, cli, PAD, OK, STAR, ARROW
+from ..i18n import t
 from .cards import (print_current_card, _goto_list, _resolve_goto, _jump,
                     _advance_one)
 
@@ -22,7 +23,8 @@ def cmd_goto(puzzles, by_id, prog, arg):
         target = _resolve_goto(arg, puzzles, by_id, prog)
         if target is None:
             _goto_list(puzzles, by_id, prog,
-                       note="There is no puzzle '%s'. Pick one of these:" % arg)
+                       note=t("goto.no_match", "There is no puzzle '%s'. Pick "
+                              "one of these:") % arg)
             return
         _jump(target, puzzles, by_id, prog)
         return
@@ -33,7 +35,7 @@ def cmd_goto(puzzles, by_id, prog, arg):
     if not interactive:
         return
     try:
-        picked = input(PAD + paint("id (blank = cancel) > ",
+        picked = input(PAD + paint(t("goto.prompt", "id (blank = cancel) > "),
                                    "cyan", "bold")).strip()
     except (EOFError, KeyboardInterrupt):
         print("")
@@ -44,7 +46,8 @@ def cmd_goto(puzzles, by_id, prog, arg):
         picked = picked[5:].strip()
     target = _resolve_goto(picked, puzzles, by_id, prog)
     if target is None:
-        print(PAD + paint("no puzzle '%s'." % picked, "yellow"))
+        print(PAD + paint(t("ui.no_puzzle", "no puzzle '%s'.") % picked,
+                          "yellow"))
         return
     _jump(target, puzzles, by_id, prog)
 
@@ -66,7 +69,7 @@ def cmd_note(puzzles, by_id, prog, arg=None):
     removes it. The note then appears on the puzzle card."""
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
-        print("No current puzzle.")
+        print(t("ui.no_current", "No current puzzle."))
         return
     answers = load_answers()
     entry = answers.setdefault(cur["id"], {"solved": False, "code": ""})
@@ -74,22 +77,28 @@ def cmd_note(puzzles, by_id, prog, arg=None):
     if not text:                                  # bare `note`: show it
         existing = entry.get("note")
         if existing:
-            print(paint("  note on %s:" % cur["id"], "magenta", "bold"))
+            print(paint("  " + t("note.header", "note on %s:") % cur["id"],
+                        "magenta", "bold"))
             print(PAD + existing)
         else:
-            print(PAD + paint("no note on %s yet." % cur["id"], "gray"))
-            print(PAD + paint("add one with  " + cli("note <text>"), "gray"))
+            print(PAD + paint(t("note.none_yet", "no note on %s yet.")
+                              % cur["id"], "gray"))
+            print(PAD + paint(t("note.add_one", "add one with  ")
+                              + cli("note <text>"), "gray"))
         return
     if text.lower() in _NOTE_CLEAR:
         if entry.pop("note", None) is not None:
             save_answers(answers)
-            print(paint("  %s Note cleared on %s." % (OK, cur["id"]), "green"))
+            print(paint("  %s " % OK + t("note.cleared", "Note cleared on %s.")
+                        % cur["id"], "green"))
         else:
-            print(PAD + paint("no note on %s to clear." % cur["id"], "gray"))
+            print(PAD + paint(t("note.none_clear", "no note on %s to clear.")
+                              % cur["id"], "gray"))
         return
     entry["note"] = text
     save_answers(answers)
-    print(paint("  %s Noted on %s." % (OK, cur["id"]), "green", "bold"))
+    print(paint("  %s " % OK + t("note.saved", "Noted on %s.") % cur["id"],
+                "green", "bold"))
     print(PAD + paint(text, "gray"))
 
 
@@ -100,12 +109,15 @@ def cmd_resume(puzzles, by_id, prog):
     done = set(prog["completed"])
     target = next((p for p in puzzles if p["id"] not in done), None)
     if target is None:
-        print(paint("  %s  Every puzzle is solved -- nothing to resume."
-                    % STAR, "green", "bold"))
-        print(PAD + paint("revisit any with  " + cli("goto <id>"), "gray"))
+        print(paint("  %s  " % STAR + t("resume.all_solved",
+                    "Every puzzle is solved -- nothing to resume."),
+                    "green", "bold"))
+        print(PAD + paint(t("resume.revisit", "revisit any with  ")
+                          + cli("goto <id>"), "gray"))
         return
     switch_to(target, prog, by_id, puzzles, load_answers())
-    print(paint("  %s Resuming at %s." % (ARROW, target["id"]), "cyan", "bold"))
+    print(paint("  %s " % ARROW + t("resume.at", "Resuming at %s.")
+                % target["id"], "cyan", "bold"))
     print_current_card(prog, target, arriving=True, puzzles=puzzles)
 
 
@@ -113,20 +125,23 @@ def cmd_retry(puzzles, by_id, prog):
     """Replay the current puzzle: reset its workspace to a blank starter."""
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
-        print("No current puzzle.")
+        print(t("ui.no_current", "No current puzzle."))
         return
     archive_current(prog, by_id, puzzles)    # keep their last code in answers
     prog["active"] = True
     save_progress(prog)
     write_work(read_starter(cur))            # blank the workspace
     solved = cur["id"] in prog["completed"]
-    print(paint("  %s Reset %s to a blank workspace -- give it another go."
-                % (ARROW, cur["id"]), "cyan", "bold"))
+    print(paint("  %s " % ARROW + t("retry.reset",
+                "Reset %s to a blank workspace -- give it another go.")
+                % cur["id"], "cyan", "bold"))
     if solved:
-        print(PAD + paint("(it stays marked solved; this is just practice)",
+        print(PAD + paint(t("retry.stays_solved",
+                          "(it stays marked solved; this is just practice)"),
                           "gray"))
-    print(PAD + paint("if your editor still shows old code, reload work.py -- "
-                      "its on-disk copy is now blank.", "gray"))
+    print(PAD + paint(t("retry.reload",
+                      "if your editor still shows old code, reload work.py -- "
+                      "its on-disk copy is now blank."), "gray"))
     print_current_card(prog, cur, arriving=True, puzzles=puzzles)
 
 
@@ -136,7 +151,7 @@ def cmd_restart(puzzles, by_id, prog):
     `retry`, it makes the puzzle pristine -- as if you had never attempted it."""
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
-        print("No current puzzle.")
+        print(t("ui.no_current", "No current puzzle."))
         return
     answers = load_answers()
     answers.pop(cur["id"], None)
@@ -147,6 +162,7 @@ def cmd_restart(puzzles, by_id, prog):
     prog["active"] = True
     save_progress(prog)
     write_work(read_starter(cur))
-    print(paint("  %s Restarted %s -- blank workspace, progress cleared."
-                % (ARROW, cur["id"]), "magenta", "bold"))
+    print(paint("  %s " % ARROW + t("restart.done",
+                "Restarted %s -- blank workspace, progress cleared.")
+                % cur["id"], "magenta", "bold"))
     print_current_card(prog, cur, arriving=True, puzzles=puzzles)

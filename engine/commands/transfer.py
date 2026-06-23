@@ -17,9 +17,23 @@ from ..state import (current_puzzle, archive_current, default_progress,
                      ensure_workspace, answers_path, progress_path, work_path,
                      list_users, current_user, ensure_user, valid_username)
 from ..render import paint, cli, PAD, OK, NO, ARROW
+from ..i18n import t, tp
 
 EXPORT_FORMAT = "pyquest-progress"
 EXPORT_VERSION = 1
+
+
+def _bundle_summary(n_done, n_answers):
+    """The shared 'N puzzles completed, M saved answers.' line. Each count is
+    pluralized on its own (Czech and most languages decline the two nouns
+    independently), then joined by a localizable template."""
+    done_txt = tp("transfer.puzzles", n_done,
+                  one="%d puzzle completed",
+                  other="%d puzzles completed") % n_done
+    ans_txt = tp("transfer.answers", n_answers,
+                 one="%d saved answer",
+                 other="%d saved answers") % n_answers
+    return "  " + t("transfer.summary", "%s, %s.") % (done_txt, ans_txt)
 
 
 # ---- export ---------------------------------------------------------------
@@ -52,15 +66,16 @@ def cmd_export(puzzles, by_id, prog, arg=None):
         os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
         write_json(dest, bundle)
     except OSError as e:
-        print(paint("  %s Couldn't write %s (%s)." % (NO, dest, e.strerror),
-                    "red"))
+        print(paint("  %s " % NO + t("transfer.write_fail",
+                    "Couldn't write %s (%s).") % (dest, e.strerror), "red"))
         return
     where = rel(dest) if os.path.abspath(dest).startswith(ROOT) else dest
-    print(paint("  %s Exported profile '%s' to %s." % (OK, user, where),
+    print(paint("  %s " % OK + t("transfer.exported",
+                "Exported profile '%s' to %s.") % (user, where),
                 "green", "bold"))
-    print("  %d puzzle(s) completed, %d saved answer(s)."
-          % (len(prog.get("completed", [])), len(answers)))
-    print("  Move it to another machine, then:  %s" % cli("import " + where))
+    print(_bundle_summary(len(prog.get("completed", [])), len(answers)))
+    print("  " + t("transfer.move_hint", "Move it to another machine, then:  %s")
+          % cli("import " + where))
 
 
 # ---- import ---------------------------------------------------------------
@@ -126,36 +141,43 @@ def cmd_import(puzzles, by_id, prog, path=None, opt1=None, opt2=None):
       force  overwrite an existing profile (otherwise import refuses)
     """
     if not path:
-        print(PAD + paint("usage:  " + cli("import <file> [name] [force]"),
-                          "yellow"))
-        print(PAD + "Imports a profile exported with  %s." % cli("export"))
+        print(PAD + paint(t("ui.usage", "usage:  ")
+                          + cli("import <file> [name] [force]"), "yellow"))
+        print(PAD + t("transfer.import_usage_hint",
+              "Imports a profile exported with  %s.") % cli("export"))
         return prog
     # parse the optional [name] [force] tail in either order
     force = "force" in (opt1, opt2)
     target = next((o for o in (opt1, opt2) if o and o != "force"), None)
 
     if not os.path.isfile(path):
-        print(paint("  %s No such file: %s" % (NO, path), "red"))
+        print(paint("  %s " % NO + t("transfer.no_file", "No such file: %s")
+                    % path, "red"))
         return prog
     try:
         with open(path) as f:
             bundle = json.load(f)
     except (OSError, ValueError):
-        print(paint("  %s Couldn't read %s as a PyQuest export." % (NO, path),
-                    "red"))
+        print(paint("  %s " % NO + t("transfer.read_fail",
+                    "Couldn't read %s as a PyQuest export.") % path, "red"))
         return prog
     if not isinstance(bundle, dict) or bundle.get("format") != EXPORT_FORMAT:
-        print(paint("  %s %s isn't a PyQuest export file." % (NO, path), "red"))
+        print(paint("  %s " % NO + t("transfer.not_export",
+                    "%s isn't a PyQuest export file.") % path, "red"))
         return prog
 
     name = target or bundle.get("user") or "default"
     if not valid_username(name):
-        print(PAD + paint("'%s' can't be a profile name." % name, "yellow"))
-        print(PAD + "Pass a valid name:  %s" % cli("import %s <name>" % path))
+        print(PAD + paint(t("user.invalid_name", "'%s' can't be a profile name.")
+                          % name, "yellow"))
+        print(PAD + t("transfer.pass_name", "Pass a valid name:  %s")
+              % cli("import %s <name>" % path))
         return prog
     if name in list_users() and not force:
-        print(paint("  %s Profile '%s' already exists." % (NO, name), "yellow"))
-        print(PAD + "Import under a new name, or overwrite it:")
+        print(paint("  %s " % NO + t("user.exists", "Profile '%s' already "
+                    "exists.") % name, "yellow"))
+        print(PAD + t("transfer.exists_hint",
+              "Import under a new name, or overwrite it:"))
         print(PAD + "  %s" % cli("import %s <other-name>" % path))
         print(PAD + "  %s" % cli("import %s %s force" % (path, name)))
         return prog
@@ -176,11 +198,15 @@ def cmd_import(puzzles, by_id, prog, path=None, opt1=None, opt2=None):
     ensure_workspace(current_puzzle(newprog, by_id, puzzles), answers,
                      newprog.get("active"))
 
-    print(paint("  %s Imported into profile '%s' (now active)." % (ARROW, name),
+    print(paint("  %s " % ARROW + t("transfer.imported",
+                "Imported into profile '%s' (now active).") % name,
                 "cyan", "bold"))
-    print("  %d puzzle(s) completed, %d saved answer(s)."
-          % (len(newprog["completed"]), len(answers)))
+    print(_bundle_summary(len(newprog["completed"]), len(answers)))
     if dropped:
-        print(PAD + paint("note: %d completed id(s) aren't in this version's "
-                          "content and were dropped." % dropped, "gray"))
+        print(PAD + paint(
+            tp("transfer.dropped", dropped,
+               one="note: %d completed id isn't in this version's content and "
+                   "was dropped.",
+               other="note: %d completed id(s) aren't in this version's content "
+                     "and were dropped.") % dropped, "gray"))
     return newprog

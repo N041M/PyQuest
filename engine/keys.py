@@ -308,6 +308,7 @@ def pick(title, options, index=0, allow_typing=False, max_rows=None):
     """
     from .theme import paint, CUR
     from .render import PAD
+    from .i18n import t
     if not (supported() and options):
         return None
     n = len(options)
@@ -330,11 +331,13 @@ def pick(title, options, index=0, allow_typing=False, max_rows=None):
         if allow_typing and buf:
             lines.append(PAD + paint("> ", "cyan", "bold") + buf)
         else:
-            tail = ["arrows move", "Enter select"]
+            tail = [t("keys.arrows", "arrows move"),
+                    t("keys.enter", "Enter select")]
             if allow_typing:
-                tail.append("type to enter one")
-            tail.append("Esc back")
-            more = "   %d of %d" % (idx + 1, n) if n > view else ""
+                tail.append(t("keys.type", "type to enter one"))
+            tail.append(t("keys.esc", "Esc back"))
+            more = "   " + t("keys.position", "%d of %d") % (idx + 1, n) \
+                if n > view else ""
             lines.append(PAD + paint(" · ".join(tail) + more, "gray"))
         return lines
 

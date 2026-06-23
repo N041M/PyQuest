@@ -102,6 +102,27 @@ Translate the ones you want; leave the rest out.
 }
 ```
 
+### Plurals
+
+Counted strings are split by **grammatical number**, so a language can decline
+a noun the way it actually does. The engine asks for a key like `stats.streak`
+with a count; you supply one entry per category your language uses, suffixed
+`.one` / `.few` / `.other` (the CLDR categories). English needs only `.one` and
+`.other`; Czech adds `.few` for 2-4:
+
+```json
+{
+  "stats.streak.one":   "%d den",
+  "stats.streak.few":   "%d dny",
+  "stats.streak.other": "%d dní"
+}
+```
+
+A category you omit falls back to that key's `.other`, then to English. Each
+language's number rule lives in `_PLURAL_RULES` in `engine/i18n.py`; add a one-
+line rule there for a language whose plurals English/Czech don't already cover.
+Keep every `%s`/`%d` from the English default, in the same order.
+
 ## chapters/ — translating the content
 
 Each topic folder under `chapters/` holds learner-facing content files:

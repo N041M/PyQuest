@@ -11,22 +11,30 @@ import os
 import sys
 import subprocess
 
-from .config import ROOT
+from .config import ROOT, load_settings
+from . import i18n
 
 ENTRY = os.path.join(ROOT, "start.py")     # the verb the spawned shell runs
 
 
 def launch_session():
     """Cold start: host a session shell with the shortcuts on, open the menu."""
+    # This launcher process prints before app.main() runs, so load the saved UI
+    # language here too -- otherwise the first lines a learner sees are always
+    # English regardless of their pack.
+    i18n.set_language(load_settings().get("lang", "en"))
     kind, exe = detect_shell()
     if kind is None:
         # No shell we can host the shortcuts in: just open the menu.
-        print("Opening the menu. (Couldn't set up the short commands for this\n"
-              "shell; you can still run `%s start.py <command>`.)" % _py())
+        print(i18n.t("session.no_shell",
+              "Opening the menu. (Couldn't set up the short commands for this\n"
+              "shell; you can still run `%s start.py <command>`.)") % _py())
         return subprocess.call([sys.executable, ENTRY, "menu"])
 
-    print("Starting PyQuest with the short commands on for this session.")
-    print("When you're done, type  exit  to leave the PyQuest session.\n")
+    print(i18n.t("session.starting",
+          "Starting PyQuest with the short commands on for this session."))
+    print(i18n.t("session.when_done",
+          "When you're done, type  exit  to leave the PyQuest session.\n"))
     try:
         return _launch(kind, exe)
     except OSError:

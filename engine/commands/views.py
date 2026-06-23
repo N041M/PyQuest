@@ -14,6 +14,7 @@ from ..state import (current_puzzle, save_progress, stat, textbook_path,
                      write_textbook, current_user)
 from ..render import (paint, wordmark, bar, header, indent, wrap, cli, field,
                       pane_open, legend, PAD, OK, STAR, ARROW)
+from ..i18n import t, tp
 from .cards import print_current_card, chapter_tree, nav_strip
 
 
@@ -24,23 +25,29 @@ def cmd_status(puzzles, by_id, prog):
     print(wordmark("cyan"))
     print("")
     print(PAD + "%s     %s"
-          % (paint(prog["mode"] + " mode", "magenta", "bold"),
+          % (paint(prog["mode"] + " " + t("ui.mode", "mode"), "magenta", "bold"),
              bar(done, total, WIDTH - 24)))
     if not prog.get("active"):
         print("")
-        print(PAD + paint("No puzzle loaded.", "white", "bold"))
-        print(PAD + "Open the menu to pick a level and start:  "
-              + paint(cli("menu"), "green", "bold"))
+        print(PAD + paint(t("status.no_loaded", "No puzzle loaded."),
+                          "white", "bold"))
+        print(PAD + t("status.open_menu", "Open the menu to pick a level and "
+                      "start:  ") + paint(cli("menu"), "green", "bold"))
         print("")
         nav_strip(prog, None, puzzles)
         return
     if cur is None:
-        print("\n" + PAD + "No current puzzle.  " + cli("map"))
+        print("\n" + PAD + t("status.no_current", "No current puzzle.  ")
+              + cli("map"))
         return
     if done >= total:
-        print("\n" + PAD + paint("%s  All %d puzzles complete." % (STAR, total),
-                                 "green", "bold"))
-        print(PAD + paint("revisit any with  goto <id>", "gray"))
+        print("\n" + PAD + paint(
+            tp("status.all_complete", total,
+               one="%s  All %d puzzle complete.",
+               other="%s  All %d puzzles complete.") % (STAR, total),
+            "green", "bold"))
+        print(PAD + paint(t("status.revisit_goto", "revisit any with  goto <id>"),
+                          "gray"))
         print("")
         nav_strip(prog, cur, puzzles)
         return
@@ -50,7 +57,7 @@ def cmd_status(puzzles, by_id, prog):
 
 def cmd_map(puzzles, by_id, prog):
     done = len(prog["completed"])
-    print(pane_open("map", prog["mode"], done, len(puzzles)))
+    print(pane_open(t("map.title", "map"), prog["mode"], done, len(puzzles)))
     chapter_tree(puzzles, prog, pickable=False)
     print("")
     print(legend())
@@ -64,21 +71,24 @@ def cmd_search(puzzles, by_id, prog, arg=None):
     with their ids (ready to `goto`) and changes nothing."""
     term = (arg or "").strip().lower()
     if not term:
-        print(PAD + paint("usage:  " + cli("search <word>"), "yellow"))
-        print(PAD + "Find a puzzle by a word in its title or concept.")
+        print(PAD + paint(t("search.usage", "usage:  ") + cli("search <word>"),
+                          "yellow"))
+        print(PAD + t("search.usage_hint",
+                      "Find a puzzle by a word in its title or concept."))
         return
     done = set(prog["completed"])
     hits = [p for p in puzzles
             if term in " ".join((p["meta"].get("title", ""),
                                  p["meta"].get("concept", ""),
                                  p["ch_title"])).lower()]
-    print(pane_open("search · %s" % term, prog["mode"],
+    print(pane_open(t("search.title", "search · %s") % term, prog["mode"],
                     len(done), len(puzzles)))
     print("")
     if not hits:
-        print(PAD + paint("no puzzle matches '%s'." % term, "yellow"))
-        print(PAD + paint("try a broader word, or browse the  " + cli("map"),
-                          "gray"))
+        print(PAD + paint(t("search.no_match", "no puzzle matches '%s'.") % term,
+                          "yellow"))
+        print(PAD + paint(t("search.broaden", "try a broader word, or browse "
+                            "the  ") + cli("map"), "gray"))
         print("")
         nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
         return
@@ -89,9 +99,11 @@ def cmd_search(puzzles, by_id, prog, arg=None):
                  paint(p["id"].ljust(5), "byellow", "bold"),
                  paint(p["meta"].get("title", ""), "white")))
     print("")
-    print(PAD + paint("%d match%s -- open one with  %s"
-                      % (len(hits), "" if len(hits) == 1 else "es",
-                         cli("goto <id>")), "gray"))
+    print(PAD + paint(
+        tp("search.matches", len(hits),
+           one="%d match -- open one with  %s",
+           other="%d matches -- open one with  %s")
+        % (len(hits), cli("goto <id>")), "gray"))
     print("")
     nav_strip(prog, current_puzzle(prog, by_id, puzzles), puzzles)
 
@@ -112,7 +124,13 @@ def _when(value):
     if dt is None:
         return paint("--", "gray")
     days = (datetime.datetime.now() - dt).days
-    rel = "today" if days <= 0 else "yesterday" if days == 1 else "%d days ago" % days
+    if days <= 0:
+        rel = t("date.today", "today")
+    elif days == 1:
+        rel = t("date.yesterday", "yesterday")
+    else:
+        rel = tp("date.days_ago", days,
+                 one="%d day ago", other="%d days ago") % days
     return paint(dt.strftime("%Y-%m-%d"), "white") + paint("   %s" % rel, "gray")
 
 
@@ -161,33 +179,44 @@ def cmd_stats(puzzles, by_id, prog):
                   if s.get("solved_on") == datetime.date.today().isoformat())
     streak = _streak(_solve_dates(prog))
 
-    print(pane_open("stats · %s" % current_user(), prog["mode"], done, total))
+    print(pane_open(t("stats.title", "stats · %s") % current_user(),
+                    prog["mode"], done, total))
     if total and done == total:
         print("")
-        print(PAD + paint("%s  course complete  %s" % (STAR, STAR),
-                          "green", "bold"))
-        print(PAD + paint("all %d puzzles solved -- %d on the first try, "
-                          "no hints." % (total, clean), "gray"))
+        print(PAD + paint("%s  %s  %s"
+                          % (STAR, t("stats.course_complete", "course complete"),
+                             STAR), "green", "bold"))
+        print(PAD + paint(
+            tp("stats.all_solved", total,
+               one="all %d puzzle solved -- %d on the first try, no hints.",
+               other="all %d puzzles solved -- %d on the first try, no hints.")
+            % (total, clean), "gray"))
     print("")
-    print(field("since", _when(prog.get("created_at"))))
-    print(field("active", _when(prog.get("last_seen"))))
-    print(field("solved", paint("%d of %d" % (done, total), "bcyan", "bold")))
+    print(field(t("stats.f_since", "since"), _when(prog.get("created_at"))))
+    print(field(t("stats.f_active", "active"), _when(prog.get("last_seen"))))
+    print(field(t("stats.f_solved", "solved"),
+                paint(t("stats.x_of_y", "%d of %d") % (done, total),
+                      "bcyan", "bold")))
     if done:
-        print(field("today", paint(str(today_n), "white")
-                    + paint("   solved today", "gray")))
+        print(field(t("stats.f_today", "today"), paint(str(today_n), "white")
+                    + paint("   " + t("stats.today_tail", "solved today"),
+                            "gray")))
         if streak:
-            print(field("streak", paint("%d day%s" % (streak,
-                        "" if streak == 1 else "s"), "byellow", "bold")
-                        + paint("   in a row", "gray")))
-    print(field("tries", paint(str(attempts), "white")
-                + paint("   check runs across all puzzles", "gray")))
-    print(field("hints", paint(str(hints), "white")
-                + paint("   hints revealed", "gray")))
+            print(field(t("stats.f_streak", "streak"), paint(
+                tp("stats.streak", streak, one="%d day", other="%d days")
+                % streak, "byellow", "bold")
+                + paint("   " + t("stats.in_a_row", "in a row"), "gray")))
+    print(field(t("stats.f_tries", "tries"), paint(str(attempts), "white")
+                + paint("   " + t("stats.tries_tail",
+                        "check runs across all puzzles"), "gray")))
+    print(field(t("stats.f_hints", "hints"), paint(str(hints), "white")
+                + paint("   " + t("stats.hints_tail", "hints revealed"), "gray")))
     if done:
-        print(field("clean", paint(str(clean), "green", "bold")
-                    + paint("   solved first try, no hints", "gray")))
+        print(field(t("stats.f_clean", "clean"), paint(str(clean), "green", "bold")
+                    + paint("   " + t("stats.clean_tail",
+                            "solved first try, no hints"), "gray")))
     print("")
-    print(header("by chapter", "cyan"))
+    print(header(t("stats.by_chapter", "by chapter"), "cyan"))
     print("")
     chs = {}
     for p in puzzles:
@@ -209,22 +238,24 @@ def cmd_stats(puzzles, by_id, prog):
 def cmd_hint(puzzles, by_id, prog):
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
-        print("No current puzzle.")
+        print(t("ui.no_current", "No current puzzle."))
         return
     hints = load_hints(cur["dir"])
     if not hints:
-        print("No hints for this puzzle.")
+        print(t("hint.none", "No hints for this puzzle."))
         return
     st = stat(prog, cur["id"])
     if prog["mode"] == "hard" and st["attempts"] < 3:
-        print("Hard mode: hints unlock after 3 attempts (%d so far)."
+        print(t("hint.hard_locked",
+                "Hard mode: hints unlock after 3 attempts (%d so far).")
               % st["attempts"])
         return
     idx = st["hints_used"]
     if idx >= len(hints):
-        print("No more hints. Try:  %s" % cli("solution"))
+        print(t("hint.no_more", "No more hints. Try:  %s") % cli("solution"))
         return
-    print(pane_open("hint  %d / %d · %s" % (idx + 1, len(hints), cur["id"]),
+    print(pane_open(t("hint.title", "hint  %d / %d · %s")
+                    % (idx + 1, len(hints), cur["id"]),
                     prog["mode"], len(prog["completed"]), len(puzzles),
                     "yellow"))
     print("")
@@ -233,7 +264,7 @@ def cmd_hint(puzzles, by_id, prog):
     save_progress(prog)
     if idx + 1 < len(hints):
         print("")
-        print(PAD + paint("run hint again for more", "gray"))
+        print(PAD + paint(t("hint.more", "run hint again for more"), "gray"))
     print("")
     nav_strip(prog, cur, puzzles)
 
@@ -241,18 +272,19 @@ def cmd_hint(puzzles, by_id, prog):
 def cmd_solution(puzzles, by_id, prog):
     cur = current_puzzle(prog, by_id, puzzles)
     if cur is None:
-        print("No current puzzle.")
+        print(t("ui.no_current", "No current puzzle."))
         return
     if prog["mode"] == "hard" and cur["id"] not in prog["completed"]:
-        print("Hard mode: the solution unlocks only after you solve it.")
+        print(t("solution.hard_locked",
+                "Hard mode: the solution unlocks only after you solve it."))
         return
     path = os.path.join(cur["dir"], "solution.py")
     if not os.path.isfile(path):
-        print("No solution file for this puzzle.")
+        print(t("solution.none", "No solution file for this puzzle."))
         return
     with open(path, encoding="utf-8") as f:
         code = f.read().rstrip()
-    print(pane_open("solution · %s · %s"
+    print(pane_open(t("solution.title", "solution · %s · %s")
                     % (cur["id"], cur["meta"].get("title", "")),
                     prog["mode"], len(prog["completed"]), len(puzzles),
                     "magenta"))
@@ -261,7 +293,7 @@ def cmd_solution(puzzles, by_id, prog):
     why = cur["meta"].get("why")
     if why:
         print("")
-        print(header("why it works", "magenta"))
+        print(header(t("solution.why", "why it works"), "magenta"))
         print("")
         for line in wrap(why):
             print(PAD + line)
@@ -277,7 +309,8 @@ def cmd_textbook(puzzles, by_id, prog, arg=None):
     # Hard mode withholds the syntax/tips crib, just as it gates hints and the
     # solution -- the learner works from the brief and their own notes alone.
     if prog.get("mode") == "hard":
-        print("Hard mode: the textbook is sealed -- work from the brief.")
+        print(t("textbook.hard_sealed",
+                "Hard mode: the textbook is sealed -- work from the brief."))
         return
     full = (arg or "").strip().lower() in ("all", "full", "everything", "a", "*")
     total = len(puzzles)
@@ -298,18 +331,22 @@ def cmd_textbook(puzzles, by_id, prog, arg=None):
     # have something to teach (a concept or a tip), not the raw puzzle total.
     total_entries = sum(1 for p in puzzles if _has_entry(p))
     write_textbook(_textbook_md(shown, full, total_entries))
-    where = ("the full reference" if full
-             else "what you've reached -- %d of %d" % (len(shown), total)
-             if shown else "nothing reached yet")
-    print(paint("  %s Textbook ready: %s." % (ARROW, where), "magenta", "bold"))
-    print(field("read", paint(rel(textbook_path()), "blue", "bold")
-                + paint("   open it in your editor", "gray")))
+    where = (t("textbook.where_full", "the full reference") if full
+             else t("textbook.where_reached", "what you've reached -- %d of %d")
+             % (len(shown), total)
+             if shown else t("textbook.where_none", "nothing reached yet"))
+    print(paint("  %s " % ARROW + t("textbook.ready", "Textbook ready: %s.")
+                % where, "magenta", "bold"))
+    print(field(t("textbook.f_read", "read"),
+                paint(rel(textbook_path()), "blue", "bold")
+                + paint("   " + t("textbook.open_it", "open it in your editor"),
+                        "gray")))
     # `textbook all` and `textbook` write the same file, so the pair is a toggle:
     # expand to the whole language, then revert to just what you've reached.
-    print(PAD + paint(("revert to just what you've reached:  " + cli("textbook"))
-                      if full else
-                      ("see the whole language:  " + cli("textbook all")),
-                      "gray"))
+    print(PAD + paint((t("textbook.revert", "revert to just what you've "
+                         "reached:  ") + cli("textbook")) if full else
+                      (t("textbook.see_all", "see the whole language:  ")
+                       + cli("textbook all")), "gray"))
 
 
 def _has_entry(p):
@@ -346,7 +383,8 @@ def _textbook_md(shown, full, total):
         if cat != prev_cat:
             body += ["# %s" % cat, ""]
             prev_cat = cat
-        body += ["## Chapter %d · %s" % (ch, items[0]["ch_title"]), ""]
+        body += ["## %s" % t("textbook.md_chapter", "Chapter %d · %s")
+                 % (ch, items[0]["ch_title"]), ""]
         for p in items:
             meta = p["meta"]
             heading = ("`%s`" % meta["syntax"] if meta.get("syntax")
@@ -361,20 +399,26 @@ def _textbook_md(shown, full, total):
                 if meta.get("why"):
                     body += ["*%s*" % meta["why"], ""]
 
-    out = ["# PyQuest Textbook", ""]
+    out = ["# " + t("textbook.md_title", "PyQuest Textbook"), ""]
     if full:
-        out += ["*The whole language PyQuest covers -- every chapter, all %d "
-                "topics.*" % total,
-                "*Run `textbook` to come back to just the chapters you've "
-                "reached.*"]
+        out += ["*" + t("textbook.md_full_1",
+                        "The whole language PyQuest covers -- every chapter, "
+                        "all %d topics.") % total + "*",
+                "*" + t("textbook.md_full_2",
+                        "Run `textbook` to come back to just the chapters "
+                        "you've reached.") + "*"]
     elif body:
-        out += ["*A technical reference for what you've reached -- %d of %d "
-                "topics.*" % (covered, total),
-                "*Run `textbook all` for the whole language; `textbook` brings "
-                "you back here.*"]
+        out += ["*" + t("textbook.md_reached_1",
+                        "A technical reference for what you've reached -- %d of "
+                        "%d topics.") % (covered, total) + "*",
+                "*" + t("textbook.md_reached_2",
+                        "Run `textbook all` for the whole language; `textbook` "
+                        "brings you back here.") + "*"]
     else:
-        out += ["*Nothing covered yet -- work through a few topics, or run "
-                "`textbook all` to preview the whole language.*"]
+        out += ["*" + t("textbook.md_empty",
+                        "Nothing covered yet -- work through a few topics, or "
+                        "run `textbook all` to preview the whole language.")
+                + "*"]
     out.append("")
 
     return "\n".join(out + body).rstrip() + "\n"

@@ -37,6 +37,39 @@ def t(key, default):
     return _active["strings"].get(key, default)
 
 
+# Integer plural rules per language, CLDR-aligned. The engine only ever
+# pluralizes whole counts, so the fraction-only "many" category is omitted.
+# An unknown language falls back to the English one/other split, which is always
+# safe: the English templates at every call site supply `one` and `other`.
+_PLURAL_RULES = {
+    "en": lambda n: "one" if n == 1 else "other",
+    # Czech: 1 -> one; 2-4 -> few; 0 and 5+ -> other.
+    "cs": lambda n: "one" if n == 1 else "few" if 2 <= n <= 4 else "other",
+}
+
+
+def _plural_category(code, n):
+    rule = _PLURAL_RULES.get(code, _PLURAL_RULES["en"])
+    return rule(abs(int(n)))
+
+
+def tp(key, n, **forms):
+    """Plural-aware sibling of t(): the form of `key` that agrees with count `n`
+    in the active language. `forms` are the English fallbacks keyed by CLDR
+    category -- every call passes at least `one=` and `other=`. A pack supplies
+    its own forms as `"<key>.<category>"` entries in strings.json (Czech needs
+    one/few/other); a category the pack omits falls back to its `.other`, then to
+    the English `forms`. Returns the chosen TEMPLATE -- the caller applies `%`,
+    so a template with extra fields beyond the count stays expressible."""
+    cat = _plural_category(_active["code"], n)
+    s = _active["strings"].get("%s.%s" % (key, cat))
+    if s is None and cat != "other":
+        s = _active["strings"].get("%s.other" % key)
+    if s is not None:
+        return s
+    return forms.get(cat) or forms.get("other") or forms.get("one")
+
+
 def current():
     return _active["code"]
 

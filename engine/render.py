@@ -9,6 +9,7 @@ from .config import WIDTH
 from .theme import (paint, paint_code,
                     OK, NO, CUR, DOT, ARROW, STAR, BOLT, RETRY,
                     LOGO, LOGO_RAMP, id_art)
+from .i18n import t
 
 PAD = "   "          # standard content indent
 
@@ -154,7 +155,8 @@ def pane_open(title, mode, done, total, color="cyan"):
     """The shared opener every sub-pane prints: a titled header rule above a
     `mode + progress` line. This is the menu's gold-standard combo lifted into
     one primitive so map/goto/hint/solution all frame themselves identically."""
-    meter = "%s%s     %s" % (PAD, paint(mode + " mode", "magenta", "bold"),
+    meter = "%s%s     %s" % (PAD, paint(mode + " " + t("ui.mode", "mode"),
+                                        "magenta", "bold"),
                              bar(done, total, WIDTH - 24))
     return header(title, color) + "\n\n" + meter
 
@@ -175,4 +177,5 @@ def nav_row(primary, clusters):
 
 def legend():
     """The shared status-marker key, reused by map and the goto picker."""
-    return PAD + paint("%s done   %s here   %s to do" % (OK, CUR, DOT), "gray")
+    return PAD + paint(t("ui.legend", "%s done   %s here   %s to do")
+                       % (OK, CUR, DOT), "gray")

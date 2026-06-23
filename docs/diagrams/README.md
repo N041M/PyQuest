@@ -70,7 +70,7 @@ classDiagram
     }
     class i18n {
         <<module>>
-        +t() localized()
+        +t() tp() localized()
     }
     class inputs {
         <<module>>
@@ -97,17 +97,21 @@ classDiagram
     commands ..> content
     commands ..> state
     commands ..> render
+    commands ..> i18n
     checker ..> content
     checker ..> state
     checker ..> render
+    checker ..> i18n
     content ..> i18n
     content ..> config
     state ..> content
     state ..> config
     render ..> theme
+    render ..> i18n
     theme ..> config
     i18n ..> config
     session ..> config
+    session ..> i18n
     inputs ..> Case
 ```
 
@@ -304,7 +308,7 @@ flowchart LR
 
 `checker` is the only module that touches the `toolkit`; the §6 sequence traces
 this path end to end. The data, visual, and foundation wiring (`state`→`content`,
-`content`→`i18n`/`config`, `render`→`theme`, the `inputs` seam) and the toolkit's
+`content`→`i18n`/`config`, `render`→`theme`/`i18n`, the `inputs` seam) and the toolkit's
 internal composition are in §0's master diagram; [toolkit.md](toolkit.md) zooms
 into the tester.
 

@@ -10,6 +10,7 @@ import sys
 
 from ..config import ROOT
 from ..render import paint, wordmark, header, PAD, OK, NO
+from ..i18n import t
 
 
 def _shortcuts_paths():
@@ -73,13 +74,16 @@ def _uninstall_persistent():
 
 
 def _disclaimer():
-    print(PAD + paint("Shortcuts let you type  ", "gray")
+    print(PAD + paint(t("shortcuts.disc_pre", "Shortcuts let you type  "), "gray")
           + paint("check", "green", "bold")
-          + paint("  instead of  python3 start.py check.", "gray"))
-    print(PAD + paint("They are shell functions defined in %s "
-                      "(check, hint, start, …)." % _shortcuts_label(), "gray"))
-    print(PAD + paint("Local = nothing outside this folder changes.  "
-                      "Persistent = one line in your shell startup file.",
+          + paint(t("shortcuts.disc_post",
+                  "  instead of  python3 start.py check."), "gray"))
+    print(PAD + paint(t("shortcuts.disc_funcs",
+                      "They are shell functions defined in %s "
+                      "(check, hint, start, …).") % _shortcuts_label(), "gray"))
+    print(PAD + paint(t("shortcuts.disc_local",
+                      "Local = nothing outside this folder changes.  "
+                      "Persistent = one line in your shell startup file."),
                       "gray"))
 
 
@@ -89,54 +93,64 @@ def cmd_setup():
     pyver = "Python %d.%d.%d" % sys.version_info[:3]
     print(wordmark("cyan"))
     print("")
-    print(header("setup", "cyan"))
+    print(header(t("setup.title", "setup"), "cyan"))
     print("")
-    print(PAD + paint("python", "cyan", "bold") + "    "
+    print(PAD + paint(t("setup.f_python", "python"), "cyan", "bold") + "    "
           + paint(pyver, "white", "bold"))
-    print(PAD + paint("status", "cyan", "bold") + "    "
-          + (paint(OK + " persistent shortcuts enabled in " + rc, "green")
+    print(PAD + paint(t("setup.f_status", "status"), "cyan", "bold") + "    "
+          + (paint(OK + " " + t("setup.persist_on",
+                   "persistent shortcuts enabled in %s") % rc, "green")
              if _is_persistent()
-             else paint("shortcuts not persistently installed", "gray")))
+             else paint(t("setup.persist_off",
+                        "shortcuts not persistently installed"), "gray")))
     print("")
     _disclaimer()
     print("")
-    print(header("enable the short commands", "magenta"))
+    print(header(t("setup.enable_title", "enable the short commands"), "magenta"))
     print("")
-    print(PAD + paint("A) this terminal only", "white", "bold")
-          + paint("   run:  ", "gray") + paint(_local_source_cmd(), "yellow",
-                                               "bold"))
-    print(PAD + paint("B) every terminal", "white", "bold")
-          + paint("      run:  ", "gray")
+    print(PAD + paint(t("setup.opt_a", "A) this terminal only"), "white", "bold")
+          + paint("   " + t("setup.run", "run:  "), "gray")
+          + paint(_local_source_cmd(), "yellow", "bold"))
+    print(PAD + paint(t("setup.opt_b", "B) every terminal"), "white", "bold")
+          + paint("      " + t("setup.run", "run:  "), "gray")
           + paint("python3 start.py setup persist", "yellow", "bold"))
     print("")
-    print(PAD + paint("remove later with  python3 start.py uninstall", "gray"))
-    print(PAD + paint("or skip shortcuts entirely -- python3 start.py … always "
-                      "works.", "gray"))
+    print(PAD + paint(t("setup.remove_later",
+                      "remove later with  python3 start.py uninstall"), "gray"))
+    print(PAD + paint(t("setup.skip",
+                      "or skip shortcuts entirely -- python3 start.py … always "
+                      "works."), "gray"))
 
 
 def cmd_setup_persist():
     status, rc = _install_persistent()
     if status == "added":
-        print(paint("  %s Shortcuts enabled in %s." % (OK, rc), "green", "bold"))
-        print("  Activate now:  %s" % paint("source " + rc, "yellow", "bold"))
+        print(paint("  %s " % OK + t("setup.enabled", "Shortcuts enabled in %s.")
+                    % rc, "green", "bold"))
+        print("  " + t("setup.activate_now", "Activate now:  %s")
+              % paint("source " + rc, "yellow", "bold"))
     elif status == "installed":
-        print(paint("  %s Already enabled in %s." % (OK, rc), "green"))
+        print(paint("  %s " % OK + t("setup.already", "Already enabled in %s.")
+                    % rc, "green"))
     else:
-        print(paint("  %s %s is missing -- can't install."
-                    % (NO, _shortcuts_label()), "red"))
+        print(paint("  %s " % NO + t("setup.missing",
+                    "%s is missing -- can't install.") % _shortcuts_label(),
+                    "red"))
 
 
 def cmd_uninstall():
     removed, rc = _uninstall_persistent()
     if removed:
-        print(paint("  %s Removed PyQuest shortcuts from %s." % (OK, rc),
-                    "green", "bold"))
+        print(paint("  %s " % OK + t("setup.removed",
+                    "Removed PyQuest shortcuts from %s.") % rc, "green", "bold"))
     else:
-        print(paint("  No persistent shortcuts in %s." % rc, "gray"))
+        print(paint("  " + t("setup.none", "No persistent shortcuts in %s.")
+                    % rc, "gray"))
     # Whether or not the rc line existed, the current shell may still hold the
     # functions; only the shell can clear those.
-    print(PAD + paint("New terminals won't load the shortcuts. This terminal "
-                      "keeps them until", "gray"))
-    print(PAD + paint("you close it -- or run:  %s"
+    print(PAD + paint(t("setup.uninstall_note",
+                      "New terminals won't load the shortcuts. This terminal "
+                      "keeps them until"), "gray"))
+    print(PAD + paint(t("setup.uninstall_note_2", "you close it -- or run:  %s")
                       % paint("unset -f menu check start hint next …", "yellow"),
                       "gray"))
