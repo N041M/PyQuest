@@ -51,7 +51,7 @@ VERBS = [
     ("mode",      "mode <m>",     (),                "always",
      "set difficulty: easy | normal | hard"),
     ("theme",     "theme <name>", (),                "always",
-     "switch colour theme (neon, amber, forest, mono)"),
+     "switch colour theme (neon, amber, forest, mono, or a themes/ preset)"),
     ("user",      "user <name>",  ("users",),        "always",
      "switch or create a profile"),
     ("export",    "export",       (),                "always",

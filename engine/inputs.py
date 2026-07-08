@@ -68,11 +68,6 @@ class Case:
             self.stdin, self.args, self.expect)
 
 
-def fixed(*cases):
-    """A provider of predetermined cases."""
-    return list(cases)
-
-
 # ---- convenience generators used by tests.py to defeat hardcoding ----------
 def random_word(min_len=3, max_len=8, rng=None):
     """A random lowercase word."""

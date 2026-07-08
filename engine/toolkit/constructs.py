@@ -439,8 +439,10 @@ class ConstructsMixin:
                     a.name == module or a.name.startswith(module + ".")
                     for a in n.names)
             if isinstance(n, ast.ImportFrom):
-                return module is None \
-                    or (n.module or "").split(".")[0] == module
+                if module is None:
+                    return True
+                mod = n.module or ""
+                return mod == module or mod.startswith(module + ".")
             return False
         what = ("an import of %s" % module) if module else "an import statement"
         self._require_live(what, "no such import was found",

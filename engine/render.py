@@ -40,10 +40,6 @@ def label(text):
     return paint(text, "cyan", "bold")
 
 
-def rule(color="gray", width=WIDTH):
-    return paint("─" * width, color)
-
-
 def _center(text, inner):
     gap = inner - len(text)
     left = gap // 2
@@ -116,7 +112,7 @@ def header(title, color="cyan"):
     return paint("%s── %s %s" % (PAD, title, "─" * max(0, tail)), color, "bold")
 
 
-def section(title, color="bmagenta"):
+def section(title, color="magenta"):
     """A heavier banner that groups chapters under a curriculum category --
     ═══ ADVANCED ═══════ -- a step above the per-chapter `header`."""
     label = " %s " % title.upper()

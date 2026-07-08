@@ -187,7 +187,6 @@ classDiagram
     }
     class inputs {
         <<module>>
-        +fixed(*cases) list~Case~
         +random_word(min, max, rng) str
         +random_int(low, high, rng) int
     }

@@ -143,6 +143,8 @@ def load_progress(puzzles):
         try:
             with open(path) as f:
                 data = json.load(f)
+            if not isinstance(data, dict):   # valid JSON but not a progress
+                raise ValueError("progress.json is not an object")
         except (ValueError, OSError):
             backup_corrupt(path)             # keep the evidence, start fresh
             data = default_progress(puzzles)
@@ -175,7 +177,10 @@ def load_answers():
     if os.path.exists(path):
         try:
             with open(path) as f:
-                return json.load(f)
+                data = json.load(f)
+            if not isinstance(data, dict):   # valid JSON but not answers
+                raise ValueError("answers.json is not an object")
+            return data
         except (ValueError, OSError):
             backup_corrupt(path)             # saved code is sacred; keep it
             return {}

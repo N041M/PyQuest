@@ -76,13 +76,22 @@ def check(code):
     return not problems
 
 
+def _pack_codes():
+    """Every pack directory under lang/. A `<code>.translations/` folder is a
+    lang_worksheet.py WORKSHEET, not a pack -- the engine never loads it, so
+    the checker must not fail it either."""
+    if not os.path.isdir(LANG_DIR):
+        return []
+    return sorted(c for c in os.listdir(LANG_DIR)
+                  if os.path.isdir(os.path.join(LANG_DIR, c))
+                  and not c.endswith(".translations"))
+
+
 def main(argv):
     if argv:
         codes = argv
     else:
-        codes = sorted(c for c in os.listdir(LANG_DIR)
-                       if os.path.isdir(os.path.join(LANG_DIR, c))) \
-            if os.path.isdir(LANG_DIR) else []
+        codes = _pack_codes()
         if not codes:
             print("No packs under lang/ -- nothing to check. (English is "
                   "built in, not a pack.)")

@@ -18,6 +18,8 @@ from .views import cmd_status, cmd_map, cmd_search, cmd_stats, cmd_textbook
 from .navigate import cmd_resume
 from .help import cmd_help
 from .registry import canonical, CANONICAL, NEEDS_PUZZLE
+from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
+                        cmd_setup_persist, cmd_uninstall)
 
 # Read-only inspection verbs with no number of their own: typed at the hub, they
 # only print, so it runs them inline rather than kicking the learner to a
@@ -30,7 +32,7 @@ _INLINE = {"help": lambda pz, by, pr: cmd_help(pr),
 _BACK = ("0", "back", "quit", "exit")
 
 # Settings verbs the hub accepts typed by name (numbers 1-6 are claimed by the
-# hub's own menu, so only the settings PANE passes the 1-4 aliases that
+# hub's own menu, so only the settings PANE passes the 1-5 aliases that
 # _settings_action also understands).
 _SETTINGS_VERBS = ("theme", "mode", "profiles", "profile", "users", "user",
                    "shortcuts", "short", "language", "lang")
@@ -44,8 +46,6 @@ def _nav_label(label):
     """Localized display text for a hub nav item, keyed off its English label so
     _NAV (dispatch numbers) and the shown wording stay one source of truth."""
     return i18n.t("menu.lbl." + label.replace(" ", "_"), label)
-from .shortcuts import (_is_persistent, _disclaimer, _local_source_cmd,
-                        cmd_setup_persist, cmd_uninstall)
 
 
 def cmd_menu(puzzles, by_id, prog):
@@ -333,7 +333,8 @@ def _menu_setup(puzzles, by_id, prog):
                 if not handled:
                     print(PAD + paint(i18n.t("settings.type_hint",
                                       "type theme / mode / profiles / "
-                                      "shortcuts, or Esc."), "yellow"))
+                                      "shortcuts / language, or Esc."),
+                                      "yellow"))
             continue
 
         def item(n, lbl, note=""):
@@ -357,7 +358,7 @@ def _menu_setup(puzzles, by_id, prog):
         handled, prog = _settings_action(head, arg, puzzles, by_id, prog)
         if not handled:
             print(PAD + paint(i18n.t("settings.type_number",
-                              "type 1-4, or 0 to go back."), "yellow"))
+                              "type 1-5, or 0 to go back."), "yellow"))
 
 
 def _menu_mode(prog):
@@ -439,7 +440,8 @@ def _menu_level(puzzles, by_id, prog):
 def _menu_theme():
     if keys.supported():
         from ..theme import THEMES, load_presets
-        names = list(THEMES) + [p for p in load_presets() if p not in THEMES]
+        THEMES.update(load_presets())   # pick up presets dropped in since import
+        names = list(THEMES)            # -- so a new preset is also selectable
         cur = load_settings().get("theme", "neon")
         print("")
         print(header(i18n.t("theme.picker_title", "theme"), "cyan"))

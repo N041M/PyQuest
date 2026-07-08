@@ -58,7 +58,8 @@ def discover():
 # Curriculum categories group the chapters in the map and textbook. A chapter's
 # category is a property of its CONTENT, not its number: a project chapter is any
 # whose puzzles carry a `kind`; an advanced chapter declares meta "category";
-# everything else is the default. The order here is the order they're shown.
+# everything else is the default (the first entry). Display order follows the
+# chapter numbers; this tuple only names the known categories.
 CATEGORIES = ("Core", "Advanced", "Projects")
 
 

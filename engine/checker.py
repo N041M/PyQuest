@@ -15,7 +15,10 @@ from .render import (paint, banner, bar, indent, quote_block, cli, PAD,
 from .i18n import t
 
 
-SAVE_TIP = paint(t("check.save_tip",
+def _save_tip():
+    # Built per call, not at import: the active language is only set once
+    # app.main() runs, so a module-level constant would freeze the English text.
+    return paint(t("check.save_tip",
                    "Did you save work.py in your editor? Unsaved edits are the "
                    "#1 cause\nof a check that 'should' pass but doesn't."),
                  "yellow")
@@ -101,7 +104,7 @@ def cmd_check(puzzles, by_id, prog):
                    paint(t("check.got", "Got:"), "red"), quote_block(e.actual)))
         if e.because:
             body = e.because + "\n\n" + body
-        body += "\n\n" + SAVE_TIP
+        body += "\n\n" + _save_tip()
         _fail(t("check.wrong_title",
                 "Wrong result -- the code runs but the answer is off"), body,
               prog, cur)
@@ -111,7 +114,7 @@ def cmd_check(puzzles, by_id, prog):
               t("check.crash_body",
                 "Python raised an error%s:\n\n%s\n\n"
                 "Read the error name: it points at what went wrong.\n\n%s")
-              % (ctx, quote_block(e.detail), SAVE_TIP), prog, cur)
+              % (ctx, quote_block(e.detail), _save_tip()), prog, cur)
     except Exception:
         _fail(t("check.crash_title2", "Crash -- your code hit an error"),
               quote_block(short_tb()), prog, cur)

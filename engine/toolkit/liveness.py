@@ -12,10 +12,15 @@ Judgment rules (chosen to protect honest code first):
   - statement removal:  any change OR a crash counts as live (removing a
     needed assignment usually crashes with NameError);
   - expression substitution: only a CLEAN run with different output counts as
-    live; crashes are inconclusive and the next sentinel is tried (so
-    type-fragile chaff engineered to crash stays dead);
+    live; a crashed run is inconclusive and the next sentinel is tried (so
+    type-fragile chaff engineered to crash stays dead). In import mode a
+    replayed call that raises where the baseline call didn't (a "\x00RAISES"
+    entry that differs from the baseline's) is a crash for this purpose,
+    never "changed behavior" -- counting it as change would let crash-chaff
+    pass any construct check;
   - containers and all-crash expressions fall back to the reachability
-    tripwire (see _tripwire);
+    tripwire (see _tripwire), which likewise accepts a new raise as proof
+    the construct executes;
   - if the baseline itself cannot be reproduced in-process, liveness degrades
     to the plain AST check (never block a learner on a harness quirk;
     audit.py would catch any weakening this opens).
@@ -110,7 +115,9 @@ class LivenessMixin:
             except PuzzleCrashError:
                 sig.append(name + ":\x00CRASH")
             except Exception as e:
-                sig.append("%s:raises %s" % (name, type(e).__name__))
+                # a learner exception, marked so the verdict can tell "raises
+                # where the baseline didn't" (a crash) from real output change
+                sig.append("%s:\x00RAISES %s" % (name, type(e).__name__))
         sig.extend(self._object_sig(g))
         return sig
 
@@ -154,7 +161,7 @@ class LivenessMixin:
                 if kind == "method":
                     objs.append(None)
             except Exception as e:
-                sig.append("%s:raises %s" % (kind, type(e).__name__))
+                sig.append("%s:\x00RAISES %s" % (kind, type(e).__name__))
                 if kind == "method":
                     objs.append(None)
         return sig
@@ -232,6 +239,14 @@ class LivenessMixin:
         "trim": (("trim", None),),
     }
 
+    @staticmethod
+    def _entry_crashed(a, b):
+        """Did ablated entry `a` crash where baseline entry `b` did not? A
+        guard-level crash always counts; a learner exception (\\x00RAISES)
+        counts only when the entry differs from the baseline's -- a call that
+        raises identically in both runs was simply not affected."""
+        return "\x00CRASH" in a or ("\x00RAISES" in a and a != b)
+
     def _tripwire(self, idx):
         """Reachability: substitute the node with an expression that raises
         the moment it is evaluated. A crash proves the construct executes;
@@ -239,7 +254,9 @@ class LivenessMixin:
         constructs whose VALUE can't be probed -- an accumulator dict/set
         starts empty by design, so no sentinel content shows up in the
         output, and a sorted() feeding dict lookups crashes on every foreign
-        sentinel key."""
+        sentinel key. In import mode the trap surfaces as the replayed call
+        raising (a \\x00RAISES entry the baseline lacks), so that counts as
+        the crash too."""
         try:
             tree = copy.deepcopy(self.tree())
             target = list(ast.walk(tree))[idx]
@@ -249,7 +266,9 @@ class LivenessMixin:
             sig = self._signature(ast.fix_missing_locations(tree))
         except Exception:
             return True                          # cannot judge: count it
-        return any("\x00CRASH" in s for s in sig)
+        base = self._live_base or []
+        return any(self._entry_crashed(a, base[i] if i < len(base) else "")
+                   for i, a in enumerate(sig))
 
     # ---- the verdict ---------------------------------------------------------
     def _is_live(self, idx, kind):
@@ -273,14 +292,19 @@ class LivenessMixin:
                 if kind == "stmt":
                     return True                  # could not even compile: vital
                 continue
+            crashed = diffed = False
             for a, b in zip(sig, base):
-                if "\x00CRASH" in a:
-                    if kind == "stmt":
-                        return True              # removal broke it: it mattered
-                else:
-                    clean_seen = True
-                    if a != b:
-                        return True              # clean run, changed behavior
+                if self._entry_crashed(a, b):
+                    crashed = True
+                elif a != b:
+                    diffed = True
+            if diffed:
+                return True                      # a clean entry changed behavior
+            if crashed:
+                if kind == "stmt":
+                    return True                  # removal broke it: it mattered
+            else:
+                clean_seen = True                # a fully clean, unchanged run
         if kind == "container":
             return self._tripwire(idx)           # executing at all is the bar
         if kind in ("expr", "bool") and not clean_seen:

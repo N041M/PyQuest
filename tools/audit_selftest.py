@@ -180,12 +180,15 @@ def _engine_selftest():
 
     def t_new_constructs():
         path, T = learner(
-            "import json\nwith open('x') as f:\n    pass\n"
+            "import json\nfrom os.path import join\n"
+            "with open('x') as f:\n    pass\n"
             "class A:\n    pass\n"
             "def g():\n    yield 1\n"
             "h = lambda x: x\n")
         T.uses_with(); T.uses_import("json"); T.uses_class()
         T.uses_yield(); T.uses_lambda()
+        T.uses_import("os.path")            # dotted module, from-import form
+        T.uses_import("os")                 # prefix of a dotted from-import
         try:
             T.uses_import("random")
         except WrongResultError:
@@ -978,6 +981,10 @@ def _engine_selftest():
             assert len(problems) == 2, problems
             assert any("not a translatable" in r for r in reasons), reasons
             assert any("no puzzle file" in r for r in reasons), reasons
+            # a <code>.translations/ WORKSHEET folder is not a pack: the
+            # no-arg scan must skip it, never fail it
+            os.makedirs(os.path.join(lang, "xx.translations"))
+            assert check_pack._pack_codes() == ["xx"], check_pack._pack_codes()
         finally:
             check_pack.LANG_DIR, check_pack.CHAPTERS_DIR = saved_lang, saved_ch
             shutil.rmtree(root)
@@ -1180,6 +1187,256 @@ def _engine_selftest():
         finally:
             shutil.rmtree(root)
 
+    def t_syntax_translated():
+        """A file Python can't parse becomes PuzzleSyntaxError (with the line)
+        in both modes -- the 'syntax error' learner screen, never a raw
+        traceback."""
+        path, T = learner("def f(:\n    pass\n")
+        try:
+            T.load()
+        except PuzzleSyntaxError as e:
+            assert "line" in str(e.detail), e.detail
+        else:
+            os.unlink(path)
+            raise AssertionError("import mode: expected PuzzleSyntaxError")
+        os.unlink(path)
+        path, T = learner("print('unclosed\n", mode="script")
+        T.timeout = 5
+        try:
+            T.run()
+        except PuzzleSyntaxError:
+            os.unlink(path)
+            return
+        os.unlink(path)
+        raise AssertionError("script mode: expected PuzzleSyntaxError")
+
+    def t_any_of_unordered():
+        """The alternative-answer asserts: any_of accepts any listed answer
+        (case-sensitive by default, like eq), unordered compares ignoring
+        order -- both raise the translated failure otherwise."""
+        path, T = learner("pass\n")
+        T.any_of("Yes", ("Yes", "No"))
+        T.any_of("yes\n", ("YES",), match_case=False)     # normalize + casefold
+        T.any_of(3, (1, 2, 3))
+        try:
+            T.any_of("maybe", ("Yes", "No"))
+        except WrongResultError:
+            pass
+        else:
+            raise AssertionError("any_of accepted an unlisted answer")
+        try:
+            T.any_of("yes", ("Yes",))                     # wrong case, strict
+        except WrongResultError:
+            pass
+        else:
+            raise AssertionError("any_of must stay case-sensitive by default")
+        T.unordered([3, 1, 2], [1, 2, 3])
+        T.unordered((1, "a"), (1, "a"))                   # unsortable -> as-is
+        try:
+            T.unordered([1, 2], [1, 3])
+        except WrongResultError:
+            os.unlink(path)
+            return
+        raise AssertionError("unordered accepted different items")
+
+    def t_prints_computed():
+        """prints_computed demands a live print() SHOWING a computed value:
+        no print at all fails, a typed-in literal fails, computing passes."""
+        from engine.toolkit import LessonNotUsedError
+        path, T = learner("print(2 + 3)\n", mode="script")
+        T.timeout = 5
+        T.run()
+        T.prints_computed()
+        os.unlink(path)
+        path, T = learner("print(5)\n", mode="script")
+        T.timeout = 5
+        T.run()
+        try:
+            T.prints_computed()
+        except LessonNotUsedError as e:
+            assert "literal" in str(e.actual), e.actual
+        else:
+            os.unlink(path)
+            raise AssertionError("a typed-in literal satisfied prints_computed")
+        os.unlink(path)
+        path, T = learner("import sys\nsys.stdout.write('5\\n')\n",
+                          mode="script")
+        T.timeout = 5
+        T.run()
+        try:
+            T.prints_computed()
+        except LessonNotUsedError:
+            os.unlink(path)
+            return
+        os.unlink(path)
+        raise AssertionError("no print() at all satisfied prints_computed")
+
+    def t_perf_helpers():
+        """The bonus(T) timing helpers: time_call returns best-of wall-clock
+        seconds; scales() passes a linear function and flags a quadratic one
+        (the doubling experiment). Deliberately generous margins -- the
+        quadratic is ~100x over a 20x threshold -- so timing noise can't flip
+        the verdict."""
+        path, T = learner(
+            "def lin(n):\n"
+            "    total = 0\n"
+            "    for i in range(n):\n"
+            "        total += i\n"
+            "    return total\n"
+            "def quad(n):\n"
+            "    total = 0\n"
+            "    for i in range(n):\n"
+            "        for j in range(n):\n"
+            "            total += 1\n"
+            "    return total\n")
+        dt = T.time_call("lin", 1000, runs=2)
+        assert isinstance(dt, float) and dt >= 0, dt
+        T.scales("lin", lambda n: n, 400, 4000, runs=1)   # linear -> passes
+        try:
+            T.scales("quad", lambda n: n, 400, 4000, runs=1)
+        except WrongResultError:
+            os.unlink(path)
+            return
+        os.unlink(path)
+        raise AssertionError("scales() let a quadratic pass as linear")
+
+    def t_object_tape_inputs():
+        """The object tape snapshots make/method arguments BEFORE the call:
+        a method that mutates its argument must not poison the replay (the
+        tape used to record the post-call, drained value)."""
+        code = ("class Bag:\n"
+                "    def __init__(self):\n        self.items = []\n"
+                "    def take_all(self, src):\n"
+                "        while src:\n"
+                "            self.items.append(src.pop())\n"
+                "        return len(self.items)\n")
+        path, T = learner(code)
+        b = T.make("Bag")
+        assert T.method(b, "take_all", [1, 2, 3]) == 3
+        kind, _ref, name, args, _kw = T._ops[-1]
+        assert (kind, name) == ("method", "take_all"), T._ops[-1]
+        assert args == ([1, 2, 3],), \
+            "tape recorded post-call args: %r" % (args,)
+        T.uses_class("Bag")             # replay with the true inputs still works
+        os.unlink(path)
+
+    def t_liveness_raise_chaff():
+        """Import mode judges crash-chaff like script mode: a decorative
+        construct engineered to RAISE under sentinel substitution stays dead
+        (a raise where the baseline didn't raise is a crash, not 'changed
+        behavior') -- while an honest construct whose every substitution
+        raises is rescued by the tripwire."""
+        from engine.toolkit import LessonNotUsedError
+        path, T = learner("def f():\n"
+                          "    x = (1 * 1) + 0\n"     # dead; str sentinel raises
+                          "    return 42\n")
+        assert T.call("f") == 42
+        try:
+            T.uses_op("*")
+        except LessonNotUsedError as e:
+            assert "decorative" in str(e.actual), e.actual
+        else:
+            os.unlink(path)
+            raise AssertionError("raise-chaff satisfied uses_op in import mode")
+        os.unlink(path)
+        # honest: the product only ever feeds a subscript, so EVERY sentinel
+        # raises -- the tripwire must still judge it live, not reject it
+        path, T = learner("def pick(s, i):\n    return s[i * 2]\n")
+        assert T.call("pick", "abcdef", 1) == "c"
+        T.uses_op("*")
+        os.unlink(path)
+
+    def t_paint_role_names():
+        """Every colour role painted anywhere in the engine must exist in the
+        theme palette -- a paint(text, 'no-such-role') only explodes on a real
+        TTY (COLOR on), which no piped run ever sees (the bmagenta bug)."""
+        import ast as _ast
+        from engine import theme
+        valid = set(theme._ROLES) | {"bold", "dim", "reset"}
+        bad = []
+        eng = os.path.join(ROOT, "engine")
+        for dirpath, dirs, files in os.walk(eng):
+            dirs[:] = [d for d in dirs if d != "__pycache__"]
+            for fn in files:
+                if not fn.endswith(".py"):
+                    continue
+                with open(os.path.join(dirpath, fn), encoding="utf-8") as f:
+                    tree = _ast.parse(f.read())
+                for node in _ast.walk(tree):
+                    if isinstance(node, _ast.Call):
+                        fu = node.func
+                        called = (fu.attr if isinstance(fu, _ast.Attribute)
+                                  else fu.id if isinstance(fu, _ast.Name)
+                                  else None)
+                        if called == "paint":
+                            for a in node.args[1:]:
+                                if (isinstance(a, _ast.Constant)
+                                        and isinstance(a.value, str)
+                                        and a.value not in valid):
+                                    bad.append((fn, a.value))
+                    if isinstance(node, _ast.FunctionDef) and node.args.defaults:
+                        args = node.args.args[-len(node.args.defaults):]
+                        for arg, dflt in zip(args, node.args.defaults):
+                            if ("color" in arg.arg or arg.arg == "border") \
+                                    and isinstance(dflt, _ast.Constant) \
+                                    and isinstance(dflt.value, str) \
+                                    and dflt.value not in valid:
+                                bad.append((fn, dflt.value))
+        assert not bad, "unknown paint role(s): %r" % bad
+
+    def t_save_tip_translates():
+        """The 'did you save work.py?' tip honours the ACTIVE language: it is
+        built per failure screen, not frozen in English at import time (the
+        pack is only activated after the engine modules import)."""
+        import shutil
+        from engine import i18n
+        from engine.checker import _save_tip
+        saved = i18n.LANG_DIR
+        d = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        i18n.LANG_DIR = d
+        try:
+            os.makedirs(os.path.join(d, "xx"))
+            with open(os.path.join(d, "xx", "pack.json"), "w",
+                      encoding="utf-8") as f:
+                f.write('{"name": "Test", "code": "xx"}')
+            with open(os.path.join(d, "xx", "strings.json"), "w",
+                      encoding="utf-8") as f:
+                f.write('{"check.save_tip": "TIP-XX"}')
+            ok, _ = i18n.set_language("xx")
+            assert ok and "TIP-XX" in _save_tip(), _save_tip()
+            i18n.set_language("en")
+            assert "work.py" in _save_tip()
+        finally:
+            i18n.LANG_DIR = saved
+            i18n.set_language("en")
+            shutil.rmtree(d)
+
+    def t_progress_shape_guard():
+        """A progress/answers file that is valid JSON but not an object is
+        treated like a corrupt one: moved aside as .corrupt, fresh state
+        returned -- not handed to the engine to crash on."""
+        from engine import state
+        d = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        ppath = os.path.join(d, "progress.json")
+        apath = os.path.join(d, "answers.json")
+        open(ppath, "w").write("[]")             # valid JSON, wrong shape
+        open(apath, "w").write('"just a string"')
+        saved_p, saved_a = state.progress_path, state.answers_path
+        state.progress_path = lambda user=None: ppath
+        state.answers_path = lambda user=None: apath
+        old_err = sys.stderr
+        sys.stderr = io.StringIO()
+        try:
+            prog, fresh = state.load_progress([{"id": "1.1"}])
+            answers = state.load_answers()
+        finally:
+            sys.stderr = old_err
+            state.progress_path, state.answers_path = saved_p, saved_a
+        assert isinstance(prog, dict) and "stats" in prog, prog
+        assert answers == {}, answers
+        assert os.path.exists(ppath + ".corrupt"), "no progress backup"
+        assert os.path.exists(apath + ".corrupt"), "no answers backup"
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -1196,7 +1453,11 @@ def _engine_selftest():
                t_command_registry, t_transfer_sanitize, t_meta_audit,
                t_key_decode, t_i18n, t_i18n_content, t_check_pack,
                t_lang_worksheet, t_new_puzzle, t_seed_reproducible,
-               t_project_checks):
+               t_project_checks,
+               t_syntax_translated, t_any_of_unordered, t_prints_computed,
+               t_perf_helpers, t_object_tape_inputs, t_liveness_raise_chaff,
+               t_paint_role_names, t_save_tip_translates,
+               t_progress_shape_guard):
         case(fn.__name__[2:], fn)
 
     bad = 0

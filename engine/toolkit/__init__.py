@@ -26,7 +26,7 @@ from ..config import TIMEOUT
 from .errors import (PuzzleSyntaxError, MissingSymbolError,
                      WrongResultError, LessonNotUsedError, PuzzleCrashError)
 from .textutil import normalize, short_tb, fmt_args
-from .guard import ExecutionGuard, NO_STDIN_MSG, EXIT_MSG
+from .guard import ExecutionGuard
 from .runners import RunnersMixin
 from .asserts import AssertsMixin
 from .liveness import LivenessMixin
@@ -34,11 +34,10 @@ from .constructs import ConstructsMixin
 from .lines import LinesMixin
 from .perf import PerfMixin
 
-__all__ = ["Toolkit", "load_module",
+__all__ = ["Toolkit",
            "PuzzleSyntaxError", "MissingSymbolError",
            "WrongResultError", "LessonNotUsedError", "PuzzleCrashError",
-           "normalize", "short_tb", "fmt_args",
-           "NO_STDIN_MSG", "EXIT_MSG"]
+           "normalize", "short_tb", "fmt_args"]
 
 
 class Toolkit(RunnersMixin, AssertsMixin, LivenessMixin, ConstructsMixin,
@@ -79,11 +78,3 @@ class Toolkit(RunnersMixin, AssertsMixin, LivenessMixin, ConstructsMixin,
     def printed(self):
         """Stdout captured from the last guarded load/call."""
         return self.guard.printed
-
-
-def load_module(path):
-    """Import a solution fresh, under the full execution guard.
-
-    Kept as a module-level function for compatibility; it simply borrows a
-    throwaway Toolkit's guard."""
-    return Toolkit(path, "import").load()

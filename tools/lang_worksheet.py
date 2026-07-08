@@ -30,7 +30,8 @@ readable raw triple-quoted string (`r\"\"\"...\"\"\"`), so markdown and backslas
 
 `apply` writes only the values you changed, so a partial translation stays partial
 (every unchanged value, and any chapter file you don't supply, falls back to
-English). The files are read with ast.literal_eval -- pure data, never executed --
+English). Reverting a value back to the English also removes the override file a
+previous apply wrote, so the pack never serves stale text the worksheet dropped. The files are read with ast.literal_eval -- pure data, never executed --
 and live as a loose `lang/<code>.translations/` folder, which the engine and the
 pack checker ignore (they only look at pack directories), so a half-finished one is
 never a broken language. (`apply` also still reads a single legacy
@@ -341,11 +342,25 @@ def apply(code):
     english = dict(_entries())
     idmap = {pid: d for pid, d in _puzzles()}
     pack = os.path.join(LANG_DIR, code)
-    name, strings, files, blank, unknown = code, {}, [], 0, 0
+    name, strings, files, blank, unknown, stale = code, {}, [], 0, 0, []
     for label, en in english.items():
         val = data.get(label)
         if val is None or val == en:             # untouched -> falls back
             blank += 1
+            # a previous apply may have written an override this worksheet no
+            # longer translates -- remove it, or the pack would keep serving
+            # the old text while the worksheet says "English"
+            dest = _resolve(label, idmap)
+            if dest is not None and dest[0] == "file":
+                out = os.path.join(pack, "chapters",
+                                   dest[1].replace("/", os.sep))
+                if os.path.isfile(out):
+                    os.remove(out)
+                    stale.append(dest[1])
+                    d = os.path.dirname(out)     # prune now-empty folders
+                    while d != pack and not os.listdir(d):
+                        os.rmdir(d)
+                        d = os.path.dirname(d)
             continue
         dest = _resolve(label, idmap)
         if dest is None:
@@ -373,6 +388,9 @@ def apply(code):
     print("wrote lang/%s/ : pack.json, strings.json (%d key(s)), %d content file(s)"
           % (code, len(strings), len(files)))
     print("  %d value(s) left as English (unchanged)" % blank)
+    if stale:
+        print("  removed %d stale override(s) reverted to English: %s"
+              % (len(stale), ", ".join(stale)))
     if unknown:
         print("  %d key(s) ignored (name nothing in the source)" % unknown)
     if name == code:

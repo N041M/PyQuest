@@ -167,13 +167,13 @@ class RunnersMixin:
         if not isinstance(cls, type):
             raise MissingSymbolError(classname)
         because = "while creating %s(%s)" % (classname, fmt_args(args, kwargs))
-        try:
+        ca, ck = self._copy_args(args, kwargs)   # snapshot BEFORE the call --
+        try:                                     # __init__ may mutate the args
             obj = self._guarded(because, cls, *args, **kwargs)
         except PuzzleCrashError:
             raise
         except Exception:
             raise PuzzleCrashError(short_tb(), because=because)
-        ca, ck = self._copy_args(args, kwargs)
         self._ops.append(("make", classname, ca, ck))
         self._register_obj(obj)
         return obj
@@ -185,13 +185,13 @@ class RunnersMixin:
             raise MissingSymbolError(name)
         because = "while calling .%s(%s)" % (name, fmt_args(args, kwargs))
         ref = self._obj_ref(obj)
-        try:
+        ca, ck = self._copy_args(args, kwargs)   # snapshot BEFORE the call --
+        try:                                     # the method may mutate the args
             result = self._guarded(because, m, *args, **kwargs)
         except PuzzleCrashError:
             raise
         except Exception:
             raise PuzzleCrashError(short_tb(), because=because)
-        ca, ck = self._copy_args(args, kwargs)
         self._ops.append(("method", ref, name, ca, ck))
         self._register_obj(result)
         return result
