@@ -9,13 +9,13 @@
 
 TRANSLATIONS = {
 
-"12.1 brief": r"""# 12.1 -- re.search: is the pattern there?
+"12.1 brief": r"""# 12.1 -- re.search: o padrão está lá?
 
-## Concept
+## Conceito
 
-A **regular expression** ("regex") is a small language for describing patterns
-in text. The **`re`** module matches them. The most basic question is "does this
-pattern appear anywhere?" -- **`re.search`**:
+Uma **expressão regular** ("regex") é uma pequena linguagem para descrever padrões
+em texto. O módulo **`re`** faz a correspondência com eles. A pergunta mais básica
+é "este padrão aparece nalgum lugar?" -- **`re.search`**:
 
 ```python
 import re
@@ -24,14 +24,15 @@ re.search(r"\d", "abc4")     # a match object (truthy)
 re.search(r"\d", "abc")      # None
 ```
 
-- The pattern is written as a **raw string** `r"..."` so backslashes mean what
-  regex expects (`r"\d"`, not `"\d"`).
-- `\d` matches any single **digit**. Other shorthands: `\w` a word character,
-  `\s` whitespace, `.` any character.
-- `re.search` returns a **match object** if the pattern is found anywhere, or
-  **`None`** if not -- so `re.search(...) is not None` is a clean yes/no.
+- O padrão é escrito como uma **cadeia de caracteres em bruto** `r"..."` para que
+  as barras invertidas signifiquem o que o regex espera (`r"\d"`, não `"\d"`).
+- `\d` corresponde a qualquer **dígito** único. Outros atalhos: `\w` um caractere
+  de palavra, `\s` espaço em branco, `.` qualquer caractere.
+- `re.search` devolve um **objeto de correspondência** se o padrão for encontrado
+  nalgum lugar, ou **`None`** se não -- por isso `re.search(...) is not None` é
+  um sim/não limpo.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -40,25 +41,25 @@ def has_letter(text):
     return re.search(r"[a-z]", text) is not None
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`re.search`**, define `has_digit(text)` that returns `True` if `text`
-contains at least one digit, `False` otherwise.
+Usando **`re.search`**, define `has_digit(text)` que devolve `True` se `text`
+contiver pelo menos um dígito, `False` caso contrário.
 
-## Done when
+## Está feito quando
 
-- `has_digit("abc4")` is `True`, `has_digit("abc")` is `False`.
-- `has_digit("")` is `False`.
-- The test uses `re.search` with `\d`, not a hand-written digit scan.
+- `has_digit("abc4")` é `True`, `has_digit("abc")` é `False`.
+- `has_digit("")` é `False`.
+- O teste usa `re.search` com `\d`, não uma verificação de dígitos escrita à mão.
 """,
 
-"12.1 hints": r"""`import re`, then `re.search(pattern, text)`. The pattern for a single digit is
-the raw string `r"\d"`.
+"12.1 hints": r"""`import re`, depois `re.search(pattern, text)`. O padrão para um único dígito é
+a cadeia de caracteres em bruto `r"\d"`.
 
 ---
 
-`re.search` returns a match object when it finds the pattern, or `None` when it
-doesn't. Turn that into a bool with `is not None`.
+`re.search` devolve um objeto de correspondência quando encontra o padrão, ou
+`None` quando não encontra. Transforma isso num booleano com `is not None`.
 
 ---
 
@@ -69,18 +70,21 @@ def has_digit(text):
     return re.search(r"\d", text) is not None
 """,
 
-"12.1 reference": r"""A **regular expression** is a pattern describing a set of strings; the **`re`**
-module matches them against text. **`re.search(pattern, text)`** scans the whole
-string for the **first** place the pattern matches and returns a **match object**
-(which is truthy) or **`None`**.
+"12.1 reference": r"""Uma **expressão regular** é um padrão que descreve um conjunto de cadeias de
+caracteres; o módulo **`re`** faz a correspondência delas com o texto.
+**`re.search(pattern, text)`** percorre a cadeia de caracteres inteira à procura
+do **primeiro** local onde o padrão corresponde e devolve um **objeto de
+correspondência** (que é verdadeiro em contexto booleano) ou **`None`**.
 
-- Write patterns as **raw strings** — `r"\d"` — so the backslashes reach the
-  regex engine instead of being interpreted by Python first.
-- Shorthand classes: `\d` a digit, `\w` a word character `[A-Za-z0-9_]`, `\s`
-  whitespace, and `.` any character but newline.
-- `re.search` looks **anywhere** in the string; `re.match` only checks the start.
-  Because the result is a match object or `None`, `re.search(...) is not None` is
-  a clean membership test.
+- Escreve os padrões como **cadeias de caracteres em bruto** — `r"\d"` — para que
+  as barras invertidas cheguem ao motor de regex em vez de serem interpretadas
+  primeiro pelo Python.
+- Classes abreviadas: `\d` um dígito, `\w` um caractere de palavra
+  `[A-Za-z0-9_]`, `\s` espaço em branco, e `.` qualquer caractere exceto nova
+  linha.
+- `re.search` procura **em qualquer lugar** da cadeia de caracteres; `re.match`
+  só verifica o início. Como o resultado é um objeto de correspondência ou
+  `None`, `re.search(...) is not None` é um teste de pertença limpo.
 
 ```python
 import re
@@ -91,12 +95,12 @@ bool(re.search(r"\s", "a b"))  # True -- contains whitespace
 ```
 """,
 
-"12.2 brief": r"""# 12.2 -- re.findall: every match
+"12.2 brief": r"""# 12.2 -- re.findall: todas as correspondências
 
-## Concept
+## Conceito
 
-`re.search` finds the *first* match. **`re.findall`** returns **all** of them, as
-a list of strings:
+`re.search` encontra a *primeira* correspondência. **`re.findall`** devolve
+**todas** elas, como uma lista de cadeias de caracteres:
 
 ```python
 import re
@@ -104,13 +108,16 @@ import re
 re.findall(r"\d+", "a12b3c456")     # ['12', '3', '456']
 ```
 
-- `\d+` means "one or more digits" -- the `+` makes the pattern grab a whole run
-  of digits, not just one. So each match is a full number.
-- `re.findall` returns a **list of strings** (the matched text), left to right,
-  non-overlapping. No match gives the empty list `[]`.
-- The matches are still text; convert with `int(...)` if you want numbers.
+- `\d+` significa "um ou mais dígitos" -- o `+` faz o padrão capturar uma
+  sequência inteira de dígitos, não apenas um. Assim, cada correspondência é um
+  número completo.
+- `re.findall` devolve uma **lista de cadeias de caracteres** (o texto
+  correspondido), da esquerda para a direita, sem sobreposição. Nenhuma
+  correspondência dá a lista vazia `[]`.
+- As correspondências continuam a ser texto; converte com `int(...)` se
+  quiseres números.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -119,25 +126,26 @@ def words(text):
     return re.findall(r"[a-z]+", text)
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`re.findall`**, define `all_numbers(text)` that returns a list of every
-run of digits in `text`, as strings.
+Usando **`re.findall`**, define `all_numbers(text)` que devolve uma lista de
+cada sequência de dígitos em `text`, como cadeias de caracteres.
 
-## Done when
+## Está feito quando
 
-- `all_numbers("a12b3c456")` returns `["12", "3", "456"]`.
-- `all_numbers("nothing")` returns `[]`.
-- The extraction uses `re.findall` with `\d+`, not a hand-written scan.
+- `all_numbers("a12b3c456")` devolve `["12", "3", "456"]`.
+- `all_numbers("nothing")` devolve `[]`.
+- A extração usa `re.findall` com `\d+`, não uma verificação escrita à mão.
 """,
 
-"12.2 hints": r"""`import re`, then `re.findall(pattern, text)` returns a list of every match. You
-want runs of digits.
+"12.2 hints": r"""`import re`, depois `re.findall(pattern, text)` devolve uma lista de todas as
+correspondências. Queres sequências de dígitos.
 
 ---
 
-The pattern `r"\d+"` matches one or more digits in a row, so each match is a full
-number. `re.findall(r"\d+", text)` is the whole answer.
+O padrão `r"\d+"` corresponde a um ou mais dígitos seguidos, por isso cada
+correspondência é um número completo. `re.findall(r"\d+", text)` é a resposta
+inteira.
 
 ---
 
@@ -148,17 +156,20 @@ def all_numbers(text):
     return re.findall(r"\d+", text)
 """,
 
-"12.2 reference": r"""**`re.findall(pattern, text)`** returns a **list of every** non-overlapping match
-of the pattern, left to right — the extract-them-all counterpart to `re.search`'s
-find-the-first.
+"12.2 reference": r"""**`re.findall(pattern, text)`** devolve uma **lista com todas** as
+correspondências sem sobreposição do padrão, da esquerda para a direita — o
+equivalente "extrai-as todas" ao "encontra a primeira" do `re.search`.
 
-- A **quantifier** makes one pattern match a run: `\d+` is "one or more digits",
-  so each match is a whole number rather than a single digit. (`+` one-or-more,
-  `*` zero-or-more, `?` optional, `{n}` exactly n.)
-- Each item in the returned list is the **matched text** (a string); no match
-  gives `[]`. Convert with `int(...)` when you want numbers.
-- If the pattern has capture groups, `findall` returns the groups instead of the
-  whole match (see 12.5); with one group it's a list of that group's text.
+- Um **quantificador** faz um padrão corresponder a uma sequência: `\d+` é "um ou
+  mais dígitos", por isso cada correspondência é um número inteiro em vez de um
+  único dígito. (`+` um-ou-mais, `*` zero-ou-mais, `?` opcional, `{n}` exatamente
+  n.)
+- Cada elemento da lista devolvida é o **texto correspondido** (uma cadeia de
+  caracteres); nenhuma correspondência dá `[]`. Converte com `int(...)` quando
+  quiseres números.
+- Se o padrão tiver grupos de captura, `findall` devolve os grupos em vez da
+  correspondência inteira (ver 12.5); com um grupo, é uma lista do texto desse
+  grupo.
 
 ```python
 import re
@@ -169,12 +180,12 @@ re.findall(r"[a-z]+", "Hi there!")  # ['i', 'there']
 ```
 """,
 
-"12.3 brief": r"""# 12.3 -- Character classes: [aeiou]
+"12.3 brief": r"""# 12.3 -- Classes de caracteres: [aeiou]
 
-## Concept
+## Conceito
 
-A **character class** `[...]` matches **any one** of the characters listed inside
-it:
+Uma **classe de caracteres** `[...]` corresponde a **qualquer um** dos
+caracteres listados dentro dela:
 
 ```python
 import re
@@ -182,15 +193,17 @@ import re
 re.findall(r"[aeiou]", "education")     # ['e', 'u', 'a', 'i', 'o']
 ```
 
-- `[aeiou]` matches a single vowel; `[abc]` matches `a`, `b`, or `c`.
-- A **range** uses a hyphen: `[a-z]` is any lowercase letter, `[0-9]` any digit
-  (the same as `\d`), `[A-Za-z0-9]` any letter or digit.
-- A leading `^` **negates** the class: `[^aeiou]` is any character that is *not*
-  a vowel.
+- `[aeiou]` corresponde a uma única vogal; `[abc]` corresponde a `a`, `b`, ou
+  `c`.
+- Um **intervalo** usa um hífen: `[a-z]` é qualquer letra minúscula, `[0-9]`
+  qualquer dígito (o mesmo que `\d`), `[A-Za-z0-9]` qualquer letra ou dígito.
+- Um `^` inicial **nega** a classe: `[^aeiou]` é qualquer caractere que *não*
+  seja uma vogal.
 
-A class is one character; add a quantifier (`[a-z]+`) to match a run of them.
+Uma classe é um caractere; adiciona um quantificador (`[a-z]+`) para
+corresponder a uma sequência deles.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -199,25 +212,26 @@ def count_letters(text):
     return len(re.findall(r"[a-z]", text))
 ```
 
-## Your task
+## A tua tarefa
 
-Using a character class with **`re.findall`**, define `count_vowels(text)` that
-returns how many vowels (`a e i o u`) are in `text`.
+Usando uma classe de caracteres com **`re.findall`**, define `count_vowels(text)`
+que devolve quantas vogais (`a e i o u`) há em `text`.
 
-## Done when
+## Está feito quando
 
-- `count_vowels("education")` returns `5`, `count_vowels("xyz")` returns `0`.
-- `count_vowels("")` returns `0`.
-- Counting uses `re.findall` with a `[aeiou]` class, not a manual `in` check.
+- `count_vowels("education")` devolve `5`, `count_vowels("xyz")` devolve `0`.
+- `count_vowels("")` devolve `0`.
+- A contagem usa `re.findall` com uma classe `[aeiou]`, não uma verificação
+  manual com `in`.
 """,
 
-"12.3 hints": r"""A character class in square brackets matches one of the listed characters. For
-vowels that's `r"[aeiou]"`.
+"12.3 hints": r"""Uma classe de caracteres entre parênteses retos corresponde a um dos
+caracteres listados. Para vogais, isso é `r"[aeiou]"`.
 
 ---
 
-`re.findall(r"[aeiou]", text)` gives a list of every vowel found; `len(...)` of
-that list is the count.
+`re.findall(r"[aeiou]", text)` dá uma lista de todas as vogais encontradas;
+`len(...)` dessa lista é a contagem.
 
 ---
 
@@ -228,18 +242,19 @@ def count_vowels(text):
     return len(re.findall(r"[aeiou]", text))
 """,
 
-"12.3 reference": r"""A **character class** `[...]` matches **exactly one** character from the set
-listed inside it. `[aeiou]` matches any single vowel; `[abc]` matches `a`, `b`,
-or `c`.
+"12.3 reference": r"""Uma **classe de caracteres** `[...]` corresponde a **exatamente um** caractere
+do conjunto listado dentro dela. `[aeiou]` corresponde a uma única vogal;
+`[abc]` corresponde a `a`, `b`, ou `c`.
 
-- A **range** with a hyphen covers consecutive characters: `[a-z]` any lowercase
-  letter, `[0-9]` any digit, `[A-Za-z0-9]` any letter or digit. Combine sets and
-  ranges freely inside one class.
-- A leading **`^`** negates: `[^aeiou]` matches any character that is *not* a
-  vowel.
-- The class matches **one** character; add a quantifier for a run — `[a-z]+` is a
-  word, `[0-9]{4}` exactly four digits. Inside a class most metacharacters lose
-  their special meaning (`[.]` is a literal dot).
+- Um **intervalo** com um hífen cobre caracteres consecutivos: `[a-z]` qualquer
+  letra minúscula, `[0-9]` qualquer dígito, `[A-Za-z0-9]` qualquer letra ou
+  dígito. Combina conjuntos e intervalos livremente dentro de uma classe.
+- Um **`^`** inicial nega: `[^aeiou]` corresponde a qualquer caractere que *não*
+  seja uma vogal.
+- A classe corresponde a **um** caractere; adiciona um quantificador para uma
+  sequência — `[a-z]+` é uma palavra, `[0-9]{4}` exatamente quatro dígitos.
+  Dentro de uma classe, a maioria dos metacaracteres perde o seu significado
+  especial (`[.]` é um ponto literal).
 
 ```python
 import re
@@ -250,16 +265,17 @@ re.findall(r"[A-Z][a-z]+", "Ada Lovelace")   # ['Ada', 'Lovelace']
 ```
 """,
 
-"12.4 brief": r"""# 12.4 -- Quantifiers: + means one or more
+"12.4 brief": r"""# 12.4 -- Quantificadores: + significa um ou mais
 
-## Concept
+## Conceito
 
-A **quantifier** says how many times the pattern before it may repeat:
+Um **quantificador** diz quantas vezes o padrão anterior pode repetir-se:
 
-- **`+`** -- one or more (`[a-z]+` is a run of one or more lowercase letters)
-- **`*`** -- zero or more
-- **`?`** -- optional (zero or one)
-- **`{n}`** -- exactly `n`; **`{n,m}`** -- between `n` and `m`
+- **`+`** -- um ou mais (`[a-z]+` é uma sequência de uma ou mais letras
+  minúsculas)
+- **`*`** -- zero ou mais
+- **`?`** -- opcional (zero ou um)
+- **`{n}`** -- exatamente `n`; **`{n,m}`** -- entre `n` e `m`
 
 ```python
 import re
@@ -267,12 +283,12 @@ import re
 re.findall(r"[A-Za-z]+", "Hello, world!")     # ['Hello', 'world']
 ```
 
-Without the `+`, `[A-Za-z]` would match single letters one at a time. The `+`
-makes it grab the **whole word**, stopping at the first character that doesn't
-fit (a space, comma, digit). That's how you split text into words while ignoring
-punctuation.
+Sem o `+`, `[A-Za-z]` corresponderia a letras únicas, uma de cada vez. O `+`
+faz com que capture a **palavra inteira**, parando no primeiro caractere que
+não se encaixe (um espaço, vírgula, dígito). É assim que se divide texto em
+palavras ignorando a pontuação.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -281,27 +297,28 @@ def integers(text):
     return re.findall(r"\d+", text)
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`re.findall`** with a quantifier, define `find_words(text)` that returns
-a list of the words in `text` -- each a run of one or more letters
-(`[A-Za-z]+`), with punctuation and spaces ignored.
+Usando **`re.findall`** com um quantificador, define `find_words(text)` que
+devolve uma lista das palavras em `text` -- cada uma uma sequência de uma ou
+mais letras (`[A-Za-z]+`), ignorando pontuação e espaços.
 
-## Done when
+## Está feito quando
 
-- `find_words("Hello, world!")` returns `["Hello", "world"]`.
-- `find_words("one-two three")` returns `["one", "two", "three"]`.
-- `find_words("")` returns `[]`.
-- Words are matched with `[A-Za-z]+`, not split by hand.
+- `find_words("Hello, world!")` devolve `["Hello", "world"]`.
+- `find_words("one-two three")` devolve `["one", "two", "three"]`.
+- `find_words("")` devolve `[]`.
+- As palavras são correspondidas com `[A-Za-z]+`, não divididas à mão.
 """,
 
-"12.4 hints": r"""A word is one or more letters in a row. The character class `[A-Za-z]` matches a
-single letter; the quantifier `+` makes it match a run.
+"12.4 hints": r"""Uma palavra é uma ou mais letras seguidas. A classe de caracteres `[A-Za-z]`
+corresponde a uma única letra; o quantificador `+` faz-a corresponder a uma
+sequência.
 
 ---
 
-`re.findall(r"[A-Za-z]+", text)` returns every word, stopping each match at the
-first non-letter. That's the whole function.
+`re.findall(r"[A-Za-z]+", text)` devolve todas as palavras, parando cada
+correspondência no primeiro caractere que não seja letra. É a função inteira.
 
 ---
 
@@ -312,20 +329,22 @@ def find_words(text):
     return re.findall(r"[A-Za-z]+", text)
 """,
 
-"12.4 reference": r"""A **quantifier** controls how many times the pattern immediately before it
-repeats:
+"12.4 reference": r"""Um **quantificador** controla quantas vezes o padrão imediatamente anterior se
+repete:
 
-- **`+`** one or more, **`*`** zero or more, **`?`** zero or one (optional),
-- **`{n}`** exactly *n*, **`{n,m}`** between *n* and *m*, **`{n,}`** at least *n*.
+- **`+`** um ou mais, **`*`** zero ou mais, **`?`** zero ou um (opcional),
+- **`{n}`** exatamente *n*, **`{n,m}`** entre *n* e *m*, **`{n,}`** pelo menos
+  *n*.
 
-`[A-Za-z]+` therefore matches a whole **word** — a run of one or more letters —
-stopping at the first character that doesn't fit, which is how you tokenize text
-while ignoring spaces and punctuation.
+`[A-Za-z]+` corresponde assim a uma **palavra** inteira — uma sequência de uma
+ou mais letras — parando no primeiro caractere que não se encaixe, que é como
+se tokeniza texto ignorando espaços e pontuação.
 
-- Quantifiers are **greedy** by default: they match as much as possible. A
-  trailing `?` makes one **lazy** (`\d+?` matches as few digits as it can).
-- The quantifier applies to the single item before it — a character, a class, or
-  a parenthesised group: `(ab)+` matches `ababab`.
+- Os quantificadores são **gulosos** por defeito: correspondem ao máximo
+  possível. Um `?` final torna um deles **preguiçoso** (`\d+?` corresponde ao
+  menor número de dígitos possível).
+- O quantificador aplica-se ao único elemento anterior — um caractere, uma
+  classe, ou um grupo entre parênteses: `(ab)+` corresponde a `ababab`.
 
 ```python
 import re
@@ -336,12 +355,13 @@ re.search(r"colou?r", "color")               # matches (the u is optional)
 ```
 """,
 
-"12.5 brief": r"""# 12.5 -- Groups: capture the parts
+"12.5 brief": r"""# 12.5 -- Grupos: captura as partes
 
-## Concept
+## Conceito
 
-Parentheses **`(...)`** in a pattern mark a **capture group**: a piece of the
-match you want to pull out. The match object then hands each one back:
+Parênteses **`(...)`** num padrão marcam um **grupo de captura**: uma parte da
+correspondência que queres extrair. O objeto de correspondência devolve depois
+cada um deles:
 
 ```python
 import re
@@ -352,15 +372,16 @@ m.group(2)     # '06'
 m.groups()     # ('2026', '06', '20')
 ```
 
-- `re.match` matches from the **start** of the string and returns a match object
-  (or `None`).
-- `m.group(n)` returns the text the *n*-th group captured (`group(0)` is the
-  whole match); `m.groups()` returns them all as a tuple.
-- The captured text is still a string -- `int(m.group(1))` if you want a number.
+- `re.match` corresponde a partir do **início** da cadeia de caracteres e
+  devolve um objeto de correspondência (ou `None`).
+- `m.group(n)` devolve o texto que o *n*-ésimo grupo capturou (`group(0)` é a
+  correspondência inteira); `m.groups()` devolve todos eles como um tuplo.
+- O texto capturado continua a ser uma cadeia de caracteres -- `int(m.group(1))`
+  se quiseres um número.
 
-One pattern thus both checks the shape and extracts the fields.
+Assim, um único padrão verifica o formato e extrai os campos.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -370,26 +391,27 @@ def split_pair(text):
     return (m.group(1), m.group(2))
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`re.match`** with capture groups, define `parse_date(text)` that takes a
-date like `"2026-06-20"` and returns the tuple of **integers**
+Usando **`re.match`** com grupos de captura, define `parse_date(text)` que
+recebe uma data como `"2026-06-20"` e devolve o tuplo de **inteiros**
 `(year, month, day)`.
 
-## Done when
+## Está feito quando
 
-- `parse_date("2026-06-20")` returns `(2026, 6, 20)`.
-- `parse_date("1999-01-05")` returns `(1999, 1, 5)`.
-- The fields come from capture groups, not `text.split("-")`.
+- `parse_date("2026-06-20")` devolve `(2026, 6, 20)`.
+- `parse_date("1999-01-05")` devolve `(1999, 1, 5)`.
+- Os campos vêm de grupos de captura, não de `text.split("-")`.
 """,
 
-"12.5 hints": r"""Wrap each part you want in parentheses: `r"(\d+)-(\d+)-(\d+)"`. Each `(...)` is a
-capture group.
+"12.5 hints": r"""Envolve cada parte que queres em parênteses: `r"(\d+)-(\d+)-(\d+)"`. Cada
+`(...)` é um grupo de captura.
 
 ---
 
-`m = re.match(pattern, text)` then read `m.group(1)`, `m.group(2)`, `m.group(3)`.
-They're strings, so wrap each in `int(...)` for the tuple.
+`m = re.match(pattern, text)` e depois lê `m.group(1)`, `m.group(2)`,
+`m.group(3)`. São cadeias de caracteres, por isso envolve cada uma em
+`int(...)` para o tuplo.
 
 ---
 
@@ -401,20 +423,23 @@ def parse_date(text):
     return (int(m.group(1)), int(m.group(2)), int(m.group(3)))
 """,
 
-"12.5 reference": r"""Parentheses **`(...)`** in a pattern create a **capture group** — a sub-part of
-the match the engine remembers so you can read it back. The match object exposes
-them:
+"12.5 reference": r"""Parênteses **`(...)`** num padrão criam um **grupo de captura** — uma
+subparte da correspondência que o motor memoriza para que a possas ler depois.
+O objeto de correspondência expõe-os:
 
-- **`m.group(n)`** returns the text the *n*-th group captured, numbered left to
-  right from 1; **`m.group(0)`** (or `m.group()`) is the whole match.
-- **`m.groups()`** returns every group's text as a tuple — ideal for unpacking.
-- Captured text is a **string**; convert with `int(...)` as needed. A group that
-  didn't participate is `None`.
+- **`m.group(n)`** devolve o texto que o *n*-ésimo grupo capturou, numerado da
+  esquerda para a direita a partir de 1; **`m.group(0)`** (ou `m.group()`) é a
+  correspondência inteira.
+- **`m.groups()`** devolve o texto de todos os grupos como um tuplo — ideal
+  para desempacotar.
+- O texto capturado é uma **cadeia de caracteres**; converte com `int(...)`
+  conforme necessário. Um grupo que não participou é `None`.
 
-So one pattern both **validates** the shape and **extracts** the fields. `re.match`
-anchors at the start and returns the match object or `None`; guard for `None`
-before reading groups when the input might not match. Name groups with
-`(?P<name>...)` and read them via `m.group("name")` for clarity.
+Assim, um único padrão **valida** o formato e **extrai** os campos. `re.match`
+ancora-se no início e devolve o objeto de correspondência ou `None`; protege-te
+contra `None` antes de ler os grupos quando a entrada pode não corresponder.
+Dá nomes aos grupos com `(?P<name>...)` e lê-os através de `m.group("name")`
+para maior clareza.
 
 ```python
 import re
@@ -425,12 +450,12 @@ tuple(int(p) for p in m.groups())   # (2026, 6, 20)
 ```
 """,
 
-"12.6 brief": r"""# 12.6 -- re.sub: find and replace by pattern
+"12.6 brief": r"""# 12.6 -- re.sub: encontrar e substituir por padrão
 
-## Concept
+## Conceito
 
-`str.replace` swaps a fixed substring. **`re.sub`** swaps everything matching a
-**pattern**:
+`str.replace` troca uma subcadeia fixa. **`re.sub`** troca tudo o que
+corresponda a um **padrão**:
 
 ```python
 import re
@@ -438,14 +463,17 @@ import re
 re.sub(r"\d+", "#", "call 555-1234 now")     # 'call #-# now'
 ```
 
-- `re.sub(pattern, replacement, text)` returns a **new** string with **every**
-  match of `pattern` replaced by `replacement`.
-- Because `\d+` matches a whole run of digits, each run collapses to a single
-  `#` -- one replacement per match, not per character.
-- No match leaves the text unchanged. The replacement can also reference captured
-  groups (`\1`), but a plain string is the common case.
+- `re.sub(pattern, replacement, text)` devolve uma **nova** cadeia de
+  caracteres com **todas** as correspondências de `pattern` substituídas por
+  `replacement`.
+- Como `\d+` corresponde a uma sequência inteira de dígitos, cada sequência
+  reduz-se a um único `#` -- uma substituição por correspondência, não por
+  caractere.
+- Sem correspondência, o texto fica inalterado. A substituição também pode
+  referenciar grupos capturados (`\1`), mas uma cadeia de caracteres simples é
+  o caso mais comum.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -454,26 +482,26 @@ def squash_spaces(text):
     return re.sub(r"\s+", " ", text)
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`re.sub`**, define `redact(text)` that replaces every run of digits in
-`text` with a single `"#"`.
+Usando **`re.sub`**, define `redact(text)` que substitui cada sequência de
+dígitos em `text` por um único `"#"`.
 
-## Done when
+## Está feito quando
 
-- `redact("call 555-1234")` returns `"call #-#"`.
-- `redact("no digits")` returns `"no digits"`.
-- Each digit *run* becomes one `#` (use `\d+`), via `re.sub` -- not a character
-  loop.
+- `redact("call 555-1234")` devolve `"call #-#"`.
+- `redact("no digits")` devolve `"no digits"`.
+- Cada *sequência* de dígitos torna-se um `#` (usa `\d+`), através de `re.sub`
+  -- não um ciclo de caracteres.
 """,
 
-"12.6 hints": r"""`re.sub(pattern, replacement, text)` replaces every match. Your pattern is a run
-of digits, your replacement is `"#"`.
+"12.6 hints": r"""`re.sub(pattern, replacement, text)` substitui todas as correspondências. O
+teu padrão é uma sequência de dígitos, a tua substituição é `"#"`.
 
 ---
 
-`r"\d+"` matches a whole run of digits, so each run becomes one `#`:
-`re.sub(r"\d+", "#", text)` is the entire function.
+`r"\d+"` corresponde a uma sequência inteira de dígitos, por isso cada
+sequência torna-se um `#`: `re.sub(r"\d+", "#", text)` é a função inteira.
 
 ---
 
@@ -484,18 +512,21 @@ def redact(text):
     return re.sub(r"\d+", "#", text)
 """,
 
-"12.6 reference": r"""**`re.sub(pattern, repl, text)`** is pattern-driven search-and-replace: it returns
-a **new** string with **every** non-overlapping match of `pattern` replaced by
-`repl`. Where `str.replace` swaps a fixed substring, `re.sub` swaps anything the
-pattern describes.
+"12.6 reference": r"""**`re.sub(pattern, repl, text)`** é uma pesquisa-e-substituição orientada por
+padrão: devolve uma **nova** cadeia de caracteres com **todas** as
+correspondências sem sobreposição de `pattern` substituídas por `repl`. Onde
+`str.replace` troca uma subcadeia fixa, `re.sub` troca tudo o que o padrão
+descreve.
 
-- Because a quantified pattern matches a **run**, each run collapses to one
-  replacement: `re.sub(r"\d+", "#", "a12b3")` is `"a#b#"`, not `"a##b#"`.
-- No match leaves the text unchanged. An optional `count=` limits how many
-  replacements are made.
-- `repl` may reference captured groups with `\1`, `\2`, … (e.g.
-  `re.sub(r"(\w+)@(\w+)", r"\2.\1", s)`), or be a **function** that receives each
-  match and returns its replacement, for logic too complex for a template.
+- Como um padrão quantificado corresponde a uma **sequência**, cada sequência
+  reduz-se a uma substituição: `re.sub(r"\d+", "#", "a12b3")` é `"a#b#"`, não
+  `"a##b#"`.
+- Sem correspondência, o texto fica inalterado. Um `count=` opcional limita
+  quantas substituições são feitas.
+- `repl` pode referenciar grupos capturados com `\1`, `\2`, … (por exemplo,
+  `re.sub(r"(\w+)@(\w+)", r"\2.\1", s)`), ou ser uma **função** que recebe cada
+  correspondência e devolve a sua substituição, para lógica demasiado
+  complexa para um modelo.
 
 ```python
 import re
@@ -506,19 +537,20 @@ re.sub(r"(\d+)", r"[\1]", "x12")               # 'x[12]'
 ```
 """,
 
-"12.7 brief": r"""# 12.7 -- Anchors: match the whole string
+"12.7 brief": r"""# 12.7 -- Âncoras: corresponder à cadeia de caracteres inteira
 
-## Concept
+## Conceito
 
-`re.search` is happy if the pattern appears **anywhere**. To **validate a
-format**, you need the *entire* string to match -- no leftover characters.
+`re.search` fica satisfeito se o padrão aparecer **em qualquer lugar**. Para
+**validar um formato**, precisas que a *cadeia de caracteres inteira*
+corresponda -- sem caracteres sobrantes.
 
-Two ways to demand that:
+Duas formas de exigir isso:
 
-- **Anchors** in the pattern: `^` ties to the **start**, `$` to the **end**, so
-  `r"^[A-Z]{2}\d{4}$"` must span the whole string.
-- **`re.fullmatch`**, which requires the pattern to cover the whole string for
-  you -- no anchors needed.
+- **Âncoras** no padrão: `^` prende-se ao **início**, `$` ao **fim**, por isso
+  `r"^[A-Z]{2}\d{4}$"` tem de abranger a cadeia de caracteres inteira.
+- **`re.fullmatch`**, que exige que o padrão cubra a cadeia de caracteres
+  inteira por ti -- sem precisares de âncoras.
 
 ```python
 import re
@@ -528,9 +560,10 @@ re.fullmatch(r"[A-Z]{2}\d{4}", "AB1234x")    # None -- trailing junk
 re.search(r"[A-Z]{2}\d{4}", "AB1234x")       # matches -- search ignores the x
 ```
 
-A product code here is two uppercase letters then four digits: `AB1234`.
+Aqui, um código de produto é duas letras maiúsculas seguidas de quatro
+dígitos: `AB1234`.
 
-## Example
+## Exemplo
 
 ```python
 import re
@@ -539,28 +572,30 @@ def is_word(text):
     return re.fullmatch(r"[a-z]+", text) is not None
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`re.fullmatch`** (or `^...$`), define `is_valid_code(text)` that returns
-`True` only when `text` is exactly **two uppercase letters followed by four
-digits** (e.g. `"AB1234"`), `False` otherwise.
+Usando **`re.fullmatch`** (ou `^...$`), define `is_valid_code(text)` que devolve
+`True` apenas quando `text` é exatamente **duas letras maiúsculas seguidas de
+quatro dígitos** (por exemplo, `"AB1234"`), `False` caso contrário.
 
-## Done when
+## Está feito quando
 
-- `is_valid_code("AB1234")` is `True`.
+- `is_valid_code("AB1234")` é `True`.
 - `is_valid_code("ab1234")`, `is_valid_code("AB123")`, `is_valid_code("AB1234x")`
-  are all `False`.
-- The whole string is matched (fullmatch or anchors), not a hand-written length
-  check.
+  são todos `False`.
+- A cadeia de caracteres inteira é correspondida (fullmatch ou âncoras), não
+  uma verificação de comprimento escrita à mão.
 """,
 
-"12.7 hints": r"""The pattern for the code is `r"[A-Z]{2}\d{4}"` -- two uppercase letters, then
-four digits. The trick is making the WHOLE string match it.
+"12.7 hints": r"""O padrão para o código é `r"[A-Z]{2}\d{4}"` -- duas letras maiúsculas, depois
+quatro dígitos. O truque é fazer com que a cadeia de caracteres INTEIRA lhe
+corresponda.
 
 ---
 
-`re.fullmatch(pattern, text)` requires the pattern to cover the entire string, so
-trailing characters fail. Return whether it found a match with `is not None`.
+`re.fullmatch(pattern, text)` exige que o padrão cubra a cadeia de caracteres
+inteira, por isso caracteres sobrantes falham. Devolve se encontrou uma
+correspondência com `is not None`.
 
 ---
 
@@ -571,19 +606,22 @@ def is_valid_code(text):
     return re.fullmatch(r"[A-Z]{2}\d{4}", text) is not None
 """,
 
-"12.7 reference": r"""By default a pattern can match **anywhere** in the string. Validating a *format*
-means the **whole** string must conform — no leftover characters. Two ways to
-require that:
+"12.7 reference": r"""Por defeito, um padrão pode corresponder **em qualquer lugar** da cadeia de
+caracteres. Validar um *formato* significa que a cadeia de caracteres
+**inteira** tem de estar conforme — sem caracteres sobrantes. Duas formas de
+exigir isso:
 
-- **Anchors** in the pattern: **`^`** matches the start of the string, **`$`** the
-  end. `r"^[A-Z]{2}\d{4}$"` must span the entire input.
-- **`re.fullmatch(pattern, text)`** demands the pattern cover the whole string
-  for you — no anchors needed. It returns a match object or `None`.
+- **Âncoras** no padrão: **`^`** corresponde ao início da cadeia de
+  caracteres, **`$`** ao fim. `r"^[A-Z]{2}\d{4}$"` tem de abranger toda a
+  entrada.
+- **`re.fullmatch(pattern, text)`** exige que o padrão cubra a cadeia de
+  caracteres inteira por ti — sem precisares de âncoras. Devolve um objeto de
+  correspondência ou `None`.
 
-The contrast: `re.search(r"[A-Z]{2}\d{4}", "AB1234x")` **matches** (the pattern
-occurs), but `re.fullmatch(r"[A-Z]{2}\d{4}", "AB1234x")` is **`None`** (the `x` is
-left over). Use `search`/`findall` to *find* substrings, `fullmatch`/anchors to
-*validate* a whole value.
+O contraste: `re.search(r"[A-Z]{2}\d{4}", "AB1234x")` **corresponde** (o
+padrão ocorre), mas `re.fullmatch(r"[A-Z]{2}\d{4}", "AB1234x")` é **`None`**
+(o `x` sobra). Usa `search`/`findall` para *encontrar* subcadeias,
+`fullmatch`/âncoras para *validar* um valor inteiro.
 
 ```python
 import re
@@ -594,13 +632,13 @@ bool(re.match(r"^\d{5}$", "12345"))               # True -- anchored form
 ```
 """,
 
-"12.8 brief": r"""# 12.8 -- Capstone: parse key=value config
+"12.8 brief": r"""# 12.8 -- Capstone: analisar configuração key=value
 
-## Concept
+## Conceito
 
-Time to combine the chapter's tools. When `re.findall` is given a pattern with
-**several capture groups**, it returns a list of **tuples** -- one per match, the
-captured pieces inside:
+Está na hora de combinar as ferramentas do capítulo. Quando `re.findall` recebe
+um padrão com **vários grupos de captura**, devolve uma lista de **tuplos** --
+um por correspondência, com as partes capturadas dentro:
 
 ```python
 import re
@@ -609,38 +647,42 @@ re.findall(r"(\w+)=(\w+)", "host=local port=8080")
 # [('host', 'local'), ('port', '8080')]
 ```
 
-A list of `(key, value)` pairs is exactly what **`dict(...)`** turns into a
-dictionary. So one pattern plus `dict` parses a whole config string:
+Uma lista de pares `(key, value)` é exatamente o que **`dict(...)`**
+transforma num dicionário. Assim, um padrão mais `dict` analisa uma cadeia de
+configuração inteira:
 
 ```python
 dict(re.findall(r"(\w+)=(\w+)", "host=local port=8080"))
 # {'host': 'local', 'port': '8080'}
 ```
 
-`\w+` matches a run of word characters (letters, digits, underscore), so each key
-and value is grabbed whole, and the `=` between them is matched literally.
+`\w+` corresponde a uma sequência de caracteres de palavra (letras, dígitos,
+sublinhado), por isso cada chave e valor é capturado por inteiro, e o `=`
+entre eles é correspondido literalmente.
 
-## Your task
+## A tua tarefa
 
-Define `parse_config(text)` that parses a space-separated string of `key=value`
-pairs into a dict, using **`re.findall`** with two capture groups.
+Define `parse_config(text)` que analisa uma cadeia de pares `key=value`
+separados por espaços num dicionário, usando **`re.findall`** com dois grupos
+de captura.
 
-## Done when
+## Está feito quando
 
-- `parse_config("host=local port=8080")` equals
+- `parse_config("host=local port=8080")` é igual a
   `{"host": "local", "port": "8080"}`.
-- `parse_config("debug=on")` equals `{"debug": "on"}`.
-- `parse_config("")` equals `{}`.
-- Pairs are captured with one `(\w+)=(\w+)` pattern, not split by hand.
+- `parse_config("debug=on")` é igual a `{"debug": "on"}`.
+- `parse_config("")` é igual a `{}`.
+- Os pares são capturados com um único padrão `(\w+)=(\w+)`, não divididos à
+  mão.
 """,
 
-"12.8 hints": r"""Use two capture groups, one for the key and one for the value, with a literal `=`
-between: `r"(\w+)=(\w+)"`.
+"12.8 hints": r"""Usa dois grupos de captura, um para a chave e outro para o valor, com um `=`
+literal entre eles: `r"(\w+)=(\w+)"`.
 
 ---
 
-With two groups, `re.findall(pattern, text)` returns a list of `(key, value)`
-tuples. `dict(...)` of that list is the config dictionary.
+Com dois grupos, `re.findall(pattern, text)` devolve uma lista de tuplos
+`(key, value)`. `dict(...)` dessa lista é o dicionário de configuração.
 
 ---
 
@@ -651,20 +693,21 @@ def parse_config(text):
     return dict(re.findall(r"(\w+)=(\w+)", text))
 """,
 
-"12.8 reference": r"""The capstone composes the chapter: a single pattern with **multiple capture
-groups**, handed to **`re.findall`**, extracts structured records in one step.
+"12.8 reference": r"""O capstone compõe o capítulo: um único padrão com **vários grupos de
+captura**, passado a **`re.findall`**, extrai registos estruturados num só
+passo.
 
-- With more than one group, `re.findall` returns a list of **tuples** — one per
-  match, holding each group's text: `re.findall(r"(\w+)=(\w+)", s)` yields
-  `[(key, value), ...]`.
-- A list of `(key, value)` pairs is exactly what **`dict(...)`** consumes, so
-  `dict(re.findall(...))` is a complete mini-parser.
-- `\w+` matches a run of word characters (letters, digits, underscore); the `=`
-  between the groups is matched **literally**. No match gives `[]`, so an empty
-  input cleanly yields `{}`.
+- Com mais de um grupo, `re.findall` devolve uma lista de **tuplos** — um por
+  correspondência, contendo o texto de cada grupo: `re.findall(r"(\w+)=(\w+)",
+  s)` produz `[(key, value), ...]`.
+- Uma lista de pares `(key, value)` é exatamente o que **`dict(...)`** consome,
+  por isso `dict(re.findall(...))` é um mini-analisador completo.
+- `\w+` corresponde a uma sequência de caracteres de palavra (letras, dígitos,
+  sublinhado); o `=` entre os grupos é correspondido **literalmente**. Nenhuma
+  correspondência dá `[]`, por isso uma entrada vazia produz corretamente `{}`.
 
-This is the regex payoff: describe the shape of one record, and the engine finds
-and dissects every occurrence for you.
+Este é o retorno do regex: descreve o formato de um registo, e o motor
+encontra e dissecta todas as ocorrências por ti.
 
 ```python
 import re
@@ -674,3 +717,4 @@ dict(re.findall(r"(\w+)=(\w+)", "host=local port=8080"))
 ```
 """,
 }
+

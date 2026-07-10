@@ -9,61 +9,61 @@
 
 TRANSLATIONS = {
 
-"6.1 brief": r"""# 6.1 -- def: your first function
+"6.1 brief": r"""# 6.1 -- def: a tua primeira função
 
-## Concept
+## Conceito
 
-A **function** is a named, reusable piece of code. You have *called* functions
-all along -- `print()`, `len()`, `sorted()`. Now you get to **define** your
-own:
+Uma **função** é um pedaço de código nomeado e reutilizável. Já *chamaste* funções
+o tempo todo -- `print()`, `len()`, `sorted()`. Agora vais **definir** a
+tua própria:
 
 ```python
 def double(x):
     return x * 2
 ```
 
-- `def` starts the definition; `double` is the name you choose.
-- `x` is a **parameter**: a variable that receives whatever value the caller
-  passes in.
-- `return` hands a value **back to the caller**. Calling `double(3)` is then
-  an expression worth `6`:
+- `def` inicia a definição; `double` é o nome que escolhes.
+- `x` é um **parâmetro**: uma variável que recebe o valor que quem chama a
+  função lhe passar.
+- `return` devolve um valor **a quem chamou a função**. Chamar `double(3)` é então
+  uma expressão que vale `6`:
 
 ```python
 result = double(3)     # result is 6
 print(double(10))      # 20
 ```
 
-**This chapter checks your code differently.** Until now your file *ran* and
-printed. From here, the checker **imports** your file and **calls your
-functions directly**, passing in many different arguments -- so there is no
-`input()` and no `print()` needed at all. Your file just defines the function.
+**Este capítulo verifica o teu código de forma diferente.** Até agora o teu ficheiro *corria* e
+imprimia. A partir daqui, o verificador **importa** o teu ficheiro e **chama as tuas
+funções diretamente**, passando muitos argumentos diferentes -- por isso não é preciso
+`input()` nem `print()` nenhum. O teu ficheiro limita-se a definir a função.
 
-## Example
+## Exemplo
 
 ```python
 def double(x):
     return x * 2
 ```
 
-That whole file is a valid answer to this puzzle: it defines `double`, and
-`double(21)` returns `42`.
+Esse ficheiro inteiro é uma resposta válida para este puzzle: define `double`, e
+`double(21)` devolve `42`.
 
-## Your task
+## A tua tarefa
 
-Define a function `double(x)` that **returns** `x` doubled.
+Define uma função `double(x)` que **devolva** `x` duplicado.
 
-## Done when
+## Está feito quando
 
-- `double(3)` returns `6`, `double(0)` returns `0`, `double(-5)` returns `-10`.
-- Your file only defines the function -- no `input()`, no `print()`.
+- `double(3)` devolve `6`, `double(0)` devolve `0`, `double(-5)` devolve `-10`.
+- O teu ficheiro só define a função -- sem `input()`, sem `print()`.
 """,
 
-"6.1 hints": r"""The shape is:  def name(parameter):  then an indented body that returns
-something.
+"6.1 hints": r"""A forma é:  def nome(parâmetro):  depois um corpo indentado que devolve
+algo.
 
 ---
 
-`def double(x):` on the first line; the body is one line: return x times 2.
+`def double(x):` na primeira linha; o corpo é uma linha: devolve x vezes 2.
 
 ---
 
@@ -71,15 +71,15 @@ def double(x):
     return x * 2
 """,
 
-"6.1 reference": r"""A **function** packages a piece of work under a name so it can be run on demand,
-as many times as needed. **`def`** introduces one: a header `def name():` and an
-indented body.
+"6.1 reference": r"""Uma **função** embala um trabalho debaixo de um nome para que possa ser executado a pedido,
+tantas vezes quantas forem necessárias. **`def`** introduz uma: um cabeçalho `def nome():` e um
+corpo indentado.
 
-- **Calling** it — `name()` — runs the body. Defining a function does not run it;
-  the call does.
-- **`return value`** hands a result back to the caller and ends the function
-  immediately. The call expression `name()` then *becomes* that value.
-- A function with no `return` (or a bare `return`) hands back `None`.
+- **Chamá-la** — `nome()` — corre o corpo. Definir uma função não a executa;
+  a chamada é que executa.
+- **`return valor`** devolve um resultado a quem chamou e termina a função
+  de imediato. A expressão da chamada `nome()` *passa a ser* esse valor.
+- Uma função sem `return` (ou com um `return` isolado) devolve `None`.
 
 ```python
 def greet():
@@ -89,12 +89,12 @@ greet()        # 'hello'  -- the call evaluates to the returned value
 ```
 """,
 
-"6.2 brief": r"""# 6.2 -- Two parameters
+"6.2 brief": r"""# 6.2 -- Dois parâmetros
 
-## Concept
+## Conceito
 
-A function can take several parameters -- list them with commas, and the
-caller's values arrive **in the same order**:
+Uma função pode receber vários parâmetros -- lista-os com vírgulas, e os
+valores de quem chama chegam **pela mesma ordem**:
 
 ```python
 def rect_area(width, height):
@@ -103,14 +103,14 @@ def rect_area(width, height):
 rect_area(3, 4)     # 12  (width=3, height=4)
 ```
 
-Inside the body, the parameters are ordinary variables. Everything you know
-already works on them -- arithmetic, comparisons, f-strings, loops.
+Dentro do corpo, os parâmetros são variáveis normais. Tudo o que já sabes
+funciona com eles -- aritmética, comparações, f-strings, ciclos.
 
-A subtlety worth meeting early: parameters are **local** to the function. The
-`width` inside `rect_area` exists only while a call is running; it is not
-visible (and does not clash with) anything outside.
+Uma subtileza que vale a pena conhecer cedo: os parâmetros são **locais** à função. O
+`width` dentro de `rect_area` só existe enquanto uma chamada está a correr; não é
+visível (e não entra em conflito com) nada fora dela.
 
-## Example
+## Exemplo
 
 ```python
 def diff(a, b):
@@ -120,23 +120,23 @@ print(diff(10, 4))   # 6
 print(diff(4, 10))   # -6  -- order matters
 ```
 
-## Your task
+## A tua tarefa
 
-Define `rect_area(width, height)` that returns the area of a rectangle
-(width times height).
+Define `rect_area(width, height)` que devolva a área de um retângulo
+(largura vezes altura).
 
-## Done when
+## Está feito quando
 
-- `rect_area(3, 4)` returns `12`; `rect_area(4, 3)` does too.
-- A zero side returns `0`.
-- No `input()`, no `print()` -- the checker passes the values in.
+- `rect_area(3, 4)` devolve `12`; `rect_area(4, 3)` também.
+- Um lado zero devolve `0`.
+- Sem `input()`, sem `print()` -- o verificador passa os valores diretamente.
 """,
 
-"6.2 hints": r"""Two parameters are listed with a comma:  def rect_area(width, height):
+"6.2 hints": r"""Dois parâmetros listam-se com uma vírgula:  def rect_area(width, height):
 
 ---
 
-The body is one line: return the product of the two parameters.
+O corpo é uma linha: devolve o produto dos dois parâmetros.
 
 ---
 
@@ -144,14 +144,14 @@ def rect_area(width, height):
     return width * height
 """,
 
-"6.2 reference": r"""A **parameter** is a name in the function header that stands for a value the
-caller supplies. The values passed in a call are the **arguments**, matched to
-parameters left to right.
+"6.2 reference": r"""Um **parâmetro** é um nome no cabeçalho da função que representa um valor que
+quem chama fornece. Os valores passados numa chamada são os **argumentos**, associados aos
+parâmetros da esquerda para a direita.
 
-- `def f(a, b):` declares two parameters; `f(3, 4)` calls with `a = 3`, `b = 4`.
-- Parameters are **local**: they exist only during the call and don't clash with
-  names outside. The function works on whatever it's given, making it reusable.
-- Passing the wrong number of arguments raises `TypeError`.
+- `def f(a, b):` declara dois parâmetros; `f(3, 4)` chama com `a = 3`, `b = 4`.
+- Os parâmetros são **locais**: só existem durante a chamada e não entram em conflito com
+  nomes de fora. A função trabalha com o que quer que lhe seja dado, o que a torna reutilizável.
+- Passar o número errado de argumentos levanta `TypeError`.
 
 ```python
 def add(a, b):
@@ -161,20 +161,20 @@ add(3, 4)      # 7
 ```
 """,
 
-"6.3 brief": r"""# 6.3 -- return, not print
+"6.3 brief": r"""# 6.3 -- return, não print
 
-## Concept
+## Conceito
 
-`print()` and `return` look similar when you test by eye, but they do
-completely different jobs:
+`print()` e `return` parecem semelhantes quando testas a olho, mas fazem
+trabalhos completamente diferentes:
 
-- `print(x)` **shows** `x` on the screen -- and that's all. The caller gets
-  nothing.
-- `return x` **hands `x` back** to the caller, who can store it, compare it,
-  or pass it on.
+- `print(x)` **mostra** `x` no ecrã -- e é só isso. Quem chamou não recebe
+  nada.
+- `return x` **devolve `x`** a quem chamou, que pode guardá-lo, compará-lo,
+  ou passá-lo adiante.
 
-A function that prints instead of returning actually returns `None` (the
-"no value" value). The difference bites the moment someone *uses* the result:
+Uma função que imprime em vez de devolver acaba na verdade por devolver `None` (o
+valor de "sem valor"). A diferença morde no momento em que alguém *usa* o resultado:
 
 ```python
 def shout_wrong(word):
@@ -184,10 +184,10 @@ answer = shout_wrong("hi")        # HI! appears, but...
 print(answer)                     # None  -- the caller got nothing
 ```
 
-The rule: **a function's job is to compute and return.** Let the *caller*
-decide whether to print.
+A regra: **o trabalho de uma função é calcular e devolver.** Deixa que quem *chama*
+decida se imprime ou não.
 
-## Example
+## Exemplo
 
 ```python
 def shout(word):
@@ -197,23 +197,23 @@ print(shout("hi"))      # HI!  -- printed BY THE CALLER
 loud = shout("ok")      # and it can be stored instead
 ```
 
-## Your task
+## A tua tarefa
 
-Define `shout(word)` that **returns** the word in UPPERCASE with a `!` stuck
-on the end. (`.upper()` is from 2.7.)
+Define `shout(word)` que **devolva** a palavra em MAIÚSCULAS com um `!` colado
+no final. (`.upper()` é de 2.7.)
 
-## Done when
+## Está feito quando
 
-- `shout("hi")` returns `"HI!"`; `shout("")` returns `"!"`.
-- The value is *returned* -- a version that only prints will fail, because the
-  checker receives `None`.
+- `shout("hi")` devolve `"HI!"`; `shout("")` devolve `"!"`.
+- O valor é *devolvido* -- uma versão que só imprime vai falhar, porque o
+  verificador recebe `None`.
 """,
 
-"6.3 hints": r"""If the checker says it got None, your function printed instead of returning.
+"6.3 hints": r"""Se o verificador disser que recebeu None, a tua função imprimiu em vez de devolver.
 
 ---
 
-Build the string with .upper() and + "!", then return it -- no print anywhere.
+Constrói a string com .upper() e + "!", depois devolve-a -- sem print nenhum.
 
 ---
 
@@ -221,15 +221,15 @@ def shout(word):
     return word.upper() + "!"
 """,
 
-"6.3 reference": r"""**Returning** a value and **printing** it are different acts, and confusing them
-is a common bug.
+"6.3 reference": r"""**Devolver** um valor e **imprimi-lo** são ações diferentes, e confundi-las
+é um erro comum.
 
-- **`return`** hands a value back to the calling code, which can store it, do
-  arithmetic on it, or pass it on. The value travels.
-- **`print`** writes text to the screen and returns `None`. The value is shown but
-  not captured — `x = print(5)` makes `x` be `None`.
-- A function that prints instead of returning can't be built on. Prefer to
-  `return` the result and let the **caller** decide whether to print it.
+- **`return`** devolve um valor ao código que chamou, que o pode guardar, fazer
+  aritmética com ele, ou passá-lo adiante. O valor viaja.
+- **`print`** escreve texto no ecrã e devolve `None`. O valor é mostrado mas
+  não é capturado — `x = print(5)` faz com que `x` seja `None`.
+- Uma função que imprime em vez de devolver não pode ser usada como base para outra coisa. Prefere
+  fazer `return` do resultado e deixar que quem **chama** decida se imprime.
 
 ```python
 def double(n):
@@ -238,12 +238,12 @@ print(double(5) + 1)    # 11  -- works because double returned
 ```
 """,
 
-"6.4 brief": r"""# 6.4 -- Default values
+"6.4 brief": r"""# 6.4 -- Valores por omissão
 
-## Concept
+## Conceito
 
-A parameter can carry a **default**: the value used when the caller leaves it
-out. Write it with `=` in the `def` line:
+Um parâmetro pode ter um valor **por omissão**: o valor usado quando quem chama o
+deixa de fora. Escreve-o com `=` na linha do `def`:
 
 ```python
 def greet(name, greeting="Hello"):
@@ -253,14 +253,14 @@ greet("Ada")              # "Hello, Ada!"   -- default used
 greet("Ada", "Hi")        # "Hi, Ada!"      -- default overridden
 ```
 
-You have already *used* this: `print(..., sep=" ")` from 1.3 -- `sep` has a
-default of one space, which you overrode with `sep=", "`. Now you can build
-the same flexibility into your own functions.
+Já *usaste* isto: `print(..., sep=" ")` de 1.3 -- `sep` tem um valor
+por omissão de um espaço, que substituíste com `sep=", "`. Agora podes construir
+a mesma flexibilidade nas tuas próprias funções.
 
-Rules: parameters with defaults go **after** the ones without, and the
-default is used *only* when the caller omits that argument.
+Regras: os parâmetros com valores por omissão vêm **depois** dos que não têm, e o
+valor por omissão só é usado quando quem chama omite esse argumento.
 
-## Example
+## Exemplo
 
 ```python
 def repeat(word, times=2):
@@ -270,25 +270,25 @@ repeat("ha")        # "haha"
 repeat("ha", 3)     # "hahaha"
 ```
 
-## Your task
+## A tua tarefa
 
-Define `greet(name, greeting="Hello")` that returns `"<greeting>, <name>!"` --
-exactly: the greeting, a comma and a space, the name, an exclamation mark.
+Define `greet(name, greeting="Hello")` que devolva `"<greeting>, <name>!"` --
+exatamente: o cumprimento, uma vírgula e um espaço, o nome, um ponto de exclamação.
 
-## Done when
+## Está feito quando
 
-- `greet("Ada")` returns `"Hello, Ada!"` (the default at work).
-- `greet("Ada", "Hi")` returns `"Hi, Ada!"`.
-- Without the default, the one-argument call would crash -- the checker makes
-  both kinds of call.
+- `greet("Ada")` devolve `"Hello, Ada!"` (o valor por omissão em ação).
+- `greet("Ada", "Hi")` devolve `"Hi, Ada!"`.
+- Sem o valor por omissão, a chamada com um só argumento rebentaria -- o verificador faz
+  os dois tipos de chamada.
 """,
 
-"6.4 hints": r"""The default goes in the def line:  def greet(name, greeting="Hello"):
+"6.4 hints": r"""O valor por omissão vai na linha do def:  def greet(name, greeting="Hello"):
 
 ---
 
-Build the result with an f-string: the greeting, then ", ", then the name,
-then "!".
+Constrói o resultado com uma f-string: o cumprimento, depois ", ", depois o nome,
+depois "!".
 
 ---
 
@@ -296,15 +296,15 @@ def greet(name, greeting="Hello"):
     return f"{greeting}, {name}!"
 """,
 
-"6.4 reference": r"""A **default value** in the header makes a parameter optional: if the caller omits
-that argument, the default is used.
+"6.4 reference": r"""Um **valor por omissão** no cabeçalho torna um parâmetro opcional: se quem chama omite
+esse argumento, o valor por omissão é usado.
 
-- `def greet(name, greeting="hi"):` can be called `greet("Ada")` (uses `"hi"`) or
-  `greet("Ada", "hello")` (overrides it).
-- Parameters **with** defaults must come **after** those without.
-- Use a *new* default each call for mutable types — write `def f(items=None):`
-  then `if items is None: items = []`, never `def f(items=[]):` (one shared list
-  persists between calls).
+- `def greet(name, greeting="hi"):` pode ser chamada como `greet("Ada")` (usa `"hi"`) ou
+  `greet("Ada", "hello")` (substitui-o).
+- Os parâmetros **com** valores por omissão têm de vir **depois** dos que não têm.
+- Usa um valor por omissão *novo* em cada chamada para tipos mutáveis — escreve `def f(items=None):`
+  depois `if items is None: items = []`, nunca `def f(items=[]):` (uma única lista partilhada
+  persiste entre chamadas).
 
 ```python
 def power(base, exp=2):
@@ -315,13 +315,13 @@ power(5, 3)    # 125
 ```
 """,
 
-"6.5 brief": r"""# 6.5 -- return ends the function
+"6.5 brief": r"""# 6.5 -- return termina a função
 
-## Concept
+## Conceito
 
-`return` doesn't just hand back a value -- it **stops the function on the
-spot**. Nothing after an executed `return` runs. That makes branching
-functions read cleanly: settle each case and leave.
+`return` não se limita a devolver um valor -- **para a função no
+momento**. Nada depois de um `return` executado corre. Isso torna as funções com
+ramificações fáceis de ler: resolve cada caso e sai.
 
 ```python
 def sign(n):
@@ -332,14 +332,14 @@ def sign(n):
     return "positive"
 ```
 
-Notice there is no `else` -- none is needed. If the first `return` fired, the
-function is already over; reaching the last line *means* `n` was positive.
-This style is called an **early return**.
+Repara que não há `else` -- não é preciso nenhum. Se o primeiro `return` disparou, a
+função já terminou; chegar à última linha *significa* que `n` era positivo.
+Este estilo chama-se **retorno antecipado**.
 
-A function with several `return` statements still returns exactly **one**
-value per call: whichever `return` runs first.
+Uma função com vários `return` continua a devolver exatamente **um**
+valor por chamada: o do primeiro `return` que executar.
 
-## Example
+## Exemplo
 
 ```python
 sign(-3)    # "negative"
@@ -347,24 +347,24 @@ sign(0)     # "zero"
 sign(42)    # "positive"
 ```
 
-## Your task
+## A tua tarefa
 
-Define `sign(n)` that returns `"negative"`, `"zero"`, or `"positive"` for a
-whole number `n`.
+Define `sign(n)` que devolva `"negative"`, `"zero"`, ou `"positive"` para um
+número inteiro `n`.
 
-## Done when
+## Está feito quando
 
-- `sign(-3)`, `sign(0)`, `sign(42)` return the three words above.
-- The boundary cases `-1` and `1` are right too.
+- `sign(-3)`, `sign(0)`, `sign(42)` devolvem as três palavras acima.
+- Os casos-limite `-1` e `1` também estão corretos.
 """,
 
-"6.5 hints": r"""Each case is an if with its own return. Once a return runs, the function is
-over.
+"6.5 hints": r"""Cada caso é um if com o seu próprio return. Assim que um return executa, a função
+termina.
 
 ---
 
-Check `n < 0` first, then `n == 0`; if neither returned, n must be positive --
-just return "positive" with no condition.
+Verifica `n < 0` primeiro, depois `n == 0`; se nenhum devolveu, n tem de ser positivo --
+basta devolver "positive" sem condição nenhuma.
 
 ---
 
@@ -376,14 +376,14 @@ def sign(n):
     return "positive"
 """,
 
-"6.5 reference": r"""A `return` can appear **anywhere** in a function, and reaching it ends the call at
-once — later lines don't run. An **early return** uses this to handle a case and
-leave immediately.
+"6.5 reference": r"""Um `return` pode aparecer **em qualquer lugar** de uma função, e alcançá-lo termina a chamada de
+imediato — as linhas seguintes não correm. Um **retorno antecipado** usa isto para tratar um caso e
+sair de imediato.
 
-- It flattens code: handle the special or invalid case up front with a guard
-  (`if bad: return ...`), then write the main path without nesting it in an
+- Achata o código: trata o caso especial ou inválido logo à cabeça com uma guarda
+  (`if bad: return ...`), depois escreve o caminho principal sem o aninhar num
   `else`.
-- The first `return` reached wins; nothing after it in that call executes.
+- O primeiro `return` alcançado vence; nada depois dele nessa chamada é executado.
 
 ```python
 def reciprocal(n):
@@ -393,30 +393,30 @@ def reciprocal(n):
 ```
 """,
 
-"6.6 brief": r"""# 6.6 -- Returning two values
+"6.6 brief": r"""# 6.6 -- Devolver dois valores
 
-## Concept
+## Conceito
 
-`return` can hand back **several values at once** -- separate them with a
-comma and Python packs them into a **tuple** (4.7):
+`return` pode devolver **vários valores de uma vez** -- separa-os com uma
+vírgula e o Python empacota-os num **tuplo** (4.7):
 
 ```python
 def min_max(nums):
     return min(nums), max(nums)
 ```
 
-The caller can keep the tuple, or unpack it straight into variables -- the
-same unpacking you used for `a, b = b, a`:
+Quem chama pode guardar o tuplo, ou desempacotá-lo diretamente em variáveis -- o
+mesmo desempacotamento que usaste em `a, b = b, a`:
 
 ```python
 pair = min_max([3, 1, 4])     # (1, 4)  -- one tuple
 lo, hi = min_max([3, 1, 4])   # lo = 1, hi = 4  -- unpacked
 ```
 
-This is how Python functions return "two answers" -- there is no special
-trick, just a tuple and unpacking.
+É assim que as funções em Python devolvem "duas respostas" -- não há nenhum
+truque especial, apenas um tuplo e desempacotamento.
 
-## Example
+## Exemplo
 
 ```python
 def split_name(full):
@@ -427,23 +427,23 @@ first, last = split_name("Ada King Lovelace")
 # first = "Ada", last = "Lovelace"
 ```
 
-## Your task
+## A tua tarefa
 
-Define `min_max(nums)` that returns the smallest and largest item of a
-non-empty list, **in that order**, as a tuple. (`min()`/`max()` are from 5.3.)
+Define `min_max(nums)` que devolva o item mais pequeno e o maior de uma
+lista não vazia, **por essa ordem**, como um tuplo. (`min()`/`max()` são de 5.3.)
 
-## Done when
+## Está feito quando
 
-- `min_max([3, 1, 4])` returns `(1, 4)` -- a tuple, smallest first.
-- `min_max([7])` returns `(7, 7)`.
-- Negative numbers work.
+- `min_max([3, 1, 4])` devolve `(1, 4)` -- um tuplo, o mais pequeno primeiro.
+- `min_max([7])` devolve `(7, 7)`.
+- Números negativos funcionam.
 """,
 
-"6.6 hints": r"""Two values after one return, separated by a comma, come back as a tuple.
+"6.6 hints": r"""Dois valores depois de um return, separados por uma vírgula, voltam como um tuplo.
 
 ---
 
-You already have both halves from 5.3: `return min(nums), max(nums)`.
+Já tens as duas metades de 5.3: `return min(nums), max(nums)`.
 
 ---
 
@@ -451,14 +451,14 @@ def min_max(nums):
     return min(nums), max(nums)
 """,
 
-"6.6 reference": r"""A function returns **one** object, but that object can be a **tuple**, so
-`return a, b` hands back several values at once (Python packs them into a tuple).
-The caller **unpacks** them with matching names.
+"6.6 reference": r"""Uma função devolve **um** objeto, mas esse objeto pode ser um **tuplo**, por isso
+`return a, b` devolve vários valores de uma vez (o Python empacota-os num tuplo).
+Quem chama **desempacota**-os com nomes correspondentes.
 
-- `return lo, hi` returns the tuple `(lo, hi)`; `low, high = bounds(xs)` unpacks
-  it into two names.
-- The counts must match on unpacking. Catch the whole tuple with one name if you
-  prefer: `result = bounds(xs)` then `result[0]`, `result[1]`.
+- `return lo, hi` devolve o tuplo `(lo, hi)`; `low, high = bounds(xs)` desempacota-o
+  em dois nomes.
+- As contagens têm de corresponder no desempacotamento. Podes capturar o tuplo inteiro com um só nome se
+  preferires: `result = bounds(xs)` depois `result[0]`, `result[1]`.
 
 ```python
 def min_max(nums):
@@ -468,53 +468,53 @@ lo, hi = min_max([3, 1, 4])   # lo = 1, hi = 4
 ```
 """,
 
-"6.7 brief": r"""# 6.7 -- Building on built-ins
+"6.7 brief": r"""# 6.7 -- Construir sobre funções nativas
 
-## Concept
+## Conceito
 
-Functions shine when they bundle a small *recipe* behind a good name. The
-recipe for an average:
+As funções brilham quando embrulham uma pequena *receita* atrás de um bom nome. A
+receita de uma média:
 
-> the total, divided by how many there are
+> o total, dividido pela quantidade de itens
 
-You own every ingredient: `sum()` (5.2), `len()` (2.6), and `/` (1.9).
-Remember from 1.9 that `/` **always returns a float** -- `4 / 2` is `2.0`,
-not `2`. That is correct here: an average is naturally a decimal number.
+Tens todos os ingredientes: `sum()` (5.2), `len()` (2.6), e `/` (1.9).
+Lembra-te de 1.9 que `/` **devolve sempre um float** -- `4 / 2` é `2.0`,
+não `2`. Isso está correto aqui: uma média é naturalmente um número decimal.
 
 ```python
 def average(nums):
     return sum(nums) / len(nums)
 ```
 
-One function, one line, instantly reusable -- and the name says what the line
-means.
+Uma função, uma linha, instantaneamente reutilizável -- e o nome diz o que a linha
+significa.
 
-## Example
+## Exemplo
 
 ```python
 average([1, 2])        # 1.5
 average([10, 20, 30])  # 20.0
 ```
 
-## Your task
+## A tua tarefa
 
-Define `average(nums)` that returns the average of a non-empty list of
-numbers.
+Define `average(nums)` que devolva a média de uma lista não vazia de
+números.
 
-## Done when
+## Está feito quando
 
-- `average([1, 2])` returns `1.5`; `average([10, 20, 30])` returns `20.0`.
-- The result is a **float** even when the division is exact (use `/`,
-  not `//`).
-- A one-item list returns that item (as a float).
+- `average([1, 2])` devolve `1.5`; `average([10, 20, 30])` devolve `20.0`.
+- O resultado é um **float** mesmo quando a divisão é exata (usa `/`,
+  não `//`).
+- Uma lista com um só item devolve esse item (como float).
 """,
 
-"6.7 hints": r"""An average is the total divided by the count -- and you have a built-in for
-each half.
+"6.7 hints": r"""Uma média é o total dividido pela contagem -- e tens uma função nativa para
+cada metade.
 
 ---
 
-`sum(nums)` over `len(nums)`, with `/` (the float division from 1.9).
+`sum(nums)` sobre `len(nums)`, com `/` (a divisão em float de 1.9).
 
 ---
 
@@ -522,13 +522,13 @@ def average(nums):
     return sum(nums) / len(nums)
 """,
 
-"6.7 reference": r"""Functions **compose built-ins** into a named, reusable operation. An `average`
-function is the model: it wraps `sum` and `len` behind one clear name.
+"6.7 reference": r"""As funções **compõem funções nativas** numa operação nomeada e reutilizável. Uma função
+`average` é o modelo: embrulha `sum` e `len` atrás de um nome claro.
 
-- `return sum(nums) / len(nums)` computes the mean — but `len(nums)` is `0` for an
-  empty list, which raises `ZeroDivisionError`, so guard it with an early return.
-- Naming the operation (`average(scores)`) makes calling code read as intent, and
-  fixing or improving the logic happens in one place.
+- `return sum(nums) / len(nums)` calcula a média — mas `len(nums)` é `0` para uma
+  lista vazia, o que levanta `ZeroDivisionError`, por isso protege-a com um retorno antecipado.
+- Nomear a operação (`average(scores)`) faz com que o código que a chama se leia como intenção, e
+  corrigir ou melhorar a lógica acontece num só sítio.
 
 ```python
 def average(nums):
@@ -540,12 +540,12 @@ average([2, 4, 9])    # 5.0
 ```
 """,
 
-"6.8 brief": r"""# 6.8 -- Functions calling functions
+"6.8 brief": r"""# 6.8 -- Funções a chamar funções
 
-## Concept
+## Conceito
 
-Your functions can call **each other**. That is the real power move: solve a
-small problem once, name it, and build the next function on top.
+As tuas funções podem chamar-se **umas às outras**. Esse é o verdadeiro golpe de mestre: resolve um
+problema pequeno uma vez, dá-lhe um nome, e constrói a função seguinte em cima dele.
 
 ```python
 def clean(text):
@@ -555,16 +555,16 @@ def same_word(a, b):
     return clean(a) == clean(b)
 ```
 
-`same_word` doesn't repeat the strip-and-lower recipe -- it *delegates* to
-`clean`. If you ever improve `clean` (say, also removing punctuation), every
-function built on it improves for free. Repeating the recipe in both places
-is how bugs are born: fix one copy, forget the other.
+`same_word` não repete a receita de retirar espaços e minusculizar -- **delega** em
+`clean`. Se alguma vez melhorares `clean` (digamos, removendo também pontuação), todas as
+funções construídas sobre ela melhoram de graça. Repetir a receita nos dois sítios
+é como nascem os bugs: corriges uma cópia, esqueces a outra.
 
-Note `same_word` returns the result of a comparison -- a **boolean**
-(`True`/`False`), like 3.1. No `if` needed: `clean(a) == clean(b)` already
-*is* the answer.
+Repara que `same_word` devolve o resultado de uma comparação -- um **booleano**
+(`True`/`False`), como em 3.1. Não é preciso `if`: `clean(a) == clean(b)` já
+*é* a resposta.
 
-## Example
+## Exemplo
 
 ```python
 clean("  Tea ")              # "tea"
@@ -572,29 +572,29 @@ same_word("  Tea ", "tea")   # True
 same_word("tea", "milk")     # False
 ```
 
-## Your task
+## A tua tarefa
 
-Define **both** functions:
+Define **ambas** as funções:
 
-- `clean(text)` -- returns the text with surrounding spaces stripped and
-  lowercased (2.7).
-- `same_word(a, b)` -- returns `True` exactly when the two texts are the same
-  after cleaning. It must **call `clean`** rather than redo the recipe.
+- `clean(text)` -- devolve o texto sem os espaços à volta e em minúsculas
+  (2.7).
+- `same_word(a, b)` -- devolve `True` exatamente quando os dois textos são iguais
+  depois de limpos. Tem de **chamar `clean`** em vez de refazer a receita.
 
-## Done when
+## Está feito quando
 
-- `clean("  Tea ")` returns `"tea"`.
-- `same_word("  Tea ", "tea")` is `True`; `same_word("tea", "milk")` is `False`.
-- `same_word` calls `clean` -- the checker looks for the delegation.
+- `clean("  Tea ")` devolve `"tea"`.
+- `same_word("  Tea ", "tea")` é `True`; `same_word("tea", "milk")` é `False`.
+- `same_word` chama `clean` -- o verificador procura a delegação.
 """,
 
-"6.8 hints": r"""Write clean first and get it passing in your head: .strip() then .lower(),
-chained.
+"6.8 hints": r"""Escreve primeiro clean e imagina-a a passar: .strip() depois .lower(),
+encadeados.
 
 ---
 
-same_word is one line: compare clean(a) with clean(b) using == and return the
-result -- a comparison already IS True or False.
+same_word é uma linha: compara clean(a) com clean(b) usando == e devolve o
+resultado -- uma comparação já É True ou False.
 
 ---
 
@@ -605,13 +605,13 @@ def same_word(a, b):
     return clean(a) == clean(b)
 """,
 
-"6.8 reference": r"""Functions **call other functions**, so a larger task is built from small, tested
-pieces. The result of one becomes the argument or building block of the next.
+"6.8 reference": r"""As funções **chamam outras funções**, por isso uma tarefa maior é construída a partir de peças
+pequenas e testadas. O resultado de uma torna-se o argumento ou bloco de construção da seguinte.
 
-- A helper does one job well; a higher-level function calls several helpers and
-  combines their results. This is the core of structuring a program.
-- `f(g(x))` feeds `g`'s result straight into `f`. Each function stays simple and
-  independently checkable.
+- Um auxiliar faz bem um trabalho; uma função de nível superior chama vários auxiliares e
+  combina os seus resultados. Isto é o cerne de estruturar um programa.
+- `f(g(x))` alimenta o resultado de `g` diretamente para `f`. Cada função mantém-se simples e
+  verificável de forma independente.
 
 ```python
 def clean(s):  return s.strip().lower()
@@ -621,19 +621,19 @@ is_yes("  YES ")   # True  -- is_yes builds on clean
 ```
 """,
 
-"6.9 brief": r"""# 6.9 -- Recursion: a function calling itself
+"6.9 brief": r"""# 6.9 -- Recursão: uma função a chamar-se a si própria
 
-## Concept
+## Conceito
 
-A function may call **itself**. That is called **recursion**, and it works
-whenever a problem contains a smaller copy of the same problem.
+Uma função pode chamar-se **a si própria**. Isso chama-se **recursão**, e funciona
+sempre que um problema contém uma cópia mais pequena do mesmo problema.
 
-The factorial is the classic: `5!` means `5 * 4 * 3 * 2 * 1`. But look again:
+O fatorial é o clássico: `5!` significa `5 * 4 * 3 * 2 * 1`. Mas olha outra vez:
 
-> `5!` is just `5 * 4!` -- and `4!` is `4 * 3!` ...
+> `5!` é apenas `5 * 4!` -- e `4!` é `4 * 3!` ...
 
-A recursive function states exactly that, plus a **base case** -- the smallest
-input answered directly, with no further calls:
+Uma função recursiva afirma exatamente isso, mais um **caso base** -- a entrada
+mais pequena respondida diretamente, sem mais chamadas:
 
 ```python
 def fact(n):
@@ -642,14 +642,14 @@ def fact(n):
     return n * fact(n - 1)  # the smaller copy of the same problem
 ```
 
-`fact(3)` runs as `3 * fact(2)` -> `3 * 2 * fact(1)` -> `3 * 2 * 1 * fact(0)`
--> `3 * 2 * 1 * 1` = `6`. Without the base case the calls would never stop --
-recursion's version of an endless loop.
+`fact(3)` corre como `3 * fact(2)` -> `3 * 2 * fact(1)` -> `3 * 2 * 1 * fact(0)`
+-> `3 * 2 * 1 * 1` = `6`. Sem o caso base as chamadas nunca parariam --
+a versão da recursão de um ciclo sem fim.
 
-You could compute a factorial with a `for` loop -- but the *lesson* here is the
-self-call, so this puzzle requires it.
+Podias calcular um fatorial com um ciclo `for` -- mas a *lição* aqui é a
+auto-chamada, por isso este puzzle exige-a.
 
-## Example
+## Exemplo
 
 ```python
 fact(0)    # 1
@@ -657,24 +657,24 @@ fact(3)    # 6
 fact(5)    # 120
 ```
 
-## Your task
+## A tua tarefa
 
-Define `fact(n)` that returns `n!` **recursively**: a base case for `0`, and
-`n * fact(n - 1)` for the rest. `n` is never negative.
+Define `fact(n)` que devolva `n!` **recursivamente**: um caso base para `0`, e
+`n * fact(n - 1)` para o resto. `n` nunca é negativo.
 
-## Done when
+## Está feito quando
 
-- `fact(0)` is `1`, `fact(1)` is `1`, `fact(5)` is `120`.
-- `fact` calls itself -- the checker looks for the self-call, so a loop
-  version won't pass.
+- `fact(0)` é `1`, `fact(1)` é `1`, `fact(5)` é `120`.
+- `fact` chama-se a si própria -- o verificador procura a auto-chamada, por isso uma versão
+  com ciclo não vai passar.
 """,
 
-"6.9 hints": r"""Answer the smallest case first: if n is 0, return 1 -- no call needed.
+"6.9 hints": r"""Responde primeiro ao caso mais pequeno: se n é 0, devolve 1 -- não é preciso chamar nada.
 
 ---
 
-For everything else, trust the function you are writing:
-return n * fact(n - 1). The early return (6.5) keeps the base case clean.
+Para todo o resto, confia na função que estás a escrever:
+return n * fact(n - 1). O retorno antecipado (6.5) mantém o caso base limpo.
 
 ---
 
@@ -684,17 +684,17 @@ def fact(n):
     return n * fact(n - 1)
 """,
 
-"6.9 reference": r"""A **recursive** function calls **itself** to solve a smaller version of the same
-problem. Two parts are essential:
+"6.9 reference": r"""Uma função **recursiva** chama-se **a si própria** para resolver uma versão mais pequena do mesmo
+problema. Duas partes são essenciais:
 
-- a **base case** that returns directly **without** recursing — this stops the
-  recursion;
-- a **recursive case** that calls the function on a smaller input and builds on
-  the result, moving toward the base case each time.
+- um **caso base** que devolve diretamente **sem** recorrer — isto termina a
+  recursão;
+- um **caso recursivo** que chama a função sobre uma entrada mais pequena e constrói sobre
+  o resultado, aproximando-se do caso base a cada vez.
 
-Miss or never reach the base case and the calls nest until Python raises
-`RecursionError`. Many recursions have a simpler loop form; recursion shines when
-the problem is itself self-similar.
+Se o caso base falhar ou nunca for alcançado, as chamadas aninham-se até o Python levantar
+`RecursionError`. Muitas recursões têm uma forma mais simples com ciclo; a recursão brilha quando
+o problema é, em si, auto-semelhante.
 
 ```python
 def factorial(n):
@@ -706,19 +706,19 @@ factorial(4)   # 24
 ```
 """,
 
-"6.10 brief": r"""# 6.10 -- Capstone: a tiny library
+"6.10 brief": r"""# 6.10 -- Capítulo final: uma pequena biblioteca
 
-## Concept
+## Conceito
 
-Nothing new -- this capstone is the chapter in miniature: several functions,
-each with one clear job, the later ones **delegating** to the earlier ones
-(6.8). A file of related functions like this is the seed of every real
-*library* you will ever import.
+Nada de novo -- este capítulo final é o capítulo em miniatura: várias funções,
+cada uma com um trabalho claro, as últimas a **delegar** nas anteriores
+(6.8). Um ficheiro de funções relacionadas como este é a semente de qualquer
+*biblioteca* real que alguma vez vieres a importar.
 
-The pieces: `for ch in word` (3.10), `in` (5.1), the tally idea (5.9),
-f-strings (2.10), and early returns (6.5).
+As peças: `for ch in word` (3.10), `in` (5.1), a ideia da contagem (5.9),
+f-strings (2.10), e retornos antecipados (6.5).
 
-## Example
+## Exemplo
 
 ```python
 count_vowels("tea")        # 2   ("e" and "a")
@@ -727,31 +727,31 @@ describe("tea")            # "tea has 2 vowels"
 describe("xyz")            # "xyz has no vowels"
 ```
 
-## Your task
+## A tua tarefa
 
-Define **both** functions:
+Define **ambas** as funções:
 
-- `count_vowels(word)` -- returns how many characters of `word` are vowels
-  (`a`, `e`, `i`, `o`, `u`; the words are lowercase).
-- `describe(word)` -- returns the string `"<word> has <n> vowels"`, except
-  when the count is zero: then it is `"<word> has no vowels"`. It must **call
+- `count_vowels(word)` -- devolve quantos caracteres de `word` são vogais
+  (`a`, `e`, `i`, `o`, `u`; as palavras estão em minúsculas).
+- `describe(word)` -- devolve a string `"<word> has <n> vowels"`, exceto
+  quando a contagem é zero: nesse caso é `"<word> has no vowels"`. Tem de **chamar
   `count_vowels`**.
 
-## Done when
+## Está feito quando
 
-- `count_vowels("tea")` is `2`; `count_vowels("xyz")` is `0`.
-- `describe("tea")` is `"tea has 2 vowels"`; `describe("xyz")` is
+- `count_vowels("tea")` é `2`; `count_vowels("xyz")` é `0`.
+- `describe("tea")` é `"tea has 2 vowels"`; `describe("xyz")` é
   `"xyz has no vowels"`.
-- `describe` delegates to `count_vowels` -- the checker looks for the call.
+- `describe` delega em `count_vowels` -- o verificador procura a chamada.
 """,
 
-"6.10 hints": r"""count_vowels is a tally over the characters: loop with `for ch in word` and
-test `ch in "aeiou"`.
+"6.10 hints": r"""count_vowels é uma contagem sobre os caracteres: percorre com `for ch in word` e
+testa `ch in "aeiou"`.
 
 ---
 
-describe calls count_vowels once, stores the number, then early-returns the
-"no vowels" wording when it is 0; otherwise an f-string with the count.
+describe chama count_vowels uma vez, guarda o número, depois faz um retorno antecipado com o
+texto de "no vowels" quando é 0; caso contrário, uma f-string com a contagem.
 
 ---
 
@@ -769,13 +769,13 @@ def describe(word):
     return f"{word} has {n} vowels"
 """,
 
-"6.10 reference": r"""A **library** here means a set of related functions you've written, each named
-for its job, that together form a reusable toolkit — the payoff of the chapter.
+"6.10 reference": r"""Uma **biblioteca** aqui significa um conjunto de funções relacionadas que escreveste, cada uma nomeada
+pelo seu trabalho, que juntas formam um conjunto de ferramentas reutilizável — a recompensa do capítulo.
 
-- Build small functions that each do one thing and `return` their result; then
-  higher-level functions call them. Calling code reads as a sequence of intents.
-- Keeping logic inside named functions (rather than copied inline) means a fix or
-  improvement lands in one place and every caller benefits.
+- Constrói funções pequenas que fazem cada uma uma coisa e devolvem (`return`) o seu resultado; depois
+  as funções de nível superior chamam-nas. O código que as chama lê-se como uma sequência de intenções.
+- Manter a lógica dentro de funções nomeadas (em vez de copiada em linha) significa que uma correção ou
+  melhoria acontece num só sítio e todos os que chamam beneficiam.
 
 ```python
 def clean(s):    return s.strip().lower()

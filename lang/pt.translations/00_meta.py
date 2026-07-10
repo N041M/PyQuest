@@ -9,571 +9,571 @@
 
 TRANSLATIONS = {
 
-"name": "<your language's own name, e.g. Čeština>",
+"name": "Português",
 
-"ui app.no_loaded_menu": "No puzzle loaded yet -- here's the menu.",
+"ui app.no_loaded_menu": "Ainda não há nenhum puzzle carregado -- aqui está o menu.",
 
-"ui app.no_puzzles": "No puzzles found under %s",
+"ui app.no_puzzles": "Não foram encontrados puzzles em %s",
 
-"ui app.open_menu_status": r"""Open the menu to set up and pick a level:  %s
+"ui app.open_menu_status": r"""Abre o menu para te configurares e escolheres um nível:  %s
 """,
 
-"ui app.run_full_list": "run  %s  for the full list.",
+"ui app.run_full_list": "corre  %s  para a lista completa.",
 
-"ui app.setup_below": r"""Set up and pick a level from the menu below.
+"ui app.setup_below": r"""Configura-te e escolhe um nível no menu abaixo.
 """,
 
-"ui app.unknown": "Unknown command '%s'.",
+"ui app.unknown": "Comando desconhecido '%s'.",
 
-"ui app.unknown_suggest": "Unknown command '%s'. Did you mean  %s ?",
+"ui app.unknown_suggest": "Comando desconhecido '%s'. Querias dizer  %s ?",
 
-"ui app.welcome": "Welcome to PyQuest!",
+"ui app.welcome": "Bem-vindo ao PyQuest!",
 
-"ui card.chapter": "chapter %d · %s",
+"ui card.chapter": "capítulo %d · %s",
 
-"ui card.f_edit": "edit",
+"ui card.f_edit": "editar",
 
-"ui card.f_read": "read",
+"ui card.f_read": "ler",
 
-"ui card.hint_lead": "hint  ",
+"ui card.hint_lead": "dica  ",
 
-"ui card.locked": "locked",
+"ui card.locked": "bloqueado",
 
-"ui card.note_lead": "note  ",
+"ui card.note_lead": "nota  ",
 
-"ui card.save_before": "(save before checking)",
+"ui card.save_before": "(guarda antes de verificar)",
 
-"ui card.solved": "solved",
+"ui card.solved": "resolvido",
 
-"ui check.banner_not_yet": "not yet",
+"ui check.banner_not_yet": "ainda não",
 
-"ui check.banner_so_close": "so close",
+"ui check.banner_so_close": "quase lá",
 
-"ui check.banner_solved": "solved",
+"ui check.banner_solved": "resolvido",
 
-"ui check.bonus_default": "this works, but could be more efficient",
+"ui check.bonus_default": "isto funciona, mas podia ser mais eficiente",
 
-"ui check.bonus_no": "bonus: not optimal yet — %s",
+"ui check.bonus_no": "bónus: ainda não é o ideal — %s",
 
-"ui check.bonus_yes": "bonus: optimal — efficient solution",
+"ui check.bonus_yes": "bónus: ideal — solução eficiente",
 
-"ui check.code_saved": "your code is saved.",
+"ui check.code_saved": "o teu código está guardado.",
 
-"ui check.crash_body": r"""Python raised an error%s:
+"ui check.crash_body": r"""O Python levantou um erro%s:
 
 %s
 
-Read the error name: it points at what went wrong.
+Lê o nome do erro: indica o que correu mal.
 
 %s
 """,
 
-"ui check.crash_title": "Crash -- your code started but hit an error",
+"ui check.crash_title": "Falha -- o teu código começou mas encontrou um erro",
 
-"ui check.crash_title2": "Crash -- your code hit an error",
+"ui check.crash_title2": "Falha -- o teu código encontrou um erro",
 
-"ui check.expected": "Expected:",
+"ui check.expected": "Esperado:",
 
-"ui check.got": "Got:",
+"ui check.got": "Obtido:",
 
-"ui check.lesson_body": r"""Your output is correct -- but this puzzle isn't really about the answer.
-It's teaching a specific tool, and your solution reached the result
-another way, so the lesson got skipped.
+"ui check.lesson_body": r"""O teu resultado está correto -- mas este puzzle não é sobre a resposta em si.
+Ensina uma ferramenta específica, e a tua solução chegou ao resultado
+de outra forma, pelo que a lição acabou por ser evitada.
 """,
 
-"ui check.lesson_rework": "Rework it to use what the puzzle teaches, then check again.",
+"ui check.lesson_rework": "Refaz para usares o que o puzzle ensina, depois verifica outra vez.",
 
-"ui check.lesson_title": "Correct answer -- but not this puzzle's lesson",
+"ui check.lesson_title": "Resposta correta -- mas não é a lição deste puzzle",
 
-"ui check.lesson_wants": "This puzzle wants:",
+"ui check.lesson_wants": "Este puzzle pretende:",
 
-"ui check.missing_body": r"""Your file doesn't define `%s`.
+"ui check.missing_body": r"""O teu ficheiro não define `%s`.
 
-Check the spelling, or add it. For a function the brief asks for
-`%s`, define it with:  def %s(...):
+Verifica a ortografia, ou adiciona-o. Para uma função, o enunciado pede
+`%s`, define-a com:  def %s(...):
 """,
 
-"ui check.missing_title": "Missing piece -- something isn't defined yet",
+"ui check.missing_title": "Falta uma peça -- ainda não está definido algo",
 
-"ui check.next": "next",
+"ui check.next": "seguinte",
 
-"ui check.no_loaded": "No puzzle loaded.",
+"ui check.no_loaded": "Nenhum puzzle carregado.",
 
-"ui check.nudge_hard": "Hard mode: hints unlock after 3 attempts (%d so far).",
+"ui check.nudge_hard": "Modo difícil: as dicas desbloqueiam-se ao fim de 3 tentativas (%d até agora).",
 
-"ui check.nudge_hints": "Hints are now available:  %s",
+"ui check.nudge_hints": "Já há dicas disponíveis:  %s",
 
-"ui check.nudge_stuck": "Stuck?  %s",
+"ui check.nudge_stuck": "Encravado?  %s",
 
-"ui check.retry": "retry",
+"ui check.retry": "repetir",
 
-"ui check.retry_hint": "to clear it and solve again from scratch",
+"ui check.retry_hint": "para o limpar e resolver de novo do zero",
 
-"ui check.save_tip": r"""Did you save work.py in your editor? Unsaved edits are the #1 cause
-of a check that 'should' pass but doesn't.
+"ui check.save_tip": r"""Guardaste o work.py no teu editor? Alterações não guardadas são a causa
+número um de uma verificação que "devia" passar mas não passa.
 """,
 
-"ui check.start_first": "Start one first:  ",
+"ui check.start_first": "Começa primeiro um:  ",
 
-"ui check.syntax_body": r"""Python stopped at %s
+"ui check.syntax_body": r"""O Python parou em %s
 
-This usually means a typo: a missing quote, parenthesis, colon,
-or wrong indentation. Open work.py and check that line.
+Isto costuma significar um erro de digitação: falta uma aspa, um parêntese,
+dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linha.
 """,
 
-"ui check.syntax_title": "Syntax error -- Python could not read your file",
+"ui check.syntax_title": "Erro de sintaxe -- o Python não conseguiu ler o teu ficheiro",
 
-"ui check.tests_unloadable": r"""Internal: could not load this puzzle's tests.
+"ui check.tests_unloadable": r"""Interno: não foi possível carregar os testes deste puzzle.
 """,
 
-"ui check.was_last": "that was the last puzzle in the course.",
+"ui check.was_last": "esse foi o último puzzle do curso.",
 
-"ui check.wrong_title": "Wrong result -- the code runs but the answer is off",
+"ui check.wrong_title": "Resultado errado -- o código corre mas a resposta está incorreta",
 
-"ui check.your_code": "Your code:",
+"ui check.your_code": "O teu código:",
 
-"ui cockpit.footer": "arrows move · Enter runs it · type a verb · Esc to the shell",
+"ui cockpit.footer": "setas movem · Enter corre · escreve um verbo · Esc para o shell",
 
-"ui date.today": "today",
+"ui date.today": "hoje",
 
-"ui date.yesterday": "yesterday",
+"ui date.yesterday": "ontem",
 
-"ui goto.footer": "run  %s   e.g.  %s   (a bare chapter number works too: %s)",
+"ui goto.footer": "corre  %s   ex.  %s   (um número de capítulo simples também funciona: %s)",
 
-"ui goto.no_match": "There is no puzzle '%s'. Pick one of these:",
+"ui goto.no_match": "Não existe nenhum puzzle '%s'. Escolhe um destes:",
 
-"ui goto.prompt": "id (blank = cancel) > ",
+"ui goto.prompt": "id (em branco = cancelar) > ",
 
-"ui goto.title": "goto · choose a puzzle",
+"ui goto.title": "ir para · escolhe um puzzle",
 
-"ui help.available_now": "available now",
+"ui help.available_now": "disponível agora",
 
-"ui help.footer": "%s available now   %s needs a puzzle loaded",
+"ui help.footer": "%s disponível agora   %s precisa de um puzzle carregado",
 
-"ui help.group_always": "anywhere",
+"ui help.group_always": "em qualquer lado",
 
-"ui help.group_puzzle": "while solving a puzzle",
+"ui help.group_puzzle": "a resolver um puzzle",
 
-"ui help.in_puzzle": "in puzzle %s",
+"ui help.in_puzzle": "no puzzle %s",
 
-"ui help.load_first": "load a puzzle first (%s)",
+"ui help.load_first": "carrega primeiro um puzzle (%s)",
 
-"ui help.no_loaded": "no puzzle loaded",
+"ui help.no_loaded": "nenhum puzzle carregado",
 
-"ui help.title": "command reference",
+"ui help.title": "referência de comandos",
 
-"ui hint.hard_locked": "Hard mode: hints unlock after 3 attempts (%d so far).",
+"ui hint.hard_locked": "Modo difícil: as dicas desbloqueiam-se ao fim de 3 tentativas (%d até agora).",
 
-"ui hint.more": "run hint again for more",
+"ui hint.more": "corre hint outra vez para mais",
 
-"ui hint.no_more": "No more hints. Try:  %s",
+"ui hint.no_more": "Não há mais dicas. Tenta:  %s",
 
-"ui hint.none": "No hints for this puzzle.",
+"ui hint.none": "Sem dicas para este puzzle.",
 
-"ui hint.title": "hint  %d / %d · %s",
+"ui hint.title": "dica  %d / %d · %s",
 
-"ui jump.locked": "'%s' is locked.",
+"ui jump.locked": "'%s' está bloqueado.",
 
-"ui jump.locked_2": "In %s mode you can only revisit unlocked puzzles.",
+"ui jump.locked_2": "No modo %s só podes revisitar puzzles desbloqueados.",
 
-"ui jump.locked_3": "Use %s to advance one, or switch to easy mode.",
+"ui jump.locked_3": "Usa %s para avançar um, ou muda para o modo fácil.",
 
-"ui jump.now_on": "Now on %s -- %s%s",
+"ui jump.now_on": "Agora em %s -- %s%s",
 
-"ui jump.restored": "  (your saved code was restored)",
+"ui jump.restored": "  (o teu código guardado foi restaurado)",
 
-"ui keys.arrows": "arrows move",
+"ui keys.arrows": "setas movem",
 
-"ui keys.enter": "Enter select",
+"ui keys.enter": "Enter seleciona",
 
-"ui keys.esc": "Esc back",
+"ui keys.esc": "Esc voltar",
 
-"ui keys.position": "%d of %d",
+"ui keys.position": "%d de %d",
 
-"ui keys.type": "type to enter one",
+"ui keys.type": "escreve para entrar num",
 
-"ui lang.picker_title": "language",
+"ui lang.picker_title": "idioma",
 
-"ui lang.prompt": "language code  (0 = back) > ",
+"ui lang.prompt": "código do idioma  (0 = voltar) > ",
 
-"ui lang.set": "language set to %s.",
+"ui lang.set": "idioma definido para %s.",
 
-"ui map.title": "map",
+"ui map.title": "mapa",
 
-"ui menu.footer_compact": "arrows select · Enter runs it · type a verb",
+"ui menu.footer_compact": "setas selecionam · Enter corre · escreve um verbo",
 
-"ui menu.footer_full": "arrows move · Enter chooses · type a verb · help",
+"ui menu.footer_full": "setas movem · Enter escolhe · escreve um verbo · help",
 
-"ui menu.learn": "learn",
+"ui menu.learn": "aprender",
 
-"ui menu.level_prompt": "id  (0 = back) > ",
+"ui menu.level_prompt": "id  (0 = voltar) > ",
 
-"ui menu.level_title": "select level",
+"ui menu.level_title": "seleciona o nível",
 
-"ui menu.main_title": "main menu",
+"ui menu.main_title": "menu principal",
 
-"ui menu.note.map": "the chapter / puzzle tree",
+"ui menu.note.map": "a árvore de capítulos / puzzles",
 
-"ui menu.note.select": "jump to any puzzle",
+"ui menu.note.select": "salta para qualquer puzzle",
 
-"ui menu.note.settings": "theme · mode · profiles · shortcuts",
+"ui menu.note.settings": "tema · modo · perfis · atalhos",
 
-"ui menu.note.stats": "attempts · hints · pace",
+"ui menu.note.stats": "tentativas · dicas · ritmo",
 
-"ui menu.note.textbook": "syntax & tips so far",
+"ui menu.note.textbook": "sintaxe e dicas até agora",
 
-"ui menu.note.textbook_sealed": "sealed in hard mode",
+"ui menu.note.textbook_sealed": "selado no modo difícil",
 
-"ui menu.play": "play",
+"ui menu.play": "jogar",
 
-"ui menu.see_you": "see you in the terminal -- solve with  ",
+"ui menu.see_you": "até já no terminal -- resolve com  ",
 
-"ui menu.setup": "set up",
+"ui menu.setup": "configurar",
 
-"ui menu.tty_only": "(run this in a terminal to choose)",
+"ui menu.tty_only": "(corre isto num terminal para escolher)",
 
-"ui menu.type_number": "type a number 0-6, or a command.",
+"ui menu.type_number": "escreve um número de 0 a 6, ou um comando.",
 
-"ui menu.verb_needs_puzzle": "'%s' runs in your terminal, once a puzzle is open.",
+"ui menu.verb_needs_puzzle": "'%s' corre no teu terminal, assim que um puzzle estiver aberto.",
 
-"ui menu.verb_needs_puzzle_2": "Pick %s to start, then save work.py and run  %s",
+"ui menu.verb_needs_puzzle_2": "Escolhe %s para começar, depois guarda o work.py e corre  %s",
 
-"ui menu.verb_terminal": "'%s' is a terminal command, not a menu option.",
+"ui menu.verb_terminal": "'%s' é um comando de terminal, não uma opção do menu.",
 
-"ui menu.verb_terminal_2": "Leave the menu (%s) and run  %s",
+"ui menu.verb_terminal_2": "Sai do menu (%s) e corre  %s",
 
-"ui mode.current": "Current mode: %s",
+"ui mode.current": "Modo atual: %s",
 
-"ui mode.desc_easy": "Pointers shown, hints/solution always available, free jumps.",
+"ui mode.desc_easy": "Pistas mostradas, dicas/solução sempre disponíveis, saltos livres.",
 
-"ui mode.desc_hard": "No skips; hints after 3 tries; solution after solving; textbook sealed.",
+"ui mode.desc_hard": "Sem saltar; dicas ao fim de 3 tentativas; solução depois de resolver; manual selado.",
 
-"ui mode.desc_normal": "Hints on demand, skip forward allowed.",
+"ui mode.desc_normal": "Dicas disponíveis a pedido, avançar é permitido.",
 
-"ui mode.picker_title": "difficulty",
+"ui mode.picker_title": "dificuldade",
 
-"ui mode.prompt": "easy / normal / hard  (0 = back) > ",
+"ui mode.prompt": "fácil / normal / difícil  (0 = voltar) > ",
 
-"ui mode.set": "Mode set to '%s'.",
+"ui mode.set": "Modo definido para '%s'.",
 
-"ui mode.usage": "Usage: %s",
+"ui mode.usage": "Utilização: %s",
 
-"ui nav.hard_skip": "Switch to an easier mode to skip:  %s",
+"ui nav.hard_skip": "Muda para um modo mais fácil para saltar:  %s",
 
-"ui nav.hard_solve": "Hard mode: you must solve %s before moving on.",
+"ui nav.hard_solve": "Modo difícil: tens de resolver %s antes de avançar.",
 
-"ui nav.last_puzzle": "That was the last puzzle in the course.",
+"ui nav.last_puzzle": "Esse foi o último puzzle do curso.",
 
-"ui nav.moved_on": "Moved on from",
+"ui nav.moved_on": "Avançaste de",
 
-"ui nav.not_solved": "%s isn't solved yet.",
+"ui nav.not_solved": "%s ainda não está resolvido.",
 
-"ui nav.not_solved_2": "Run %s until it passes, or %s to move on without solving.",
+"ui nav.not_solved_2": "Corre %s até passar, ou %s para avançar sem resolver.",
 
-"ui nav.skipped": "Skipped (not solved)",
+"ui nav.skipped": "Saltado (não resolvido)",
 
-"ui note.add_one": "add one with  ",
+"ui note.add_one": "adiciona uma com  ",
 
-"ui note.cleared": "Note cleared on %s.",
+"ui note.cleared": "Nota apagada em %s.",
 
-"ui note.header": "note on %s:",
+"ui note.header": "nota em %s:",
 
-"ui note.none_clear": "no note on %s to clear.",
+"ui note.none_clear": "não há nota em %s para apagar.",
 
-"ui note.none_yet": "no note on %s yet.",
+"ui note.none_yet": "ainda não há nota em %s.",
 
-"ui note.saved": "Noted on %s.",
+"ui note.saved": "Anotado em %s.",
 
-"ui profiles.arrow_hint": "arrow to a name to switch · '+ new profile' to create · or type 'rename a b' / 'delete a'",
+"ui profiles.arrow_hint": "usa as setas até um nome para mudar · '+ new profile' para criar · ou escreve 'rename a b' / 'delete a'",
 
-"ui profiles.new_entry": "+ new profile",
+"ui profiles.new_entry": "+ novo perfil",
 
-"ui profiles.new_prompt": "new profile name  (blank = cancel) > ",
+"ui profiles.new_prompt": "nome do novo perfil  (em branco = cancelar) > ",
 
-"ui profiles.prompt": "name to switch/create · 'rename a b' · 'delete a'  (0 = back) > ",
+"ui profiles.prompt": "nome para mudar/criar · 'rename a b' · 'delete a'  (0 = voltar) > ",
 
-"ui profiles.title": "profiles",
+"ui profiles.title": "perfis",
 
-"ui restart.done": "Restarted %s -- blank workspace, progress cleared.",
+"ui restart.done": "Reiniciado %s -- área de trabalho em branco, progresso apagado.",
 
-"ui resume.all_solved": "Every puzzle is solved -- nothing to resume.",
+"ui resume.all_solved": "Todos os puzzles estão resolvidos -- nada para retomar.",
 
-"ui resume.at": "Resuming at %s.",
+"ui resume.at": "A retomar em %s.",
 
-"ui resume.revisit": "revisit any with  ",
+"ui resume.revisit": "revisita qualquer um com  ",
 
-"ui retry.reload": "if your editor still shows old code, reload work.py -- its on-disk copy is now blank.",
+"ui retry.reload": "se o teu editor ainda mostrar código antigo, recarrega o work.py -- a cópia em disco está agora em branco.",
 
-"ui retry.reset": "Reset %s to a blank workspace -- give it another go.",
+"ui retry.reset": "Repõe %s numa área de trabalho em branco -- tenta outra vez.",
 
-"ui retry.stays_solved": "(it stays marked solved; this is just practice)",
+"ui retry.stays_solved": "(continua marcado como resolvido; isto é só prática)",
 
-"ui search.broaden": "try a broader word, or browse the  ",
+"ui search.broaden": "tenta uma palavra mais genérica, ou navega pelo  ",
 
-"ui search.no_match": "no puzzle matches '%s'.",
+"ui search.no_match": "nenhum puzzle corresponde a '%s'.",
 
-"ui search.title": "search · %s",
+"ui search.title": "procurar · %s",
 
-"ui search.usage": "usage:  ",
+"ui search.usage": "utilização:  ",
 
-"ui search.usage_hint": "Find a puzzle by a word in its title or concept.",
+"ui search.usage_hint": "Encontra um puzzle por uma palavra no título ou conceito.",
 
-"ui session.no_shell": r"""Opening the menu. (Couldn't set up the short commands for this
-shell; you can still run `%s start.py <command>`.)
+"ui session.no_shell": r"""A abrir o menu. (Não foi possível configurar os atalhos para este
+shell; ainda podes correr `%s start.py <comando>`.)
 """,
 
-"ui session.starting": "Starting PyQuest with the short commands on for this session.",
+"ui session.starting": "A iniciar o PyQuest com os atalhos ativos para esta sessão.",
 
-"ui session.when_done": r"""When you're done, type  exit  to leave the PyQuest session.
+"ui session.when_done": r"""Quando terminares, escreve  exit  para sair da sessão do PyQuest.
 """,
 
-"ui settings.persistent": "persistent: %s",
+"ui settings.persistent": "persistente: %s",
 
-"ui settings.title": "settings",
+"ui settings.title": "definições",
 
-"ui settings.type_hint": "type theme / mode / profiles / shortcuts / language, or Esc.",
+"ui settings.type_hint": "escreve theme / mode / profiles / shortcuts / language, ou Esc.",
 
-"ui settings.type_number": "type 1-5, or 0 to go back.",
+"ui settings.type_number": "escreve 1-5, ou 0 para voltar.",
 
-"ui setup.activate_now": "Activate now:  %s",
+"ui setup.activate_now": "Ativa agora:  %s",
 
-"ui setup.already": "Already enabled in %s.",
+"ui setup.already": "Já ativado em %s.",
 
-"ui setup.enable_title": "enable the short commands",
+"ui setup.enable_title": "ativar os atalhos",
 
-"ui setup.enabled": "Shortcuts enabled in %s.",
+"ui setup.enabled": "Atalhos ativados em %s.",
 
 "ui setup.f_python": "python",
 
-"ui setup.f_status": "status",
+"ui setup.f_status": "estado",
 
-"ui setup.missing": "%s is missing -- can't install.",
+"ui setup.missing": "%s está em falta -- não é possível instalar.",
 
-"ui setup.none": "No persistent shortcuts in %s.",
+"ui setup.none": "Nenhum atalho persistente em %s.",
 
-"ui setup.opt_a": "A) this terminal only",
+"ui setup.opt_a": "A) só este terminal",
 
-"ui setup.opt_b": "B) every terminal",
+"ui setup.opt_b": "B) todos os terminais",
 
-"ui setup.persist_off": "shortcuts not persistently installed",
+"ui setup.persist_off": "atalhos não instalados de forma persistente",
 
-"ui setup.persist_on": "persistent shortcuts enabled in %s",
+"ui setup.persist_on": "atalhos persistentes ativados em %s",
 
-"ui setup.remove_later": "remove later with  python3 start.py uninstall",
+"ui setup.remove_later": "remove mais tarde com  python3 start.py uninstall",
 
-"ui setup.removed": "Removed PyQuest shortcuts from %s.",
+"ui setup.removed": "Atalhos do PyQuest removidos de %s.",
 
-"ui setup.run": "run:  ",
+"ui setup.run": "corre:  ",
 
-"ui setup.skip": "or skip shortcuts entirely -- python3 start.py … always works.",
+"ui setup.skip": "ou salta os atalhos por completo -- python3 start.py … funciona sempre.",
 
-"ui setup.title": "setup",
+"ui setup.title": "configuração",
 
-"ui setup.uninstall_note": "New terminals won't load the shortcuts. This terminal keeps them until",
+"ui setup.uninstall_note": "Novos terminais não vão carregar os atalhos. Este terminal mantém-nos até",
 
-"ui setup.uninstall_note_2": "you close it -- or run:  %s",
+"ui setup.uninstall_note_2": "o fechares -- ou corres:  %s",
 
-"ui shortcuts.disc_funcs": "They are shell functions defined in %s (check, hint, start, …).",
+"ui shortcuts.disc_funcs": "São funções de shell definidas em %s (check, hint, start, …).",
 
-"ui shortcuts.disc_local": "Local = nothing outside this folder changes.  Persistent = one line in your shell startup file.",
+"ui shortcuts.disc_local": "Local = nada fora desta pasta muda.  Persistente = uma linha no ficheiro de arranque do teu shell.",
 
-"ui shortcuts.disc_post": "  instead of  python3 start.py check.",
+"ui shortcuts.disc_post": "  em vez de  python3 start.py check.",
 
-"ui shortcuts.disc_pre": "Shortcuts let you type  ",
+"ui shortcuts.disc_pre": "Os atalhos deixam-te escrever  ",
 
-"ui shortcuts.opt_local": "enable for THIS terminal (local, nothing saved)",
+"ui shortcuts.opt_local": "ativar só para ESTE terminal (local, nada é guardado)",
 
-"ui shortcuts.opt_persist": "install persistently (one line in your startup file)",
+"ui shortcuts.opt_persist": "instalar de forma persistente (uma linha no teu ficheiro de arranque)",
 
-"ui shortcuts.opt_uninstall": "uninstall (remove the persistent line)",
+"ui shortcuts.opt_uninstall": "desinstalar (remover a linha persistente)",
 
-"ui shortcuts.run_yourself": "Run this yourself (a program can't source into your shell):",
+"ui shortcuts.run_yourself": "Corre isto tu mesmo (um programa não se consegue integrar no teu shell):",
 
-"ui shortcuts.title": "shortcuts",
+"ui shortcuts.title": "atalhos",
 
-"ui solution.hard_locked": "Hard mode: the solution unlocks only after you solve it.",
+"ui solution.hard_locked": "Modo difícil: a solução só se desbloqueia depois de a resolveres.",
 
-"ui solution.none": "No solution file for this puzzle.",
+"ui solution.none": "Sem ficheiro de solução para este puzzle.",
 
-"ui solution.title": "solution · %s · %s",
+"ui solution.title": "solução · %s · %s",
 
-"ui solution.why": "why it works",
+"ui solution.why": "porque funciona",
 
-"ui stats.by_chapter": "by chapter",
+"ui stats.by_chapter": "por capítulo",
 
-"ui stats.clean_tail": "solved first try, no hints",
+"ui stats.clean_tail": "resolvido à primeira, sem dicas",
 
-"ui stats.course_complete": "course complete",
+"ui stats.course_complete": "curso completo",
 
-"ui stats.f_active": "active",
+"ui stats.f_active": "ativo",
 
-"ui stats.f_clean": "clean",
+"ui stats.f_clean": "limpo",
 
-"ui stats.f_hints": "hints",
+"ui stats.f_hints": "dicas",
 
-"ui stats.f_since": "since",
+"ui stats.f_since": "desde",
 
-"ui stats.f_solved": "solved",
+"ui stats.f_solved": "resolvidos",
 
-"ui stats.f_streak": "streak",
+"ui stats.f_streak": "sequência",
 
-"ui stats.f_today": "today",
+"ui stats.f_today": "hoje",
 
-"ui stats.f_tries": "tries",
+"ui stats.f_tries": "tentativas",
 
-"ui stats.hints_tail": "hints revealed",
+"ui stats.hints_tail": "dicas reveladas",
 
-"ui stats.in_a_row": "in a row",
+"ui stats.in_a_row": "seguidos",
 
-"ui stats.title": "stats · %s",
+"ui stats.title": "estatísticas · %s",
 
-"ui stats.today_tail": "solved today",
+"ui stats.today_tail": "resolvidos hoje",
 
-"ui stats.tries_tail": "check runs across all puzzles",
+"ui stats.tries_tail": "execuções de check em todos os puzzles",
 
-"ui stats.x_of_y": "%d of %d",
+"ui stats.x_of_y": "%d de %d",
 
-"ui status.no_current": "No current puzzle.  ",
+"ui status.no_current": "Nenhum puzzle atual.  ",
 
-"ui status.no_loaded": "No puzzle loaded.",
+"ui status.no_loaded": "Nenhum puzzle carregado.",
 
-"ui status.open_menu": "Open the menu to pick a level and start:  ",
+"ui status.open_menu": "Abre o menu para escolher um nível e começar:  ",
 
-"ui status.revisit_goto": "revisit any with  goto <id>",
+"ui status.revisit_goto": "revisita qualquer um com  goto <id>",
 
-"ui textbook.f_read": "read",
+"ui textbook.f_read": "ler",
 
-"ui textbook.hard_sealed": "Hard mode: the textbook is sealed -- work from the brief.",
+"ui textbook.hard_sealed": "Modo difícil: o manual está selado -- trabalha a partir do enunciado.",
 
-"ui textbook.md_chapter": "Chapter %d · %s",
+"ui textbook.md_chapter": "Capítulo %d · %s",
 
-"ui textbook.md_empty": "Nothing covered yet -- work through a few topics, or run `textbook all` to preview the whole language.",
+"ui textbook.md_empty": "Ainda não foi abordado nada -- avança por alguns temas, ou corre `textbook all` para pré-ver toda a linguagem.",
 
-"ui textbook.md_full_1": "The whole language PyQuest covers -- every chapter, all %d topics.",
+"ui textbook.md_full_1": "Toda a linguagem que o PyQuest cobre -- todos os capítulos, os %d temas.",
 
-"ui textbook.md_full_2": "Run `textbook` to come back to just the chapters you've reached.",
+"ui textbook.md_full_2": "Corre `textbook` para voltar só aos capítulos que já alcançaste.",
 
-"ui textbook.md_reached_1": "A technical reference for what you've reached -- %d of %d topics.",
+"ui textbook.md_reached_1": "Uma referência técnica para o que já alcançaste -- %d de %d temas.",
 
-"ui textbook.md_reached_2": "Run `textbook all` for the whole language; `textbook` brings you back here.",
+"ui textbook.md_reached_2": "Corre `textbook all` para a linguagem completa; `textbook` traz-te de volta aqui.",
 
-"ui textbook.md_title": "PyQuest Textbook",
+"ui textbook.md_title": "Manual do PyQuest",
 
-"ui textbook.open_it": "open it in your editor",
+"ui textbook.open_it": "abre-o no teu editor",
 
-"ui textbook.ready": "Textbook ready: %s.",
+"ui textbook.ready": "Manual pronto: %s.",
 
-"ui textbook.revert": "revert to just what you've reached:  ",
+"ui textbook.revert": "volta só ao que já alcançaste:  ",
 
-"ui textbook.see_all": "see the whole language:  ",
+"ui textbook.see_all": "vê a linguagem completa:  ",
 
-"ui textbook.where_full": "the full reference",
+"ui textbook.where_full": "a referência completa",
 
-"ui textbook.where_none": "nothing reached yet",
+"ui textbook.where_none": "ainda nada alcançado",
 
-"ui textbook.where_reached": "what you've reached -- %d of %d",
+"ui textbook.where_reached": "o que já alcançaste -- %d de %d",
 
-"ui theme.add_own": "add your own: drop a JSON file in themes/ (see themes/README.md)",
+"ui theme.add_own": "adiciona o teu: coloca um ficheiro JSON em themes/ (vê themes/README.md)",
 
-"ui theme.list_title": "themes",
+"ui theme.list_title": "temas",
 
-"ui theme.picker_title": "theme",
+"ui theme.picker_title": "tema",
 
-"ui theme.prompt": "theme name  (0 = back) > ",
+"ui theme.prompt": "nome do tema  (0 = voltar) > ",
 
-"ui theme.set": "theme set to '%s'.",
+"ui theme.set": "tema definido para '%s'.",
 
-"ui theme.set_with": "set with  ",
+"ui theme.set_with": "define com  ",
 
-"ui theme.unknown": "unknown theme '%s'. options: %s",
+"ui theme.unknown": "tema desconhecido '%s'. opções: %s",
 
-"ui transfer.exists_hint": "Import under a new name, or overwrite it:",
+"ui transfer.exists_hint": "Importa com um nome novo, ou substitui-o:",
 
-"ui transfer.exported": "Exported profile '%s' to %s.",
+"ui transfer.exported": "Perfil '%s' exportado para %s.",
 
-"ui transfer.import_usage_hint": "Imports a profile exported with  %s.",
+"ui transfer.import_usage_hint": "Importa um perfil exportado com  %s.",
 
-"ui transfer.imported": "Imported into profile '%s' (now active).",
+"ui transfer.imported": "Importado para o perfil '%s' (agora ativo).",
 
-"ui transfer.move_hint": "Move it to another machine, then:  %s",
+"ui transfer.move_hint": "Move-o para outra máquina, depois:  %s",
 
-"ui transfer.no_file": "No such file: %s",
+"ui transfer.no_file": "Não existe o ficheiro: %s",
 
-"ui transfer.not_export": "%s isn't a PyQuest export file.",
+"ui transfer.not_export": "%s não é um ficheiro de exportação do PyQuest.",
 
-"ui transfer.pass_name": "Pass a valid name:  %s",
+"ui transfer.pass_name": "Indica um nome válido:  %s",
 
-"ui transfer.read_fail": "Couldn't read %s as a PyQuest export.",
+"ui transfer.read_fail": "Não foi possível ler %s como uma exportação do PyQuest.",
 
 "ui transfer.summary": "%s, %s.",
 
-"ui transfer.write_fail": "Couldn't write %s (%s).",
+"ui transfer.write_fail": "Não foi possível escrever %s (%s).",
 
-"ui ui.back": "back",
+"ui ui.back": "voltar",
 
-"ui ui.legend": "%s done   %s here   %s to do",
+"ui ui.legend": "%s feito   %s aqui   %s por fazer",
 
-"ui ui.mode": "mode",
+"ui ui.mode": "modo",
 
-"ui ui.no_current": "No current puzzle.",
+"ui ui.no_current": "Nenhum puzzle atual.",
 
-"ui ui.no_puzzle": "no puzzle '%s'.",
+"ui ui.no_puzzle": "nenhum puzzle '%s'.",
 
-"ui ui.off": "off",
+"ui ui.off": "desligado",
 
-"ui ui.on": "on",
+"ui ui.on": "ligado",
 
-"ui ui.usage": "usage:  ",
+"ui ui.usage": "utilização:  ",
 
-"ui user.already_on": "already on '%s'.",
+"ui user.already_on": "já está em '%s'.",
 
-"ui user.created_switched": "created and switched to",
+"ui user.created_switched": "criado e mudado para",
 
-"ui user.deleted": "Deleted profile '%s' and all its progress.",
+"ui user.deleted": "Perfil '%s' e todo o seu progresso foram apagados.",
 
-"ui user.exists": "Profile '%s' already exists.",
+"ui user.exists": "O perfil '%s' já existe.",
 
-"ui user.invalid_name": "'%s' can't be a profile name.",
+"ui user.invalid_name": "'%s' não pode ser o nome de um perfil.",
 
-"ui user.is_active": "'%s' is the active profile.",
+"ui user.is_active": "'%s' é o perfil ativo.",
 
-"ui user.list_title": "users",
+"ui user.list_title": "perfis",
 
-"ui user.manage": "rename  %s      delete  %s",
+"ui user.manage": "renomear  %s      apagar  %s",
 
-"ui user.manage_hint": "To manage profiles:  %s  ·  %s",
+"ui user.manage_hint": "Para gerir perfis:  %s  ·  %s",
 
-"ui user.name_rules": "Use only letters, digits, dashes, or underscores (up to 32 characters).",
+"ui user.name_rules": "Usa só letras, dígitos, traços ou sublinhados (até 32 caracteres).",
 
-"ui user.name_rules_1": "Names become folders under users/, so use only letters,",
+"ui user.name_rules_1": "Os nomes tornam-se pastas dentro de users/, por isso usa só letras,",
 
-"ui user.name_rules_2": "digits, dashes, or underscores (up to 32 characters).",
+"ui user.name_rules_2": "dígitos, traços ou sublinhados (até 32 caracteres).",
 
-"ui user.no_profile": "No profile '%s'.",
+"ui user.no_profile": "Não existe o perfil '%s'.",
 
-"ui user.no_spaces": "'%s' can't be a profile name (no spaces).",
+"ui user.no_spaces": "'%s' não pode ser o nome de um perfil (sem espaços).",
 
-"ui user.renamed": "Renamed '%s' to '%s'.",
+"ui user.renamed": "'%s' renomeado para '%s'.",
 
-"ui user.same_name": "'%s' is already its name.",
+"ui user.same_name": "'%s' já é o nome atual.",
 
-"ui user.switch_create": "switch or create with  ",
+"ui user.switch_create": "muda ou cria com  ",
 
-"ui user.switch_first": "Switch to another first:  %s",
+"ui user.switch_first": "Muda primeiro para outro:  %s",
 
-"ui user.switched_to": "switched to",
+"ui user.switched_to": "mudado para",
 
-"ui wipe.cleared": "Cleared this profile's progress, saved code, and workspace.",
+"ui wipe.cleared": "Progresso, código guardado e área de trabalho deste perfil foram apagados.",
 
-"ui wipe.confirm_hint": "It cannot be undone. To go ahead:  %s",
+"ui wipe.confirm_hint": "Não pode ser desfeito. Para continuar:  %s",
 
-"ui wipe.done": "Profile wiped.",
+"ui wipe.done": "Perfil apagado.",
 
-"ui wipe.open_menu": "Open the menu to start again:  %s",
+"ui wipe.open_menu": "Abre o menu para começar de novo:  %s",
 
-"ui wipe.restart_hint": "(to clear just the current puzzle instead, use  %s)",
+"ui wipe.restart_hint": "(para apagar só o puzzle atual, usa  %s)",
 
-"ui wipe.warn": "This erases EVERYTHING in profile '%s' --",
+"ui wipe.warn": "Isto apaga TUDO no perfil '%s' --",
 
-"ui wipe.warn_2": "every completed puzzle, all saved code, and the workspace.",
+"ui wipe.warn_2": "cada puzzle completado, todo o código guardado, e a área de trabalho.",
 }

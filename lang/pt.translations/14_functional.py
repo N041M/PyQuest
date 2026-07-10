@@ -9,56 +9,56 @@
 
 TRANSLATIONS = {
 
-"14.1 brief": r"""# 14.1 -- lambda: a function in an expression
+"14.1 brief": r"""# 14.1 -- lambda: uma função numa expressão
 
-## Concept
+## Conceito
 
-A **`lambda`** is a tiny function written inline, with no name and no `def`:
+Uma **`lambda`** é uma função minúscula escrita em linha, sem nome e sem `def`:
 
 ```python
 double = lambda x: x * 2
 double(5)      # 10
 ```
 
-- `lambda args: expression` -- the value of the expression is returned
-  automatically (no `return`, and only one expression allowed).
-- A lambda is a **value**, so you can store it, **return** it from another
-  function, or pass it as an argument (which is where it really earns its keep --
-  the rest of this chapter).
+- `lambda args: expression` -- o valor da expressão é devolvido
+  automaticamente (sem `return`, e só é permitida uma expressão).
+- Uma lambda é um **valor**, por isso podes guardá-la, **devolvê-la** de outra
+  função, ou passá-la como argumento (é aí que ela realmente mostra o seu valor --
+  o resto deste capítulo).
 
-Because a lambda is defined inside another function, it can **close over** that
-function's variables. `lambda x: x * n` remembers the `n` from where it was made.
+Como uma lambda é definida dentro de outra função, ela pode **capturar** as
+variáveis dessa função. `lambda x: x * n` recorda o `n` do local onde foi criada.
 
-(For anything longer than one expression, use a normal `def` -- lambdas are for
-small inline functions.)
+(Para algo mais longo do que uma expressão, usa um `def` normal -- as lambdas
+são para pequenas funções em linha.)
 
-## Example
+## Exemplo
 
 ```python
 def adder(n):
     return lambda x: x + n     # remembers n
 ```
 
-## Your task
+## A tua tarefa
 
-Define `multiplier(n)` that **returns a lambda** which multiplies its argument by
-`n`. So `multiplier(3)` returns a function, and calling that function with `4`
-gives `12`.
+Define `multiplier(n)` que **devolve uma lambda** que multiplica o seu argumento
+por `n`. Assim, `multiplier(3)` devolve uma função, e chamar essa função com `4`
+dá `12`.
 
-## Done when
+## Está feito quando
 
-- `multiplier(3)(4)` is `12`; `multiplier(10)(5)` is `50`.
-- `multiplier(0)(7)` is `0`.
-- The returned function is a `lambda`, not a nested `def`.
+- `multiplier(3)(4)` é `12`; `multiplier(10)(5)` é `50`.
+- `multiplier(0)(7)` é `0`.
+- A função devolvida é uma `lambda`, não um `def` aninhado.
 """,
 
-"14.1 hints": r"""A lambda is `lambda args: expression`. You want one that takes an `x` and gives
-back `x * n`.
+"14.1 hints": r"""Uma lambda é `lambda args: expression`. Queres uma que receba um `x` e devolva
+`x * n`.
 
 ---
 
-`multiplier` returns that lambda. The lambda closes over `n`, so each call to
-`multiplier` makes a function tied to its own `n`.
+`multiplier` devolve essa lambda. A lambda captura `n`, por isso cada chamada a
+`multiplier` cria uma função ligada ao seu próprio `n`.
 
 ---
 
@@ -66,19 +66,19 @@ def multiplier(n):
     return lambda x: x * n
 """,
 
-"14.1 reference": r"""A **`lambda`** is an anonymous function written as a single expression:
-`lambda args: expression`. The expression's value is returned automatically —
-there is no `return`, and the body must be **one** expression.
+"14.1 reference": r"""Uma **`lambda`** é uma função anónima escrita como uma única expressão:
+`lambda args: expression`. O valor da expressão é devolvido automaticamente —
+não há `return`, e o corpo tem de ser **uma** expressão.
 
-- A lambda is a first-class **value**: assign it, return it, or pass it as an
-  argument. `f = lambda x: x * 2` is much like `def f(x): return x * 2`, just
-  inline and nameless.
-- Defined inside another function, a lambda **closes over** that scope's
-  variables — `lambda x: x * n` captures `n` from where it was created, so each
-  `multiplier(n)` yields a function bound to its own `n`.
-- Lambdas are for *small* inline functions, especially as the `key=` to `sorted`
-  or the function for `map`/`filter` (the rest of this chapter). For anything
-  multi-statement, use a named `def`.
+- Uma lambda é um **valor** de primeira classe: atribui-a, devolve-a, ou
+  passa-a como argumento. `f = lambda x: x * 2` é muito semelhante a
+  `def f(x): return x * 2`, só que em linha e sem nome.
+- Definida dentro de outra função, uma lambda **captura** as variáveis desse
+  âmbito — `lambda x: x * n` captura `n` do local onde foi criada, por isso cada
+  `multiplier(n)` produz uma função ligada ao seu próprio `n`.
+- As lambdas servem para funções em linha *pequenas*, especialmente como o
+  `key=` de `sorted` ou a função para `map`/`filter` (o resto deste capítulo).
+  Para algo com várias instruções, usa um `def` com nome.
 
 ```python
 double = lambda x: x * 2
@@ -90,52 +90,53 @@ multiplier(3)(4)           # 12
 ```
 """,
 
-"14.2 brief": r"""# 14.2 -- map: apply to every item
+"14.2 brief": r"""# 14.2 -- map: aplicar a cada item
 
-## Concept
+## Conceito
 
-**`map(func, iterable)`** runs `func` on **every** item and yields the results.
-It's the "apply to each" pattern as a higher-order function -- a function that
-takes another function:
+**`map(func, iterable)`** executa `func` em **cada** item e produz os
+resultados. É o padrão "aplicar a cada" como função de ordem superior -- uma
+função que recebe outra função:
 
 ```python
 list(map(str.upper, ["a", "b"]))     # ['A', 'B']
 list(map(lambda x: x * x, [1, 2, 3])) # [1, 4, 9]
 ```
 
-- `map` returns a **lazy iterator**, so wrap it in `list(...)` to get a list.
-- The function can be a `lambda`, a `def`, or a built-in like `str.upper` or
-  `int`.
+- `map` devolve um **iterador preguiçoso**, por isso envolve-o em `list(...)`
+  para obteres uma lista.
+- A função pode ser uma `lambda`, um `def`, ou uma função nativa como
+  `str.upper` ou `int`.
 
-(A list comprehension `[f(x) for x in items]` does the same thing and often reads
-more naturally; this puzzle is about learning `map` itself, the tool you'll meet
-in plenty of code.)
+(Uma compreensão de lista `[f(x) for x in items]` faz a mesma coisa e muitas
+vezes lê-se de forma mais natural; este puzzle é sobre aprender o próprio `map`,
+a ferramenta que vais encontrar em imenso código.)
 
-## Example
+## Exemplo
 
 ```python
 def lengths(words):
     return list(map(len, words))
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`map`**, define `squares(nums)` that returns a list of each number in
-`nums` squared.
+Usando **`map`**, define `squares(nums)` que devolve uma lista com cada
+número de `nums` elevado ao quadrado.
 
-## Done when
+## Está feito quando
 
-- `squares([1, 2, 3])` returns `[1, 4, 9]`.
-- `squares([])` returns `[]`.
-- The mapping is done with `map`, not a comprehension or manual loop.
+- `squares([1, 2, 3])` devolve `[1, 4, 9]`.
+- `squares([])` devolve `[]`.
+- O mapeamento é feito com `map`, não com uma compreensão ou um ciclo manual.
 """,
 
-"14.2 hints": r"""`map(func, nums)` applies `func` to each number. Your `func` squares its input:
-`lambda x: x * x`.
+"14.2 hints": r"""`map(func, nums)` aplica `func` a cada número. A tua `func` eleva a entrada ao
+quadrado: `lambda x: x * x`.
 
 ---
 
-`map` is lazy, so wrap it: `list(map(lambda x: x * x, nums))`.
+`map` é preguiçoso, por isso envolve-o: `list(map(lambda x: x * x, nums))`.
 
 ---
 
@@ -143,18 +144,20 @@ def squares(nums):
     return list(map(lambda x: x * x, nums))
 """,
 
-"14.2 reference": r"""**`map(func, iterable)`** applies `func` to every item and yields the results —
-the "transform each item" pattern as a higher-order function (one that takes
-another function as an argument).
+"14.2 reference": r"""**`map(func, iterable)`** aplica `func` a cada item e produz os resultados —
+o padrão "transformar cada item" como função de ordem superior (uma que recebe
+outra função como argumento).
 
-- It returns a **lazy iterator**, computing each result on demand; wrap it in
-  `list(...)` (or `tuple`, or feed a `for`) to consume it.
-- `func` can be a `lambda`, a named `def`, or any callable — a built-in like
-  `len`, `str.upper`, or `int` is common.
-- Given several iterables, `map(func, a, b)` calls `func(a_i, b_i)` in lockstep,
-  stopping at the shortest.
-- A list comprehension `[func(x) for x in items]` expresses the same thing and is
-  often clearer; `map` is the functional-style equivalent you'll see widely.
+- Devolve um **iterador preguiçoso**, calculando cada resultado à medida da
+  necessidade; envolve-o em `list(...)` (ou `tuple`, ou alimenta um `for`) para
+  o consumir.
+- `func` pode ser uma `lambda`, um `def` com nome, ou qualquer chamável — uma
+  função nativa como `len`, `str.upper`, ou `int` é comum.
+- Dados vários iteráveis, `map(func, a, b)` chama `func(a_i, b_i)` em
+  sincronia, parando no mais curto.
+- Uma compreensão de lista `[func(x) for x in items]` exprime a mesma coisa e
+  é muitas vezes mais clara; `map` é o equivalente em estilo funcional que vais
+  ver com frequência.
 
 ```python
 list(map(len, ["hi", "there"]))        # [2, 5]
@@ -163,50 +166,51 @@ list(map(int, ["1", "2", "3"]))        # [1, 2, 3]
 ```
 """,
 
-"14.3 brief": r"""# 14.3 -- filter: keep what passes
+"14.3 brief": r"""# 14.3 -- filter: manter o que passa
 
-## Concept
+## Conceito
 
-Where `map` transforms every item, **`filter`** keeps only **some** of them.
-You give it a **predicate** -- a function that returns true or false -- and it
-keeps each item the predicate says yes to:
+Enquanto `map` transforma cada item, **`filter`** mantém apenas **alguns**
+deles. Dás-lhe um **predicado** -- uma função que devolve verdadeiro ou falso --
+e ele mantém cada item ao qual o predicado diz que sim:
 
 ```python
 list(filter(lambda x: x > 0, [-1, 2, -3, 4]))     # [2, 4]
 ```
 
-- `filter(pred, iterable)` yields each item for which `pred(item)` is truthy,
-  dropping the rest, in order.
-- Like `map`, it returns a **lazy iterator**, so wrap it in `list(...)`.
+- `filter(pred, iterable)` produz cada item para o qual `pred(item)` é
+  verdadeiro, descartando o resto, por ordem.
+- Tal como `map`, devolve um **iterador preguiçoso**, por isso envolve-o em
+  `list(...)`.
 
-(The comprehension `[x for x in items if pred(x)]` does the same; this puzzle is
-about `filter` itself.)
+(A compreensão `[x for x in items if pred(x)]` faz o mesmo; este puzzle é
+sobre o próprio `filter`.)
 
-## Example
+## Exemplo
 
 ```python
 def nonempty(strings):
     return list(filter(lambda s: s != "", strings))
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`filter`**, define `evens(nums)` that returns a list of only the even
-numbers in `nums`.
+Usando **`filter`**, define `evens(nums)` que devolve uma lista apenas com os
+números pares em `nums`.
 
-## Done when
+## Está feito quando
 
-- `evens([1, 2, 3, 4])` returns `[2, 4]`.
-- `evens([1, 3, 5])` returns `[]`.
-- The selection is done with `filter`, not a comprehension or manual loop.
+- `evens([1, 2, 3, 4])` devolve `[2, 4]`.
+- `evens([1, 3, 5])` devolve `[]`.
+- A seleção é feita com `filter`, não com uma compreensão ou um ciclo manual.
 """,
 
-"14.3 hints": r"""`filter(pred, nums)` keeps each number where `pred` is true. Your predicate tests
-even: `lambda x: x % 2 == 0`.
+"14.3 hints": r"""`filter(pred, nums)` mantém cada número onde `pred` é verdadeiro. O teu
+predicado testa a paridade: `lambda x: x % 2 == 0`.
 
 ---
 
-Wrap it in `list(...)`: `list(filter(lambda x: x % 2 == 0, nums))`.
+Envolve-o em `list(...)`: `list(filter(lambda x: x % 2 == 0, nums))`.
 
 ---
 
@@ -214,17 +218,18 @@ def evens(nums):
     return list(filter(lambda x: x % 2 == 0, nums))
 """,
 
-"14.3 reference": r"""**`filter(pred, iterable)`** keeps the items for which the **predicate** `pred`
-(a function returning true or false) is truthy, dropping the rest — the "keep if"
-counterpart to `map`'s "transform each".
+"14.3 reference": r"""**`filter(pred, iterable)`** mantém os itens para os quais o **predicado**
+`pred` (uma função que devolve verdadeiro ou falso) é verdadeiro, descartando o
+resto — a contrapartida "mantém se" do "transforma cada" de `map`.
 
-- It returns a **lazy iterator** in original order; wrap it in `list(...)` to
-  collect.
-- `pred` is any callable returning a truthy/falsy value — a `lambda`, a `def`, or
-  a built-in. Passing **`None`** as the predicate (`filter(None, items)`) keeps
-  the items that are themselves truthy, dropping `0`, `""`, `None`, etc.
-- The comprehension `[x for x in items if pred(x)]` is the equivalent and often
-  reads better; `filter` is the functional form.
+- Devolve um **iterador preguiçoso** pela ordem original; envolve-o em
+  `list(...)` para recolher.
+- `pred` é qualquer chamável que devolva um valor verdadeiro/falso — uma
+  `lambda`, um `def`, ou uma função nativa. Passar **`None`** como predicado
+  (`filter(None, items)`) mantém os itens que são, eles próprios, verdadeiros,
+  descartando `0`, `""`, `None`, etc.
+- A compreensão `[x for x in items if pred(x)]` é o equivalente e muitas
+  vezes lê-se melhor; `filter` é a forma funcional.
 
 ```python
 list(filter(lambda x: x > 0, [-1, 2, -3, 4]))   # [2, 4]
@@ -233,13 +238,14 @@ list(filter(str.isalpha, "a1b2"))                # ['a', 'b']
 ```
 """,
 
-"14.4 brief": r"""# 14.4 -- sorted(key=lambda): sort by a derived value
+"14.4 brief": r"""# 14.4 -- sorted(key=lambda): ordenar por um valor derivado
 
-## Concept
+## Conceito
 
-`sorted` (chapter 5) orders items by their natural order. Its **`key=`** argument
-changes *what* it sorts on: a function mapping each item to the value to compare.
-An inline **lambda** is the usual way to write that:
+`sorted` (capítulo 5) ordena os itens pela sua ordem natural. O seu argumento
+**`key=`** muda *aquilo* por que ordena: uma função que faz corresponder cada
+item ao valor a comparar. Uma **lambda** em linha é a forma habitual de a
+escrever:
 
 ```python
 words = ["pear", "fig", "apple"]
@@ -247,37 +253,40 @@ sorted(words, key=len)                  # ['fig', 'pear', 'apple']
 sorted(words, key=lambda w: w[-1])      # by last letter
 ```
 
-- `key` is called once per item; `sorted` then orders items by those key values.
-- The lambda lets you sort by anything **derived** from an item -- its length, a
-  field, a computed score -- without changing the items themselves.
-- `sorted` is **stable**: items with equal keys keep their original order.
+- `key` é chamada uma vez por item; `sorted` ordena então os itens por esses
+  valores-chave.
+- A lambda permite ordenar por qualquer coisa **derivada** de um item -- o
+  seu comprimento, um campo, uma pontuação calculada -- sem alterar os próprios
+  itens.
+- `sorted` é **estável**: itens com chaves iguais mantêm a sua ordem
+  original.
 
-## Example
+## Exemplo
 
 ```python
 def by_size(nums):
     return sorted(nums, key=lambda n: abs(n))   # by distance from zero
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`sorted`** with a **`key=lambda`**, define `by_last(words)` that returns
-the words sorted by their **last character**.
+Usando **`sorted`** com um **`key=lambda`**, define `by_last(words)` que
+devolve as palavras ordenadas pelo seu **último caráter**.
 
-## Done when
+## Está feito quando
 
-- `by_last(["pear", "fig", "kiwi"])` returns `["fig", "kiwi", "pear"]`
-  (last letters g, i, r are in order).
-- `by_last([])` returns `[]`.
-- The order comes from `sorted(..., key=lambda ...)`, not a manual sort.
+- `by_last(["pear", "fig", "kiwi"])` devolve `["fig", "kiwi", "pear"]`
+  (as últimas letras g, i, r estão por ordem).
+- `by_last([])` devolve `[]`.
+- A ordem vem de `sorted(..., key=lambda ...)`, não de uma ordenação manual.
 """,
 
-"14.4 hints": r"""`sorted(words, key=...)` sorts by whatever the key function returns. You want to
-sort by the last character of each word.
+"14.4 hints": r"""`sorted(words, key=...)` ordena pelo que quer que a função `key` devolva.
+Queres ordenar pelo último caráter de cada palavra.
 
 ---
 
-The last character of `w` is `w[-1]`, so the key is `lambda w: w[-1]`:
+O último caráter de `w` é `w[-1]`, por isso a chave é `lambda w: w[-1]`:
 `sorted(words, key=lambda w: w[-1])`.
 
 ---
@@ -286,16 +295,18 @@ def by_last(words):
     return sorted(words, key=lambda w: w[-1])
 """,
 
-"14.4 reference": r"""`sorted`'s **`key=`** argument is a function mapping each item to the value to
-sort on, so you can order by something **derived** from the items rather than the
-items themselves. An inline **`lambda`** is the idiomatic way to write that key.
+"14.4 reference": r"""O argumento **`key=`** de `sorted` é uma função que faz corresponder cada
+item ao valor pelo qual ordenar, permitindo-te ordenar por algo **derivado** dos
+itens em vez dos próprios itens. Uma **`lambda`** em linha é a forma idiomática
+de escrever essa chave.
 
-- `key` is called **once per item**; `sorted` orders the items by the resulting
-  key values, but returns the original items. `sorted(words, key=len)` orders by
-  length, `sorted(words, key=lambda w: w[-1])` by last letter.
-- `sorted` is **stable**: items with equal keys keep their input order.
-- Pair `key=` with **`reverse=True`** to sort descending. The same `key=` works on
-  `list.sort`, `min`, and `max`.
+- `key` é chamada **uma vez por item**; `sorted` ordena os itens pelos
+  valores-chave resultantes, mas devolve os itens originais. `sorted(words,
+  key=len)` ordena por comprimento, `sorted(words, key=lambda w: w[-1])` pela
+  última letra.
+- `sorted` é **estável**: itens com chaves iguais mantêm a ordem de entrada.
+- Combina `key=` com **`reverse=True`** para ordenar de forma decrescente. O
+  mesmo `key=` funciona em `list.sort`, `min`, e `max`.
 
 ```python
 sorted(["pear", "fig", "apple"], key=len)            # ['fig', 'pear', 'apple']
@@ -304,52 +315,55 @@ sorted(records, key=lambda r: r[1], reverse=True)    # by 2nd field, high first
 ```
 """,
 
-"14.5 brief": r"""# 14.5 -- any: is at least one true?
+"14.5 brief": r"""# 14.5 -- any: há pelo menos um verdadeiro?
 
-## Concept
+## Conceito
 
-**`any(iterable)`** returns `True` if **at least one** item is truthy, `False`
-otherwise. Fed a generator of tests, it answers "does *any* item pass?":
+**`any(iterable)`** devolve `True` se **pelo menos um** item for verdadeiro,
+`False` caso contrário. Alimentado com um gerador de testes, responde a
+"*algum* item passa?":
 
 ```python
 any(n < 0 for n in [1, 2, -3])     # True
 any(n < 0 for n in [1, 2, 3])      # False
 ```
 
-- It replaces the loop-with-a-flag (`found = False; for ...: if ...: found =
-  True`) with one expression.
-- It **short-circuits**: it stops and returns `True` at the first truthy item.
-- `any([])` is `False` (nothing passed).
+- Substitui o ciclo com uma bandeira (`found = False; for ...: if ...: found =
+  True`) por uma única expressão.
+- Tem **avaliação abreviada**: para e devolve `True` no primeiro item
+  verdadeiro.
+- `any([])` é `False` (nada passou).
 
-The pattern is `any(<test> for <item> in <iterable>)` -- a generator expression
-of booleans handed to `any`.
+O padrão é `any(<test> for <item> in <iterable>)` -- uma expressão geradora de
+booleanos passada a `any`.
 
-## Example
+## Exemplo
 
 ```python
 def has_blank(strings):
     return any(s == "" for s in strings)
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`any`**, define `has_negative(nums)` that returns `True` if `nums`
-contains at least one negative number.
+Usando **`any`**, define `has_negative(nums)` que devolve `True` se `nums`
+contiver pelo menos um número negativo.
 
-## Done when
+## Está feito quando
 
-- `has_negative([1, 2, -3])` is `True`; `has_negative([1, 2, 3])` is `False`.
-- `has_negative([])` is `False`.
-- The answer comes from `any(...)`, not a hand-written loop with a flag.
+- `has_negative([1, 2, -3])` é `True`; `has_negative([1, 2, 3])` é `False`.
+- `has_negative([])` é `False`.
+- A resposta vem de `any(...)`, não de um ciclo escrito à mão com uma
+  bandeira.
 """,
 
-"14.5 hints": r"""`any(...)` takes a sequence of true/false values and returns True if any is true.
-Build that sequence with a generator expression.
+"14.5 hints": r"""`any(...)` recebe uma sequência de valores verdadeiro/falso e devolve True se
+algum for verdadeiro. Constrói essa sequência com uma expressão geradora.
 
 ---
 
-`any(n < 0 for n in nums)` -- for each number, the test `n < 0` is True or False,
-and `any` reports whether at least one was True.
+`any(n < 0 for n in nums)` -- para cada número, o teste `n < 0` é True ou
+False, e `any` informa se pelo menos um foi True.
 
 ---
 
@@ -357,15 +371,15 @@ def has_negative(nums):
     return any(n < 0 for n in nums)
 """,
 
-"14.5 reference": r"""**`any(iterable)`** returns `True` as soon as **one** item is truthy, else
-`False`. Handed a generator of tests, it answers "does any item pass?" in a single
-expression, replacing a loop that sets a flag.
+"14.5 reference": r"""**`any(iterable)`** devolve `True` assim que **um** item é verdadeiro, caso
+contrário `False`. Recebendo um gerador de testes, responde a "algum item
+passa?" numa única expressão, substituindo um ciclo que define uma bandeira.
 
-- It **short-circuits**: evaluation stops at the first truthy item, so it's
-  efficient and works on infinite/lazy iterables.
-- `any([])` is `False` — there is nothing to be true.
-- The idiom is `any(<test> for <item> in <iterable>)`: a generator expression of
-  booleans. (Its partner `all` is 14.6.)
+- Tem **avaliação abreviada**: a avaliação para no primeiro item verdadeiro,
+  por isso é eficiente e funciona em iteráveis infinitos/preguiçosos.
+- `any([])` é `False` — não há nada que seja verdadeiro.
+- O idioma é `any(<test> for <item> in <iterable>)`: uma expressão geradora de
+  booleanos. (O seu parceiro `all` é o 14.6.)
 
 ```python
 any(n < 0 for n in [1, 2, -3])    # True
@@ -374,51 +388,52 @@ any([])                           # False
 ```
 """,
 
-"14.6 brief": r"""# 14.6 -- all: are they every one true?
+"14.6 brief": r"""# 14.6 -- all: são todos verdadeiros?
 
-## Concept
+## Conceito
 
-**`all(iterable)`** is `any`'s partner: it returns `True` only if **every** item
-is truthy. It answers "do they *all* pass?":
+**`all(iterable)`** é o parceiro de `any`: devolve `True` apenas se **todos**
+os itens forem verdadeiros. Responde a "passam *todos*?":
 
 ```python
 all(n > 0 for n in [1, 2, 3])      # True
 all(n > 0 for n in [1, -2, 3])     # False
 ```
 
-- It **short-circuits** the other way: it stops and returns `False` at the first
-  item that fails.
-- `all([])` is `True` -- vacuously, since no item failed. (A common surprise:
-  "all of nothing" is true.)
+- Tem **avaliação abreviada** no sentido oposto: para e devolve `False` no
+  primeiro item que falha.
+- `all([])` é `True` -- vacuamente, já que nenhum item falhou. (Uma surpresa
+  comum: "todos de nada" é verdadeiro.)
 
-Same shape as `any`: `all(<test> for <item> in <iterable>)`.
+Mesma forma que `any`: `all(<test> for <item> in <iterable>)`.
 
-## Example
+## Exemplo
 
 ```python
 def all_words(strings):
     return all(s.isalpha() for s in strings)
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`all`**, define `all_positive(nums)` that returns `True` if **every**
-number in `nums` is greater than zero.
+Usando **`all`**, define `all_positive(nums)` que devolve `True` se **todos**
+os números em `nums` forem maiores que zero.
 
-## Done when
+## Está feito quando
 
-- `all_positive([1, 2, 3])` is `True`; `all_positive([1, -2, 3])` is `False`.
-- `all_positive([])` is `True` (nothing fails).
-- The answer comes from `all(...)`, not a hand-written loop with a flag.
+- `all_positive([1, 2, 3])` é `True`; `all_positive([1, -2, 3])` é `False`.
+- `all_positive([])` é `True` (nada falha).
+- A resposta vem de `all(...)`, não de um ciclo escrito à mão com uma
+  bandeira.
 """,
 
-"14.6 hints": r"""`all(...)` returns True only if every value in the sequence is true. Build the
-sequence of tests with a generator expression.
+"14.6 hints": r"""`all(...)` devolve True apenas se todos os valores na sequência forem
+verdadeiros. Constrói a sequência de testes com uma expressão geradora.
 
 ---
 
-`all(n > 0 for n in nums)` -- each `n > 0` is True or False, and `all` is True
-only if none were False.
+`all(n > 0 for n in nums)` -- cada `n > 0` é True ou False, e `all` é True
+apenas se nenhum for False.
 
 ---
 
@@ -426,15 +441,18 @@ def all_positive(nums):
     return all(n > 0 for n in nums)
 """,
 
-"14.6 reference": r"""**`all(iterable)`** returns `True` only if **every** item is truthy — the partner
-to `any`. It answers "do they all pass?" in one expression.
+"14.6 reference": r"""**`all(iterable)`** devolve `True` apenas se **todos** os itens forem
+verdadeiros — o parceiro de `any`. Responde a "passam todos?" numa única
+expressão.
 
-- It **short-circuits** on the first falsy item, returning `False` immediately.
-- `all([])` is `True` — *vacuously*, since no item failed. This "all of nothing
-  is true" rule is a common surprise; guard for the empty case if it matters.
-- Same shape as `any`: `all(<test> for <item> in <iterable>)`. Together they
-  express the universal ("for all") and existential ("there exists") questions
-  over a sequence.
+- Tem **avaliação abreviada** no primeiro item falso, devolvendo `False`
+  imediatamente.
+- `all([])` é `True` — *vacuamente*, já que nenhum item falhou. Esta regra de
+  "todos de nada é verdadeiro" é uma surpresa comum; protege-te contra o caso
+  vazio se isso importar.
+- Mesma forma que `any`: `all(<test> for <item> in <iterable>)`. Juntos,
+  exprimem as questões universal ("para todos") e existencial ("existe") sobre
+  uma sequência.
 
 ```python
 all(n > 0 for n in [1, 2, 3])     # True
@@ -443,12 +461,13 @@ all([])                           # True  -- vacuously
 ```
 """,
 
-"14.7 brief": r"""# 14.7 -- reduce: fold a sequence to one value
+"14.7 brief": r"""# 14.7 -- reduce: dobrar uma sequência num único valor
 
-## Concept
+## Conceito
 
-**`reduce`** (from `functools`) **folds** a whole sequence into a single value by
-applying a two-argument function cumulatively, left to right:
+**`reduce`** (de `functools`) **dobra** uma sequência inteira num único valor,
+aplicando uma função de dois argumentos cumulativamente, da esquerda para a
+direita:
 
 ```python
 from functools import reduce
@@ -457,14 +476,16 @@ reduce(lambda a, b: a + b, [1, 2, 3, 4])     # 10  ((((1+2)+3)+4))
 reduce(lambda a, b: a * b, [1, 2, 3, 4])     # 24
 ```
 
-- `reduce(func, items)` computes `func(func(func(i0, i1), i2), i3)...` -- each
-  step combines the running result with the next item.
-- A third argument is a **start** value: `reduce(func, items, start)` begins the
-  fold from `start`, which also defines the answer for an **empty** sequence.
-- It's the accumulator loop (chapter 3) as a higher-order function. (`sum` is the
-  special case for `+`; `reduce` lets you fold with *any* combiner.)
+- `reduce(func, items)` calcula `func(func(func(i0, i1), i2), i3)...` -- cada
+  passo combina o resultado corrente com o próximo item.
+- Um terceiro argumento é um valor **inicial**: `reduce(func, items, start)`
+  começa a dobragem a partir de `start`, que também define a resposta para uma
+  sequência **vazia**.
+- É o ciclo acumulador (capítulo 3) como função de ordem superior. (`sum` é o
+  caso especial para `+`; `reduce` permite-te dobrar com *qualquer*
+  combinador.)
 
-## Example
+## Exemplo
 
 ```python
 from functools import reduce
@@ -473,25 +494,27 @@ def total(nums):
     return reduce(lambda a, b: a + b, nums, 0)
 ```
 
-## Your task
+## A tua tarefa
 
-Using **`reduce`** from `functools`, define `product(nums)` that returns the
-product of all the numbers (with a start of `1`, so the empty list gives `1`).
+Usando **`reduce`** de `functools`, define `product(nums)` que devolve o
+produto de todos os números (com um valor inicial de `1`, para que a lista
+vazia dê `1`).
 
-## Done when
+## Está feito quando
 
-- `product([1, 2, 3, 4])` returns `24`; `product([5])` returns `5`.
-- `product([])` returns `1`.
-- The fold uses `reduce`, not a manual accumulator loop.
+- `product([1, 2, 3, 4])` devolve `24`; `product([5])` devolve `5`.
+- `product([])` devolve `1`.
+- A dobragem usa `reduce`, não um ciclo acumulador manual.
 """,
 
-"14.7 hints": r"""`from functools import reduce`. It takes a two-argument combiner, the items, and
-a start value.
+"14.7 hints": r"""`from functools import reduce`. Recebe um combinador de dois argumentos, os
+itens, e um valor inicial.
 
 ---
 
-The combiner multiplies the running result by the next number:
-`reduce(lambda a, b: a * b, nums, 1)`. The start `1` makes the empty list give 1.
+O combinador multiplica o resultado corrente pelo próximo número:
+`reduce(lambda a, b: a * b, nums, 1)`. O valor inicial `1` faz com que a lista
+vazia dê 1.
 
 ---
 
@@ -502,18 +525,19 @@ def product(nums):
     return reduce(lambda a, b: a * b, nums, 1)
 """,
 
-"14.7 reference": r"""**`functools.reduce(func, iterable[, start])`** **folds** a sequence into a single
-value by applying a two-argument `func` cumulatively, left to right:
-`func(func(func(i0, i1), i2), i3)...`. Each step combines the running result with
-the next item.
+"14.7 reference": r"""**`functools.reduce(func, iterable[, start])`** **dobra** uma sequência num
+único valor, aplicando uma `func` de dois argumentos cumulativamente, da
+esquerda para a direita: `func(func(func(i0, i1), i2), i3)...`. Cada passo
+combina o resultado corrente com o próximo item.
 
-- A **start** value (`reduce(func, items, start)`) seeds the fold and defines the
-  result for an **empty** sequence; without it, reducing an empty iterable raises
-  `TypeError`.
-- It generalises the accumulator loop to *any* combiner: `+` gives a sum, `*` a
-  product, `max` the largest. The dedicated `sum` is the `+` special case, and
-  `math.prod` the `*` one — but `reduce` folds with whatever function you supply.
-- `reduce` lives in `functools` (it's not a built-in), so it must be imported.
+- Um valor **inicial** (`reduce(func, items, start)`) semeia a dobragem e
+  define o resultado para uma sequência **vazia**; sem ele, reduzir um
+  iterável vazio lança `TypeError`.
+- Generaliza o ciclo acumulador para *qualquer* combinador: `+` dá uma soma,
+  `*` um produto, `max` o maior. O `sum` dedicado é o caso especial de `+`, e
+  `math.prod` o de `*` — mas `reduce` dobra com a função que fornecires.
+- `reduce` vive em `functools` (não é uma função nativa), por isso tem de ser
+  importada.
 
 ```python
 from functools import reduce
@@ -524,16 +548,17 @@ reduce(lambda a, b: a if a > b else b, [3, 9, 2])   # 9  (max)
 ```
 """,
 
-"14.8 brief": r"""# 14.8 -- Capstone: a ranked shortlist
+"14.8 brief": r"""# 14.8 -- Capstone: uma lista restrita classificada
 
-## Concept
+## Conceito
 
-The chapter's tools chain into a **pipeline**. Given a list of `(name, score)`
-records, build a shortlist:
+As ferramentas do capítulo encadeiam-se num **pipeline**. Dada uma lista de
+registos `(name, score)`, constrói uma lista restrita:
 
-1. **`filter`** to the records that meet a threshold,
-2. **`sorted`** with a `key=lambda` (and `reverse=True`) to rank them high to low,
-3. **`map`** out just the names.
+1. **`filter`** para os registos que atingem um limiar,
+2. **`sorted`** com um `key=lambda` (e `reverse=True`) para os classificar do
+mais alto para o mais baixo,
+3. **`map`** para extrair apenas os nomes.
 
 ```python
 records = [("Ada", 90), ("Linus", 70), ("Grace", 95)]
@@ -542,30 +567,33 @@ ranked = sorted(qualified, key=lambda r: r[1], reverse=True)
 list(map(lambda r: r[0], ranked))     # ['Grace', 'Ada']
 ```
 
-Each record is a tuple, so `r[0]` is the name and `r[1]` the score.
+Cada registo é um tuplo, por isso `r[0]` é o nome e `r[1]` a pontuação.
 
-## Your task
+## A tua tarefa
 
-Define `passing(records, threshold)` that takes a list of `(name, score)` tuples
-and returns the **names** of those with `score >= threshold`, ordered by score
-**highest first**, built with `filter`, `sorted(key=lambda ...)`, and `map`.
+Define `passing(records, threshold)` que recebe uma lista de tuplos `(name,
+score)` e devolve os **nomes** daqueles com `score >= threshold`, ordenados
+pela pontuação **da mais alta para a mais baixa**, construído com `filter`,
+`sorted(key=lambda ...)`, e `map`.
 
-## Done when
+## Está feito quando
 
-- `passing([("Ada", 90), ("Linus", 70), ("Grace", 95)], 80)` returns
+- `passing([("Ada", 90), ("Linus", 70), ("Grace", 95)], 80)` devolve
   `["Grace", "Ada"]`.
-- `passing([], 50)` returns `[]`; a threshold above every score returns `[]`.
-- The result is built by filtering, sorting by a lambda key, and mapping -- a
-  pipeline of the chapter's tools.
+- `passing([], 50)` devolve `[]`; um limiar acima de todas as pontuações
+  devolve `[]`.
+- O resultado é construído filtrando, ordenando por uma chave lambda, e
+  mapeando -- um pipeline das ferramentas do capítulo.
 """,
 
-"14.8 hints": r"""Three steps. First `filter(lambda r: r[1] >= threshold, records)` keeps the
-records that qualify (r[1] is the score).
+"14.8 hints": r"""Três passos. Primeiro, `filter(lambda r: r[1] >= threshold, records)` mantém
+os registos que se qualificam (r[1] é a pontuação).
 
 ---
 
-Then `sorted(qualified, key=lambda r: r[1], reverse=True)` ranks them high to
-low, and `map(lambda r: r[0], ...)` pulls out the names. Wrap the map in `list`.
+Depois, `sorted(qualified, key=lambda r: r[1], reverse=True)` classifica-os
+do mais alto para o mais baixo, e `map(lambda r: r[0], ...)` extrai os nomes.
+Envolve o map em `list`.
 
 ---
 
@@ -575,20 +603,21 @@ def passing(records, threshold):
     return list(map(lambda r: r[0], ranked))
 """,
 
-"14.8 reference": r"""The capstone chains the chapter's higher-order functions into a **data
-pipeline** — the shape of much real processing:
+"14.8 reference": r"""O capstone encadeia as funções de ordem superior do capítulo num **pipeline
+de dados** — a forma de muito processamento real:
 
-1. **`filter(lambda r: r[1] >= threshold, records)`** narrows to the records that
-   qualify;
-2. **`sorted(..., key=lambda r: r[1], reverse=True)`** ranks them by score, high
-   to low (stable, so equal scores keep their order);
-3. **`map(lambda r: r[0], ...)`** projects out just the field you want — the name.
+1. **`filter(lambda r: r[1] >= threshold, records)`** restringe aos registos
+   que se qualificam;
+2. **`sorted(..., key=lambda r: r[1], reverse=True)`** classifica-os por
+   pontuação, do mais alto para o mais baixo (estável, por isso pontuações
+   iguais mantêm a sua ordem);
+3. **`map(lambda r: r[0], ...)`** projeta apenas o campo que queres — o nome.
 
-Each stage takes a function and an iterable and yields another iterable, so they
-compose directly: the filter feeds the sort, the sort feeds the map. The same
-pipeline could be written with comprehensions; expressing it as
-`filter`/`sorted`/`map` is the functional style, and seeing a task *as* a pipeline
-of transformations is the skill the chapter builds toward.
+Cada etapa recebe uma função e um iterável e produz outro iterável, por isso
+compõem-se diretamente: o filter alimenta o sort, o sort alimenta o map. O
+mesmo pipeline podia ser escrito com compreensões; expressá-lo como
+`filter`/`sorted`/`map` é o estilo funcional, e ver uma tarefa *como* um
+pipeline de transformações é a competência para a qual o capítulo conduz.
 
 ```python
 def passing(records, threshold):

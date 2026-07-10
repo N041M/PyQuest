@@ -11,13 +11,13 @@ TRANSLATIONS = {
 
 "7.1 brief": r"""# 7.1 -- try / except
 
-## Concept
+## Conceito
 
-You have *caused* plenty of errors by now. Time to **handle** one.
+Já *causaste* bastantes erros até agora. Chegou a altura de **tratares** de um.
 
-When Python hits something impossible -- like `int("hello")` -- it **raises an
-exception**: the normal flow stops dead and, unless someone deals with it, the
-program crashes with a traceback. `try`/`except` is how you deal with it:
+Quando o Python encontra algo impossível -- como `int("hello")` -- **levanta uma
+exceção**: o fluxo normal para de repente e, a menos que alguém trate disso, o
+programa falha com um traceback. `try`/`except` é a forma de tratares disso:
 
 ```python
 try:
@@ -27,41 +27,41 @@ except ValueError:
     print("not a number")
 ```
 
-How it runs:
+Como isto funciona:
 
-- The `try` block runs normally -- **until** a line raises.
-- If nothing raises, the `except` block is skipped entirely.
-- If `int(text)` raises a `ValueError` (its complaint about unconvertible
-  text), the rest of the `try` block is abandoned and the `except` block
-  runs instead. **No crash.**
+- O bloco `try` corre normalmente -- **até** uma linha levantar uma exceção.
+- Se nada levantar uma exceção, o bloco `except` é ignorado por completo.
+- Se `int(text)` levantar um `ValueError` (a sua queixa sobre texto que não é
+  convertível), o resto do bloco `try` é abandonado e o bloco `except` corre
+  em vez disso. **Sem falha.**
 
-The program *recovers*: it chose what failure means instead of falling over.
+O programa *recupera*: escolheu o que a falha significa, em vez de simplesmente cair.
 
-## Example
+## Exemplo
 
-Input `7` prints `14`. Input `seven` prints `not a number` -- the same code,
-no crash either way.
+A entrada `7` imprime `14`. A entrada `seven` imprime `not a number` -- o mesmo
+código, sem falhar em nenhum dos casos.
 
-## Your task
+## A tua tarefa
 
-Read one line. If it converts to a whole number, print that number **doubled**.
-If it doesn't, print exactly `not a number`. (This is a script puzzle again:
-`input()` and `print()` are back.)
+Lê uma linha. Se ela se converter num número inteiro, imprime esse número
+**duplicado**. Se não se converter, imprime exatamente `not a number`. (Este é
+outra vez um puzzle de script: `input()` e `print()` estão de volta.)
 
-## Done when
+## Está feito quando
 
-- `7` prints `14`; `-3` prints `-6`.
-- `seven` and `12abc` print `not a number` -- and the program exits cleanly,
-  no traceback.
-- You used `try`/`except` -- the checker requires the real thing.
+- `7` imprime `14`; `-3` imprime `-6`.
+- `seven` e `12abc` imprimem `not a number` -- e o programa termina de forma
+  limpa, sem traceback.
+- Usaste `try`/`except` -- o verificador exige mesmo isso.
 """,
 
-"7.1 hints": r"""int("seven") raises a ValueError -- put the conversion inside a try block.
+"7.1 hints": r"""int("seven") levanta um ValueError -- põe a conversão dentro de um bloco try.
 
 ---
 
-try: convert and print the double. except ValueError: print the message.
-The except block only runs when the conversion failed.
+try: converte e imprime o dobro. except ValueError: imprime a mensagem.
+O bloco except só corre quando a conversão falhou.
 
 ---
 
@@ -73,15 +73,16 @@ except ValueError:
     print("not a number")
 """,
 
-"7.1 reference": r"""A **`try` / `except`** statement runs risky code and catches the error if it
-fails, instead of letting the program crash. The `try` block holds the code that
-might **raise**; the `except` block runs only if it does.
+"7.1 reference": r"""Uma instrução **`try` / `except`** corre código arriscado e apanha o erro se
+falhar, em vez de deixar o programa cair. O bloco `try` contém o código que
+pode **levantar** uma exceção; o bloco `except` só corre se isso acontecer.
 
-- If the `try` block succeeds, the `except` is skipped entirely.
-- If a statement in `try` raises, the **rest of the `try` is abandoned** and
-  control jumps to the matching `except`; the program then continues below.
-- An uncaught error unwinds the whole program with a traceback — `except` is how
-  you intervene.
+- Se o bloco `try` for bem-sucedido, o `except` é completamente ignorado.
+- Se uma instrução em `try` levantar uma exceção, o **resto do `try` é
+  abandonado** e o controlo salta para o `except` correspondente; o programa
+  continua depois disso.
+- Um erro não apanhado desenrola o programa inteiro com um traceback —
+  `except` é a forma de intervires.
 
 ```python
 try:
@@ -91,12 +92,12 @@ except ValueError:
 ```
 """,
 
-"7.2 brief": r"""# 7.2 -- Catch the RIGHT error
+"7.2 brief": r"""# 7.2 -- Apanha o erro CERTO
 
-## Concept
+## Conceito
 
-`except` can name which error it handles -- and it should. Errors you did not
-expect are **information**, and swallowing them hides bugs.
+`except` pode indicar qual o erro que trata -- e deve fazê-lo. Erros que não
+esperavas são **informação**, e engoli-los esconde bugs.
 
 ```python
 try:
@@ -105,15 +106,16 @@ except ValueError:        # exactly the error int() raises for bad TEXT
     n = None
 ```
 
-The tempting shortcut is a bare `except:` (or `except Exception:`) -- "catch
-everything, can't crash!" But *everything* includes errors that mean **your
-code is being misused**. `int([1, 2])` doesn't raise `ValueError` -- it raises
-`TypeError` ("wrong kind of thing entirely"), and that one *should* crash
-loudly so the caller's bug gets found, not papered over.
+O atalho tentador é um `except:` (ou `except Exception:`) sem nome -- "apanha
+tudo, não pode falhar!" Mas *tudo* inclui erros que significam que **o teu
+código está a ser usado incorretamente**. `int([1, 2])` não levanta um
+`ValueError` -- levanta um `TypeError` ("um tipo de coisa completamente
+errado"), e esse *deveria* falhar ruidosamente para que o bug de quem chamou
+a função seja encontrado, não escondido.
 
-The rule: **catch exactly what you expect; let everything else escape.**
+A regra: **apanha exatamente o que esperas; deixa tudo o resto escapar.**
 
-## Example
+## Exemplo
 
 ```python
 safe_int("42")      # 42
@@ -121,26 +123,26 @@ safe_int("nope")    # None         (ValueError, handled)
 safe_int([1, 2])    # TypeError!   (NOT handled -- a misuse, let it crash)
 ```
 
-## Your task
+## A tua tarefa
 
-Define `safe_int(text)` that returns `int(text)`, or `None` when the text
-isn't a valid number. Catch **only** `ValueError` -- a `TypeError` from a
-non-string must escape.
+Define `safe_int(text)` que devolve `int(text)`, ou `None` quando o texto não
+é um número válido. Apanha **apenas** `ValueError` -- um `TypeError` vindo de
+algo que não é uma string tem de escapar.
 
-## Done when
+## Está feito quando
 
-- `safe_int("42")` is `42`; `safe_int("-7")` is `-7`.
-- `safe_int("nope")` and `safe_int("")` are `None`.
-- `safe_int([1, 2])` raises `TypeError` -- the checker calls it with a list
-  on purpose, so catching too much fails.
+- `safe_int("42")` é `42`; `safe_int("-7")` é `-7`.
+- `safe_int("nope")` e `safe_int("")` são `None`.
+- `safe_int([1, 2])` levanta `TypeError` -- o verificador chama-o de propósito
+  com uma lista, por isso apanhar de mais falha.
 """,
 
-"7.2 hints": r"""return int(text) inside the try; the except returns None instead.
+"7.2 hints": r"""return int(text) dentro do try; o except devolve None em vez disso.
 
 ---
 
-Name the error: `except ValueError:` -- naming nothing (or Exception) also
-catches the TypeError the checker sends, and that must escape.
+Nomeia o erro: `except ValueError:` -- não nomear nada (ou Exception) também
+apanha o TypeError que o verificador envia, e esse tem de escapar.
 
 ---
 
@@ -151,16 +153,18 @@ def safe_int(text):
         return None
 """,
 
-"7.2 reference": r"""An `except` should name the **specific** exception you expect. Catching exactly
-the right type lets unexpected errors surface as bugs instead of being silently
-swallowed.
+"7.2 reference": r"""Um `except` deve indicar a exceção **específica** que esperas. Apanhar
+exatamente o tipo certo permite que erros inesperados apareçam como bugs em
+vez de serem silenciosamente engolidos.
 
-- `except ValueError:` catches only that type; an unrelated failure (a typo'd
-  name raising `NameError`) still propagates, which is what you want.
-- A bare `except:` (or `except Exception:`) catches **everything**, including bugs
-  you'd rather see — avoid it unless you genuinely mean "any failure".
-- Match the type to the operation: `int()` raises `ValueError`, indexing raises
-  `IndexError`, dict lookup raises `KeyError`.
+- `except ValueError:` apanha apenas esse tipo; uma falha não relacionada
+  (um nome mal escrito que levanta `NameError`) continua a propagar-se, o que
+  é o que queres.
+- Um `except:` sem nome (ou `except Exception:`) apanha **tudo**, incluindo
+  bugs que preferirias ver — evita-o a menos que queiras mesmo dizer
+  "qualquer falha".
+- Faz corresponder o tipo à operação: `int()` levanta `ValueError`, indexar
+  levanta `IndexError`, uma pesquisa num dicionário levanta `KeyError`.
 
 ```python
 try:
@@ -170,12 +174,12 @@ except KeyError:         # only a missing key, not other bugs
 ```
 """,
 
-"7.3 brief": r"""# 7.3 -- ZeroDivisionError: ask forgiveness
+"7.3 brief": r"""# 7.3 -- ZeroDivisionError: pede perdão
 
-## Concept
+## Conceito
 
-Dividing by zero raises `ZeroDivisionError`. There are two ways to write a
-division that survives it:
+Dividir por zero levanta `ZeroDivisionError`. Há duas formas de escrever uma
+divisão que sobrevive a isso:
 
 ```python
 # "look before you leap": test first
@@ -190,42 +194,45 @@ except ZeroDivisionError:
     return None
 ```
 
-Both behave the same *here* -- but Python style strongly favours the second,
-and this puzzle requires it. Why:
+Ambas se comportam da mesma forma *aqui* -- mas o estilo do Python favorece
+fortemente a segunda, e este puzzle exige-a. Porquê:
 
-- The `try` names the actual event ("the division failed") instead of a
-  pre-condition you must keep in sync with it.
-- Pre-checks don't scale: real operations can fail a dozen ways
-  (file missing, permission denied, connection dropped...). You cannot
-  pre-test them all -- but one `except` can catch the failure itself.
+- O `try` nomeia o acontecimento real ("a divisão falhou") em vez de uma
+  pré-condição que tens de manter sincronizada com ele.
+- Verificações prévias não escalam: operações reais podem falhar de várias
+  formas (ficheiro em falta, permissão negada, ligação perdida...). Não
+  consegues testar todas antecipadamente -- mas um único `except` consegue
+  apanhar a própria falha.
 
-This style is called **EAFP**: *easier to ask forgiveness than permission*.
+Este estilo chama-se **EAFP**: *easier to ask forgiveness than permission*
+(mais fácil pedir perdão do que permissão).
 
-## Example
+## Exemplo
 
 ```python
 safe_div(10, 4)    # 2.5
 safe_div(5, 0)     # None  -- handled, no crash
 ```
 
-## Your task
+## A tua tarefa
 
-Define `safe_div(a, b)` that returns `a / b`, or `None` when `b` is zero --
-using `try`/`except`, not an `if`.
+Define `safe_div(a, b)` que devolve `a / b`, ou `None` quando `b` é zero --
+usando `try`/`except`, e não um `if`.
 
-## Done when
+## Está feito quando
 
-- `safe_div(10, 4)` is `2.5`; `safe_div(5, 0)` is `None`.
-- `safe_div(0, 5)` is `0.0` -- zero on TOP is a fine division.
-- You caught `ZeroDivisionError` -- an if-test dodges the lesson and fails.
+- `safe_div(10, 4)` é `2.5`; `safe_div(5, 0)` é `None`.
+- `safe_div(0, 5)` é `0.0` -- zero no numerador é uma divisão perfeitamente
+  válida.
+- Apanhaste `ZeroDivisionError` -- um teste com if foge à lição e falha.
 """,
 
-"7.3 hints": r"""Attempt the division inside try -- don't test b first.
+"7.3 hints": r"""Tenta a divisão dentro do try -- não testes b primeiro.
 
 ---
 
-`except ZeroDivisionError: return None` -- the early return (6.5) inside try
-handles the happy path.
+`except ZeroDivisionError: return None` -- o return antecipado (6.5) dentro
+do try trata do caminho feliz.
 
 ---
 
@@ -236,14 +243,16 @@ def safe_div(a, b):
         return None
 """,
 
-"7.3 reference": r"""Dividing by zero raises **`ZeroDivisionError`**. Catching it demonstrates the
-**EAFP** style — "easier to ask forgiveness than permission": attempt the
-operation and handle the failure, rather than testing for every bad case first.
+"7.3 reference": r"""Dividir por zero levanta **`ZeroDivisionError`**. Apanhá-lo demonstra o
+estilo **EAFP** — "mais fácil pedir perdão do que permissão": tentas a
+operação e tratas da falha, em vez de testares antecipadamente todos os
+casos maus.
 
-- `a / 0` and `a // 0` and `a % 0` all raise. Wrapping the division in `try`
-  lets you supply a fallback when the divisor turns out to be zero.
-- EAFP often reads cleaner than a guarding `if b != 0:` and avoids a race between
-  the check and the use.
+- `a / 0` e `a // 0` e `a % 0` levantam todos esta exceção. Envolver a
+  divisão num `try` permite-te fornecer uma alternativa quando o divisor
+  acaba por ser zero.
+- O EAFP muitas vezes lê-se de forma mais limpa do que um `if b != 0:` de
+  guarda, e evita uma corrida entre a verificação e a utilização.
 
 ```python
 try:
@@ -253,22 +262,23 @@ except ZeroDivisionError:
 ```
 """,
 
-"7.4 brief": r"""# 7.4 -- IndexError and safe access
+"7.4 brief": r"""# 7.4 -- IndexError e acesso seguro
 
-## Concept
+## Conceito
 
-Indexing past the end of a list raises `IndexError`:
+Indexar para lá do fim de uma lista levanta `IndexError`:
 
 ```python
 items = ["a", "b"]
 items[5]      # IndexError!
 ```
 
-A "safe get" returns a fallback instead of crashing -- and it is another
-place where *trying* beats *pre-testing*. Remember that negative indexes are
-**valid** (2.2): `items[-1]` is the last item, `items[-2]` the one before.
-A hand-written bounds check has to get `0 <= i`... no wait, `-len <= i <
-len`... exactly right, in two directions. Or you just try it:
+Um "safe get" devolve uma alternativa em vez de falhar -- e é mais um sítio
+onde *tentar* vence *testar antecipadamente*. Lembra-te de que índices
+negativos são **válidos** (2.2): `items[-1]` é o último elemento, `items[-2]`
+o anterior a esse. Uma verificação de limites escrita à mão tem de acertar em
+`0 <= i`... não, espera, `-len <= i < len`... exatamente, nas duas direções.
+Ou simplesmente tentas:
 
 ```python
 try:
@@ -277,10 +287,10 @@ except IndexError:
     return default
 ```
 
-The `except` is correct *by definition* -- it fires precisely when Python
-itself says the index is bad, negatives included.
+O `except` está correto *por definição* -- dispara precisamente quando o
+próprio Python diz que o índice é mau, negativos incluídos.
 
-## Example
+## Exemplo
 
 ```python
 item_or(["a", "b"], 0, "?")     # "a"
@@ -288,26 +298,27 @@ item_or(["a", "b"], -1, "?")    # "b"   -- valid negative index
 item_or(["a", "b"], 5, "?")     # "?"   -- out of range, fallback
 ```
 
-## Your task
+## A tua tarefa
 
-Define `item_or(items, i, default)` that returns `items[i]`, or `default`
-when `i` is out of range -- using `try`/`except IndexError`.
+Define `item_or(items, i, default)` que devolve `items[i]`, ou `default`
+quando `i` está fora do intervalo -- usando `try`/`except IndexError`.
 
-## Done when
+## Está feito quando
 
-- `item_or(["a", "b"], 1, "?")` is `"b"`; index `5` gives `"?"`.
-- `item_or(["a", "b"], -1, "?")` is `"b"` -- negatives that fit are valid.
-- `item_or([], 0, "?")` is `"?"` -- an empty list has no valid index.
-- You used `try`/`except` -- bounds arithmetic dodges the lesson and fails.
+- `item_or(["a", "b"], 1, "?")` é `"b"`; o índice `5` dá `"?"`.
+- `item_or(["a", "b"], -1, "?")` é `"b"` -- negativos que cabem são válidos.
+- `item_or([], 0, "?")` é `"?"` -- uma lista vazia não tem nenhum índice
+  válido.
+- Usaste `try`/`except` -- aritmética de limites foge à lição e falha.
 """,
 
-"7.4 hints": r"""Just index it inside a try -- Python already knows exactly which indexes are
-bad.
+"7.4 hints": r"""Basta indexar dentro de um try -- o Python já sabe exatamente quais os
+índices que são maus.
 
 ---
 
-`except IndexError: return default` -- this gets negatives right for free,
-which a hand-written bounds check usually doesn't.
+`except IndexError: return default` -- isto acerta nos negativos de graça,
+o que uma verificação de limites escrita à mão normalmente não consegue.
 
 ---
 
@@ -318,14 +329,14 @@ def item_or(items, i, default):
         return default
 """,
 
-"7.4 reference": r"""Indexing past the end of a list (or string) raises **`IndexError`**. Catching it
-turns a risky lookup into a **safe access** that returns a fallback when the
-position doesn't exist.
+"7.4 reference": r"""Indexar para lá do fim de uma lista (ou string) levanta **`IndexError`**.
+Apanhá-lo transforma uma pesquisa arriscada num **acesso seguro** que
+devolve uma alternativa quando a posição não existe.
 
-- `lst[i]` raises if `i >= len(lst)` (or `i < -len(lst)`); the `except` supplies a
-  default instead of crashing.
-- This is the EAFP counterpart to checking `if i < len(lst):` first — useful when
-  the out-of-range case is normal rather than a bug.
+- `lst[i]` levanta uma exceção se `i >= len(lst)` (ou `i < -len(lst)`); o
+  `except` fornece uma alternativa em vez de deixar cair o programa.
+- Este é o contraponto EAFP de verificar primeiro `if i < len(lst):` —
+  útil quando o caso fora do intervalo é normal e não um bug.
 
 ```python
 def get(lst, i, default=None):
@@ -336,13 +347,13 @@ def get(lst, i, default=None):
 ```
 """,
 
-"7.5 brief": r"""# 7.5 -- raise: errors are yours too
+"7.5 brief": r"""# 7.5 -- raise: os erros também são teus
 
-## Concept
+## Conceito
 
-So far you have *caught* errors that Python raised. You can also **raise your
-own** -- and good functions do, the moment they are handed something
-senseless:
+Até agora tens *apanhado* erros que o Python levantou. Também podes
+**levantar os teus próprios** -- e boas funções fazem-no, assim que lhes é
+entregue algo sem sentido:
 
 ```python
 def checked_age(age):
@@ -351,17 +362,17 @@ def checked_age(age):
     return age
 ```
 
-`raise` creates the error and throws it right there: the function stops, and
-the caller gets the same treatment `int("nope")` gives them -- catchable with
-`try`, loud if ignored.
+`raise` cria o erro e lança-o ali mesmo: a função para, e quem a chamou
+recebe o mesmo tratamento que `int("nope")` dá -- apanhável com `try`,
+ruidoso se ignorado.
 
-Why raise instead of returning something like `None` or `-1`? Because a wrong
-value travels: it gets stored, added, printed, and the crash (if any) happens
-far from the real mistake. A raise pins the failure to the moment and the
-message -- `ValueError("age cannot be negative")` says exactly what went
-wrong, where it went wrong. Garbage in, **error** out -- never garbage out.
+Porquê levantar em vez de devolver algo como `None` ou `-1`? Porque um valor
+errado viaja: é guardado, somado, impresso, e a falha (se houver) acontece
+longe do erro real. Um raise fixa a falha no momento e na mensagem --
+`ValueError("age cannot be negative")` diz exatamente o que correu mal, e
+onde correu mal. Lixo à entrada, **erro** à saída -- nunca lixo à saída.
 
-## Example
+## Exemplo
 
 ```python
 checked_age(30)     # 30
@@ -369,24 +380,25 @@ checked_age(0)      # 0    -- zero is a fine age
 checked_age(-1)     # ValueError: age cannot be negative
 ```
 
-## Your task
+## A tua tarefa
 
-Define `checked_age(age)` that returns the age unchanged -- but raises a
-`ValueError` when it is negative. Give it a message saying what's wrong.
+Define `checked_age(age)` que devolve a idade sem alterações -- mas levanta
+um `ValueError` quando ela é negativa. Dá-lhe uma mensagem que diga o que
+está errado.
 
-## Done when
+## Está feito quando
 
-- `checked_age(30)` returns `30`; `checked_age(0)` returns `0`.
-- `checked_age(-1)` raises `ValueError`.
-- You used `raise` -- the checker looks for the statement itself.
+- `checked_age(30)` devolve `30`; `checked_age(0)` devolve `0`.
+- `checked_age(-1)` levanta `ValueError`.
+- Usaste `raise` -- o verificador procura a própria instrução.
 """,
 
-"7.5 hints": r"""Guard first, return after: if the age is negative, raise; otherwise it's fine
-as-is.
+"7.5 hints": r"""Protege primeiro, devolve depois: se a idade for negativa, levanta a
+exceção; caso contrário está bem como está.
 
 ---
 
-The guard is two lines:  if age < 0:  then
+A proteção são duas linhas: if age < 0: e depois
 raise ValueError("age cannot be negative").
 
 ---
@@ -397,17 +409,17 @@ def checked_age(age):
     return age
 """,
 
-"7.5 reference": r"""**`raise`** triggers an exception **yourself**, stopping the function and
-signalling that something is wrong. It lets your code reject bad input at the
-point it's detected, the same way built-ins do.
+"7.5 reference": r"""**`raise`** dispara uma exceção **por ti próprio**, parando a função e
+sinalizando que algo está errado. Permite que o teu código rejeite entradas
+inválidas no momento em que são detetadas, tal como fazem as funções nativas.
 
-- `raise ValueError("amount must be positive")` constructs an exception with a
-  message and throws it; execution stops unless a `try` up the call chain catches
-  it.
-- Choose the type that fits: `ValueError` for a wrong value, `TypeError` for a
-  wrong type. The message explains what was expected.
-- Raising at the boundary (as input arrives) keeps the rest of the code able to
-  trust its data.
+- `raise ValueError("amount must be positive")` constrói uma exceção com uma
+  mensagem e lança-a; a execução para a menos que um `try` mais acima na
+  cadeia de chamadas a apanhe.
+- Escolhe o tipo que se adequa: `ValueError` para um valor errado, `TypeError`
+  para um tipo errado. A mensagem explica o que era esperado.
+- Levantar a exceção na fronteira (assim que a entrada chega) mantém o resto
+  do código capaz de confiar nos seus dados.
 
 ```python
 def withdraw(amount):
@@ -417,13 +429,13 @@ def withdraw(amount):
 ```
 """,
 
-"7.6 brief": r"""# 7.6 -- Ask again: the retry loop
+"7.6 brief": r"""# 7.6 -- Pergunta outra vez: o ciclo de repetição
 
-## Concept
+## Conceito
 
-The classic use of `try`/`except` in a real program: **keep asking until the
-input makes sense.** Combine a `while True` loop (3.7), `break` (3.11), and
-the `except` from 7.1:
+O uso clássico de `try`/`except` num programa a sério: **continuar a
+perguntar até a entrada fazer sentido.** Combina um ciclo `while True` (3.7),
+`break` (3.11), e o `except` de 7.1:
 
 ```python
 while True:
@@ -434,39 +446,43 @@ while True:
         pass               # bad line -- silently go around again
 ```
 
-The shape to internalise:
+A forma a interiorizar:
 
-- the **happy path** ends in `break`;
-- the **except** absorbs the failure and lets the loop retry;
-- after the loop, `n` is guaranteed valid -- the code below can trust it.
+- o **caminho feliz** termina em `break`;
+- o **except** absorve a falha e deixa o ciclo tentar outra vez;
+- depois do ciclo, `n` está garantidamente válido -- o código a seguir pode
+  confiar nele.
 
-(`pass` is Python's "do nothing" statement -- the except block must contain
-*something*.)
+(`pass` é a instrução do Python para "não fazer nada" -- o bloco except tem
+de conter *alguma coisa*.)
 
-## Example
+## Exemplo
 
-For the input lines `cat`, `dog`, `21` the program ignores the first two and
-prints `42`.
+Para as linhas de entrada `cat`, `dog`, `21` o programa ignora as duas
+primeiras e imprime `42`.
 
-## Your task
+## A tua tarefa
 
-Read lines until one converts to a whole number, then print that number
-**doubled**. Bad lines produce no output at all.
+Lê linhas até uma se converter num número inteiro, depois imprime esse
+número **duplicado**. Linhas inválidas não produzem qualquer saída.
 
-## Done when
+## Está feito quando
 
-- `21` as the first line prints `42`.
-- `cat`, `dog`, `21` also prints just `42` -- the garbage is silently retried.
-- Negative numbers work.
-- You used a loop and `try`/`except`.
+- `21` como primeira linha imprime `42`.
+- `cat`, `dog`, `21` também imprime apenas `42` -- o lixo é repetido em
+  silêncio.
+- Números negativos funcionam.
+- Usaste um ciclo e `try`/`except`.
 """,
 
-"7.6 hints": r"""while True around a try: convert-and-break; the except just goes around again.
+"7.6 hints": r"""while True à volta de um try: converte e break; o except simplesmente volta
+a tentar.
 
 ---
 
-except ValueError: pass  -- `pass` means "do nothing", which here means
-"retry". Print AFTER the loop, where n is guaranteed good.
+except ValueError: pass -- `pass` significa "não faças nada", o que aqui
+significa "tenta outra vez". Imprime DEPOIS do ciclo, onde n está garantido
+que é bom.
 
 ---
 
@@ -479,16 +495,16 @@ while True:
 print(n * 2)
 """,
 
-"7.6 reference": r"""The **retry loop** keeps asking until it gets a valid value. It combines a
-`while True` with `try` / `except`: succeed and `break` out; fail and loop round
-to ask again.
+"7.6 reference": r"""O **ciclo de repetição** continua a perguntar até obter um valor válido.
+Combina um `while True` com `try` / `except`: se tiver sucesso, faz `break`
+para sair; se falhar, volta ao ciclo para perguntar outra vez.
 
-- The `try` attempts the parse/operation; a successful path ends with `break`,
-  leaving the loop.
-- The `except` handles the bad input (often just printing a hint and falling
-  through), so the `while True` runs another pass.
-- `while True` with no other exit relies on that `break` — the valid case is the
-  only way out.
+- O `try` tenta a conversão/operação; um caminho bem-sucedido termina com
+  `break`, saindo do ciclo.
+- O `except` trata da entrada inválida (muitas vezes só imprimindo uma dica
+  e continuando), para que o `while True` faça mais uma passagem.
+- Um `while True` sem outra saída depende desse `break` — o caso válido é a
+  única forma de sair.
 
 ```python
 while True:
@@ -500,12 +516,13 @@ while True:
 ```
 """,
 
-"7.7 brief": r"""# 7.7 -- Reading the error: except ... as e
+"7.7 brief": r"""# 7.7 -- Ler o erro: except ... as e
 
-## Concept
+## Conceito
 
-An exception is not just a signal -- it is an **object carrying a message**.
-Catch it *into a variable* with `as`, and you can use that message:
+Uma exceção não é apenas um sinal -- é um **objeto que transporta uma
+mensagem**. Apanha-a *para uma variável* com `as`, e podes usar essa
+mensagem:
 
 ```python
 try:
@@ -514,44 +531,46 @@ except ValueError as e:
     print(e)
 ```
 
-For `text = "5x"`, that prints Python's own diagnosis:
+Para `text = "5x"`, isso imprime o próprio diagnóstico do Python:
 
 ```
 invalid literal for int() with base 10: '5x'
 ```
 
-`e` is the error object; printing it shows its message. This is how real
-programs log what actually went wrong instead of a vague "something failed" --
-the difference between a bug report you can act on and one you can't.
+`e` é o objeto de erro; imprimi-lo mostra a sua mensagem. É assim que
+programas a sério registam o que realmente correu mal, em vez de um vago
+"algo falhou" -- a diferença entre um relatório de bug em que consegues agir
+e um em que não consegues.
 
-(You don't write the message yourself here -- you *relay* the one Python
-attached when it raised.)
+(Não escreves a mensagem tu próprio aqui -- tu *transmites* a que o Python
+anexou quando a levantou.)
 
-## Example
+## Exemplo
 
-Input `7` prints `7`. Input `5x` prints
+A entrada `7` imprime `7`. A entrada `5x` imprime
 `invalid literal for int() with base 10: '5x'`.
 
-## Your task
+## A tua tarefa
 
-Read one line. If it converts to a whole number, print the number. If it
-doesn't, catch the `ValueError` **as `e`** and print `e` itself -- Python's
-message, not your own.
+Lê uma linha. Se ela se converter num número inteiro, imprime o número. Se
+não se converter, apanha o `ValueError` **como `e`** e imprime o próprio `e`
+-- a mensagem do Python, não uma tua.
 
-## Done when
+## Está feito quando
 
-- `7` prints `7`.
-- `5x` prints the exact `invalid literal ...: '5x'` message -- with the
-  offending text quoted inside it.
-- You did not type the message by hand (it must match for *any* input, which
-  only printing `e` gets right).
+- `7` imprime `7`.
+- `5x` imprime exatamente a mensagem `invalid literal ...: '5x'` -- com o
+  texto ofensor citado lá dentro.
+- Não escreveste a mensagem à mão (tem de corresponder para *qualquer*
+  entrada, o que só imprimir `e` consegue fazer bem).
 """,
 
-"7.7 hints": r"""The `as e` goes right in the except line:  except ValueError as e:
+"7.7 hints": r"""O `as e` vai mesmo na linha do except: except ValueError as e:
 
 ---
 
-Inside the except block, just print(e) -- the object prints as its message.
+Dentro do bloco except, basta print(e) -- o objeto imprime-se como a sua
+mensagem.
 
 ---
 
@@ -562,14 +581,16 @@ except ValueError as e:
     print(e)
 """,
 
-"7.7 reference": r"""**`except ValueError as e:`** binds the caught exception **object** to a name, so
-you can inspect it — most simply by printing it to show what went wrong.
+"7.7 reference": r"""**`except ValueError as e:`** liga o objeto da exceção apanhada a um nome,
+para que o possas inspecionar — mais simplesmente imprimindo-o para mostrar
+o que correu mal.
 
-- The exception object carries the detail; `str(e)` (or `print(e)`) yields its
-  message. `type(e).__name__` gives the error's class name.
-- The name `e` exists only inside the `except` block.
-- One handler can catch a family by naming a base class: `except Exception as e:`
-  binds any of its subclasses (use sparingly — broad catches hide bugs).
+- O objeto da exceção transporta o detalhe; `str(e)` (ou `print(e)`) produz
+  a sua mensagem. `type(e).__name__` dá o nome da classe do erro.
+- O nome `e` só existe dentro do bloco `except`.
+- Um único handler pode apanhar uma família inteira nomeando uma classe
+  base: `except Exception as e:` liga qualquer uma das suas subclasses (usa
+  com moderação — apanhar de forma demasiado ampla esconde bugs).
 
 ```python
 try:
@@ -579,12 +600,12 @@ except ValueError as e:
 ```
 """,
 
-"7.8 brief": r"""# 7.8 -- Capstone: a robust calculator
+"7.8 brief": r"""# 7.8 -- Capstone: uma calculadora robusta
 
-## Concept
+## Conceito
 
-One `try` can have **several** `except` blocks -- one per kind of failure,
-each choosing its own recovery:
+Um único `try` pode ter **vários** blocos `except` -- um por cada tipo de
+falha, cada um escolhendo a sua própria recuperação:
 
 ```python
 try:
@@ -595,12 +616,12 @@ except ZeroDivisionError:
     print("cannot divide")
 ```
 
-Whichever error is raised picks its matching block; the others are skipped.
-This capstone wires the whole chapter into the classic exercise: a calculator
-that **cannot be crashed** by its input. It also needs `split` (4.4),
-indexing (2.1), `elif` (3.4), and `/` (1.9).
+Seja qual for o erro levantado, este escolhe o seu bloco correspondente; os
+outros são ignorados. Este capstone liga todo o capítulo ao exercício
+clássico: uma calculadora que **não pode ser feita cair** pela sua entrada.
+Também precisa de `split` (4.4), indexação (2.1), `elif` (3.4), e `/` (1.9).
 
-## Example
+## Exemplo
 
 ```
 input "8 + 5"   ->  13
@@ -610,33 +631,33 @@ input "two * 3" ->  bad number
 input "8 ? 5"   ->  unknown op
 ```
 
-## Your task
+## A tua tarefa
 
-Read one line of the form `<number> <op> <number>` (three parts separated by
-spaces). For ops `+`, `-`, `*` print the whole-number result; for `/` print
-the float result. Handle every failure:
+Lê uma linha da forma `<number> <op> <number>` (três partes separadas por
+espaços). Para as operações `+`, `-`, `*` imprime o resultado como número
+inteiro; para `/` imprime o resultado como float. Trata todas as falhas:
 
-- a part that isn't a whole number -> print `bad number`
-- division by zero -> print `cannot divide`
-- any other op symbol -> print `unknown op`
+- uma parte que não é um número inteiro -> imprime `bad number`
+- divisão por zero -> imprime `cannot divide`
+- qualquer outro símbolo de operação -> imprime `unknown op`
 
-## Done when
+## Está feito quando
 
 - `8 + 5` -> `13`, `9 / 2` -> `4.5`, `3 * -2` -> `-6`.
 - `9 / 0` -> `cannot divide`; `two * 3` -> `bad number`; `8 ? 5` ->
   `unknown op`.
-- No input crashes it: each failure prints its own message via `except`
-  blocks (and an `else`/`elif` for the unknown op).
+- Nenhuma entrada o faz cair: cada falha imprime a sua própria mensagem
+  através de blocos `except` (e um `else`/`elif` para a operação
+  desconhecida).
 """,
 
-"7.8 hints": r"""split() the line into three parts; convert parts[0] and parts[2] inside the
-try.
+"7.8 hints": r"""split() a linha em três partes; converte parts[0] e parts[2] dentro do try.
 
 ---
 
-Stack the two excepts after one try: ValueError -> "bad number",
-ZeroDivisionError -> "cannot divide". The op chain is if/elif/else, with else
-printing "unknown op".
+Empilha os dois excepts depois de um try: ValueError -> "bad number",
+ZeroDivisionError -> "cannot divide". A cadeia da operação é if/elif/else,
+com o else a imprimir "unknown op".
 
 ---
 
@@ -661,15 +682,17 @@ except ZeroDivisionError:
     print("cannot divide")
 """,
 
-"7.8 reference": r"""A single `try` can be followed by **several `except` clauses**, each handling a
-different failure with its own response. They're tested top to bottom; the
-**first** matching type runs, and the rest are skipped.
+"7.8 reference": r"""Um único `try` pode ser seguido por **vários `except`**, cada um a tratar
+de uma falha diferente com a sua própria resposta. São testados de cima
+para baixo; o **primeiro** tipo correspondente corre, e os restantes são
+ignorados.
 
-- This builds robust input handling: one `try` around the work, then an `except`
-  per thing that can go wrong (`ValueError` for a bad number,
-  `ZeroDivisionError` for `/0`), each giving a tailored message.
-- Order from specific to general if types are related, since the first match
-  wins.
+- Isto constrói um tratamento robusto de entradas: um `try` à volta do
+  trabalho, depois um `except` por cada coisa que pode correr mal
+  (`ValueError` para um número inválido, `ZeroDivisionError` para `/0`),
+  cada um dando uma mensagem à medida.
+- Ordena do específico para o geral se os tipos estiverem relacionados, já
+  que o primeiro a corresponder ganha.
 
 ```python
 try:

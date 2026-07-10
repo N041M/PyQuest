@@ -9,11 +9,11 @@
 
 TRANSLATIONS = {
 
-"5.1 brief": r"""# 5.1 -- in: membership testing
+"5.1 brief": r"""# 5.1 -- in: testar pertença
 
-## Concept
+## Conceito
 
-You met `in` with sets (4.11). It actually works on almost everything:
+Encontraste o `in` com conjuntos (4.11). Na verdade funciona em quase tudo:
 
 ```python
 "e" in "hello"        # True   (substring of a string)
@@ -21,26 +21,26 @@ You met `in` with sets (4.11). It actually works on almost everything:
 "sam" in {"sam": 20}  # True   (KEY of a dict)
 ```
 
-`x in s` is an expression that gives a **boolean** (`True`/`False`), so it
-slots straight into an `if`:
+`x in s` é uma expressão que dá um **booleano** (`True`/`False`), por isso
+encaixa diretamente num `if`:
 
 ```python
 if "@" in address:
     print("looks like an email")
 ```
 
-There is also the opposite, `not in`:
+Também existe o oposto, `not in`:
 
 ```python
 if "x" not in word:
     print("no x here")
 ```
 
-Compare that with chapter 2, where you used `s.find()` and checked for `-1`.
-`in` says the same thing in plain English -- prefer it whenever you only need
-*whether* something is there, not *where*.
+Compara com o capítulo 2, onde usaste `s.find()` e verificaste `-1`.
+O `in` diz a mesma coisa em linguagem simples -- prefere-o sempre que só precises de saber
+*se* algo está lá, não *onde*.
 
-## Example
+## Exemplo
 
 ```python
 word = "banana"
@@ -48,30 +48,30 @@ print("n" in word)     # True
 print("z" in word)     # False
 ```
 
-## Your task
+## A tua tarefa
 
-Read a word, then a single letter. Print `yes` if the letter appears in the
-word, and `no` if it doesn't.
+Lê uma palavra, depois uma única letra. Imprime `yes` se a letra aparecer na
+palavra, e `no` se não aparecer.
 
-For input `banana`, then `n`:
+Para a entrada `banana`, depois `n`:
 
 ```
 yes
 ```
 
-## Done when
+## Está feito quando
 
-- A letter that appears prints `yes`; one that doesn't prints `no`.
-- It works for a one-letter word too.
-- You used the `in` operator (not `.find()` or `.count()`).
+- Uma letra que aparece imprime `yes`; uma que não aparece imprime `no`.
+- Também funciona para uma palavra de uma letra.
+- Usaste o operador `in` (não `.find()` nem `.count()`).
 """,
 
-"5.1 hints": r"""`letter in word` is already True or False -- put it straight in an `if`.
+"5.1 hints": r"""`letter in word` já é True ou False -- coloca-o diretamente num `if`.
 
 ---
 
-Read the word, read the letter, then branch: `if letter in word:` print yes,
-`else:` print no.
+Lê a palavra, lê a letra, depois ramifica: `if letter in word:` imprime yes,
+`else:` imprime no.
 
 ---
 
@@ -83,15 +83,15 @@ else:
     print("no")
 """,
 
-"5.1 reference": r"""The **`in`** operator tests membership and yields a boolean, so it drops straight
-into an `if` or `while`. `x in c` is `True` when `x` is found in `c`.
+"5.1 reference": r"""O operador **`in`** testa a pertença e devolve um booleano, por isso encaixa diretamente
+num `if` ou `while`. `x in c` é `True` quando `x` é encontrado em `c`.
 
-- For a **string**, `in` tests for a **substring**: `"cat" in "concatenate"` is
+- Para uma **cadeia de caracteres**, `in` testa uma **substring**: `"cat" in "concatenate"` é
   `True`.
-- For a **list** or **tuple**, it tests for an item (scanning the sequence).
-- For a **dict** or **set**, it tests for a **key**/member — and is fast
-  (hash-based), unlike the linear scan of a list.
-- `x not in c` is the readable negation.
+- Para uma **lista** ou **tuplo**, testa um item (percorrendo a sequência).
+- Para um **dicionário** ou **conjunto**, testa uma **chave**/membro — e é rápido
+  (baseado em hash), ao contrário da procura linear de uma lista.
+- `x not in c` é a negação, e lê-se de forma natural.
 
 ```python
 "a" in "cat"          # True
@@ -102,9 +102,9 @@ into an `if` or `while`. `x in c` is `True` when `x` is found in `c`.
 
 "5.2 brief": r"""# 5.2 -- sum()
 
-## Concept
+## Conceito
 
-In 3.12 you wrote the **accumulator pattern** by hand:
+Em 3.12 escreveste o **padrão acumulador** à mão:
 
 ```python
 total = 0
@@ -112,20 +112,19 @@ for x in nums:
     total = total + x
 ```
 
-That pattern is so common Python ships it as a built-in function:
+Esse padrão é tão comum que o Python o traz como função nativa:
 
 ```python
 total = sum(nums)
 ```
 
-`sum(list_of_numbers)` adds every item and returns the total. On an empty list
-it returns `0` -- exactly what your hand-written accumulator started with.
+`sum(list_of_numbers)` soma cada item e devolve o total. Numa lista vazia
+devolve `0` -- exatamente o valor com que o teu acumulador escrito à mão começava.
 
-This chapter is full of such **power tools**: built-ins that replace a loop you
-have already written yourself once. You earn the shortcut by knowing what it
-replaces.
+Este capítulo está cheio destas **ferramentas poderosas**: funções nativas que substituem um
+ciclo que já escreveste tu mesmo uma vez. Ganhas o atalho por saberes o que ele substitui.
 
-## Example
+## Exemplo
 
 ```python
 nums = [3, 1, 4]
@@ -133,30 +132,30 @@ print(sum(nums))    # 8
 print(sum([]))      # 0
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n`, then `n` whole numbers (one per line). Print their total
-using `sum()`.
+Lê uma contagem `n`, depois `n` números inteiros (um por linha). Imprime o seu total
+usando `sum()`.
 
-For input `3`, then `3`, `1`, `4`:
+Para a entrada `3`, depois `3`, `1`, `4`:
 
 ```
 8
 ```
 
-## Done when
+## Está feito quando
 
-- `3, 1, 4` prints `8`; negatives work too.
-- A count of `0` prints `0`.
-- You used `sum()` -- not a hand-written loop this time.
+- `3, 1, 4` imprime `8`; negativos também funcionam.
+- Uma contagem de `0` imprime `0`.
+- Usaste `sum()` -- desta vez, não um ciclo escrito à mão.
 """,
 
-"5.2 hints": r"""Build the list of numbers first (like 4.13), then hand the whole list to one
-function call.
+"5.2 hints": r"""Constrói primeiro a lista de números (como em 4.13), depois entrega a lista toda a uma só
+chamada de função.
 
 ---
 
-`sum(nums)` returns the total -- print that. No `total = 0` needed.
+`sum(nums)` devolve o total -- imprime isso. Não precisas de `total = 0`.
 
 ---
 
@@ -167,15 +166,15 @@ for _ in range(n):
 print(sum(nums))
 """,
 
-"5.2 reference": r"""**`sum(numbers)`** adds up an iterable of numbers and returns the total — the
-accumulator loop of 3.12 as one built-in call.
+"5.2 reference": r"""**`sum(numbers)`** soma um iterável de números e devolve o total — o
+ciclo acumulador de 3.12 numa só chamada nativa.
 
-- It works on any iterable of numbers (list, tuple, range, generator). `sum([])`
-  is `0`.
-- An optional second argument is the **start** value: `sum(nums, 100)` begins the
-  total at 100.
-- It only adds numbers; to total something derived from each item, feed it a
-  comprehension or generator, e.g. `sum(len(w) for w in words)`.
+- Funciona em qualquer iterável de números (lista, tuplo, range, gerador). `sum([])`
+  é `0`.
+- Um segundo argumento opcional é o valor **inicial**: `sum(nums, 100)` começa o
+  total em 100.
+- Só soma números; para totalizar algo derivado de cada item, alimenta-o com uma
+  compreensão ou gerador, por exemplo `sum(len(w) for w in words)`.
 
 ```python
 sum([3, 1, 4])              # 8
@@ -184,13 +183,13 @@ sum(len(w) for w in words)  # total characters
 ```
 """,
 
-"5.3 brief": r"""# 5.3 -- min() and max()
+"5.3 brief": r"""# 5.3 -- min() e max()
 
-## Concept
+## Conceito
 
-Finding the smallest or largest item is another loop you could write by hand
-("keep a best-so-far, compare each item") -- and another loop Python ships as
-a built-in:
+Encontrar o item mais pequeno ou maior é outro ciclo que podias escrever à mão
+("guarda o melhor até agora, compara cada item") -- e outro ciclo que o Python traz como
+função nativa:
 
 ```python
 nums = [3, 7, 1]
@@ -198,18 +197,18 @@ print(min(nums))    # 1
 print(max(nums))    # 7
 ```
 
-`min()` and `max()` take a list (any non-empty collection, in fact) and return
-its smallest / largest item. They also work on strings -- "smallest" then means
-earliest in alphabetical order:
+`min()` e `max()` recebem uma lista (na verdade, qualquer coleção não vazia) e devolvem
+o seu item mais pequeno / maior. Também funcionam com cadeias de caracteres -- "mais pequeno" então
+significa mais cedo na ordem alfabética:
 
 ```python
 min("cab")     # "a"
 ```
 
-One caution: on an **empty** list they crash (there is no smallest of
-nothing), so this puzzle guarantees at least one number.
+Um cuidado: numa lista **vazia** rebentam (não há mais pequeno de
+nada), por isso este puzzle garante pelo menos um número.
 
-## Example
+## Exemplo
 
 ```python
 nums = [4, -2, 9]
@@ -217,30 +216,30 @@ print(min(nums))    # -2
 print(max(nums))    # 9
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n` (always at least 1), then `n` whole numbers. Print two lines:
-the smallest, then the largest.
+Lê uma contagem `n` (sempre pelo menos 1), depois `n` números inteiros. Imprime duas linhas:
+o mais pequeno, depois o maior.
 
-For input `3`, then `4`, `-2`, `9`:
+Para a entrada `3`, depois `4`, `-2`, `9`:
 
 ```
 -2
 9
 ```
 
-## Done when
+## Está feito quando
 
-- `4, -2, 9` prints `-2` then `9`.
-- A single number prints itself twice (it is both the min and the max).
-- You used `min()` and `max()`.
+- `4, -2, 9` imprime `-2` depois `9`.
+- Um único número imprime-se a si próprio duas vezes (é ao mesmo tempo o mínimo e o máximo).
+- Usaste `min()` e `max()`.
 """,
 
-"5.3 hints": r"""Build the list first; then the smallest and largest are each one function call.
+"5.3 hints": r"""Constrói primeiro a lista; depois o mais pequeno e o maior são cada um uma só chamada de função.
 
 ---
 
-`print(min(nums))` then `print(max(nums))` -- two lines, two calls.
+`print(min(nums))` depois `print(max(nums))` -- duas linhas, duas chamadas.
 
 ---
 
@@ -252,15 +251,15 @@ print(min(nums))
 print(max(nums))
 """,
 
-"5.3 reference": r"""**`min(items)`** and **`max(items)`** return the smallest and largest item of a
-non-empty collection.
+"5.3 reference": r"""**`min(items)`** e **`max(items)`** devolvem o item mais pequeno e o maior de uma
+coleção não vazia.
 
-- They compare with `<`/`>`, so they work on numbers and on strings (which
-  compare lexicographically).
-- Called on an **empty** iterable they raise `ValueError`; pass `default=` to
-  supply a fallback.
-- A `key=` function ranks by a derived value instead of the item itself:
-  `max(words, key=len)` returns the **longest** word.
+- Comparam com `<`/`>`, por isso funcionam com números e com cadeias de caracteres (que
+  se comparam lexicograficamente).
+- Chamados sobre um iterável **vazio** levantam `ValueError`; passa `default=` para
+  fornecer um valor alternativo.
+- Uma função `key=` ordena por um valor derivado em vez do próprio item:
+  `max(words, key=len)` devolve a palavra **mais comprida**.
 
 ```python
 min([3, 1, 4])             # 1
@@ -271,10 +270,10 @@ max(words, key=len)        # the longest word
 
 "5.4 brief": r"""# 5.4 -- sorted()
 
-## Concept
+## Conceito
 
-`sorted(nums)` returns a **new list** with the same items in order, smallest
-first:
+`sorted(nums)` devolve uma **nova lista** com os mesmos itens por ordem, do mais pequeno
+primeiro:
 
 ```python
 nums = [3, 1, 2]
@@ -282,17 +281,16 @@ print(sorted(nums))    # [1, 2, 3]
 print(nums)            # [3, 1, 2]  -- the original is untouched
 ```
 
-Two things to know:
+Duas coisas a saber:
 
-- It returns a *copy*; the original list keeps its order. (There is also
-  `nums.sort()`, a method that reorders the list **in place** -- handy later,
-  but `sorted()` is the safer default because nothing is changed behind your
-  back.)
-- Largest-first is one keyword away: `sorted(nums, reverse=True)`.
+- Devolve uma *cópia*; a lista original mantém a sua ordem. (Também existe
+  `nums.sort()`, um método que reordena a lista **no próprio local** -- útil mais tarde,
+  mas `sorted()` é a opção mais segura por omissão porque nada é alterado às escondidas.)
+- Do maior para o mais pequeno é só uma palavra-chave de distância: `sorted(nums, reverse=True)`.
 
-Duplicates are kept -- sorting reorders, it never removes.
+Os duplicados mantêm-se -- ordenar reorganiza, nunca remove.
 
-## Example
+## Exemplo
 
 ```python
 for x in sorted([3, 1, 2]):
@@ -302,12 +300,12 @@ for x in sorted([3, 1, 2]):
 # 3
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n`, then `n` whole numbers. Print them smallest to largest,
-one per line.
+Lê uma contagem `n`, depois `n` números inteiros. Imprime-os do mais pequeno ao maior,
+um por linha.
 
-For input `4`, then `3`, `1`, `3`, `2`:
+Para a entrada `4`, depois `3`, `1`, `3`, `2`:
 
 ```
 1
@@ -316,18 +314,18 @@ For input `4`, then `3`, `1`, `3`, `2`:
 3
 ```
 
-## Done when
+## Está feito quando
 
-- `3, 1, 3, 2` prints `1, 2, 3, 3` -- the duplicate `3` appears twice.
-- A count of `0` prints nothing.
-- You used `sorted()`.
+- `3, 1, 3, 2` imprime `1, 2, 3, 3` -- o `3` duplicado aparece duas vezes.
+- Uma contagem de `0` não imprime nada.
+- Usaste `sorted()`.
 """,
 
-"5.4 hints": r"""Build the list, then loop over `sorted(nums)` instead of `nums`.
+"5.4 hints": r"""Constrói a lista, depois percorre `sorted(nums)` em vez de `nums`.
 
 ---
 
-`for x in sorted(nums):` visits the items smallest-first; print each one.
+`for x in sorted(nums):` visita os itens do mais pequeno para o maior; imprime cada um.
 
 ---
 
@@ -339,16 +337,16 @@ for x in sorted(nums):
     print(x)
 """,
 
-"5.4 reference": r"""**`sorted(items)`** returns a **new** list with the items in ascending order,
-leaving the original untouched.
+"5.4 reference": r"""**`sorted(items)`** devolve uma **nova** lista com os itens em ordem crescente,
+deixando o original intacto.
 
-- It accepts any iterable and always returns a list. Numbers sort numerically,
-  strings lexicographically.
-- **`reverse=True`** sorts descending. **`key=`** sorts by a derived value:
-  `sorted(words, key=len)` orders by length, `sorted(d.items(), key=lambda kv:
-  kv[1])` orders dict pairs by value.
-- The list method `lst.sort()` sorts **in place** and returns `None`; use
-  `sorted` when you want a new list or are sorting a non-list.
+- Aceita qualquer iterável e devolve sempre uma lista. Números ordenam-se numericamente,
+  cadeias de caracteres lexicograficamente.
+- **`reverse=True`** ordena de forma decrescente. **`key=`** ordena por um valor derivado:
+  `sorted(words, key=len)` ordena por comprimento, `sorted(d.items(), key=lambda kv:
+  kv[1])` ordena os pares do dicionário pelo valor.
+- O método de lista `lst.sort()` ordena **no próprio local** e devolve `None`; usa
+  `sorted` quando queres uma lista nova ou estás a ordenar algo que não é uma lista.
 
 ```python
 sorted([3, 1, 2])               # [1, 2, 3]
@@ -359,10 +357,10 @@ sorted(words, key=len)          # shortest to longest
 
 "5.5 brief": r"""# 5.5 -- enumerate()
 
-## Concept
+## Conceito
 
-Sometimes a loop needs both the **item** and its **position**. You could track
-a counter by hand, but Python has a built-in for exactly this:
+Às vezes um ciclo precisa tanto do **item** como da sua **posição**. Podias controlar
+um contador à mão, mas o Python tem uma função nativa exatamente para isto:
 
 ```python
 words = ["tea", "milk"]
@@ -372,11 +370,11 @@ for i, w in enumerate(words):
 # 1 milk
 ```
 
-Each pass, `enumerate` hands you a pair `(position, item)`, which you unpack
-into two variables (4.7) -- the same trick as `for k, v in d.items()`.
+Em cada passagem, o `enumerate` entrega-te um par `(posição, item)`, que desempacotas
+em duas variáveis (4.7) -- o mesmo truque de `for k, v in d.items()`.
 
-Counting from `0` is rarely what you want to *show* a person. The second
-argument sets the starting number:
+Contar a partir de `0` raramente é o que queres *mostrar* a uma pessoa. O segundo
+argumento define o número inicial:
 
 ```python
 for i, w in enumerate(words, 1):
@@ -385,7 +383,7 @@ for i, w in enumerate(words, 1):
 # 2 milk
 ```
 
-## Example
+## Exemplo
 
 ```python
 for i, ch in enumerate("hi", 1):
@@ -394,12 +392,12 @@ for i, ch in enumerate("hi", 1):
 # 2. i
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n`, then `n` words. Print them as a numbered list starting at 1,
-in the format `1. word` (a dot and a space after the number).
+Lê uma contagem `n`, depois `n` palavras. Imprime-as como uma lista numerada a começar em 1,
+no formato `1. palavra` (um ponto e um espaço depois do número).
 
-For input `3`, then `tea`, `milk`, `sugar`:
+Para a entrada `3`, depois `tea`, `milk`, `sugar`:
 
 ```
 1. tea
@@ -407,19 +405,19 @@ For input `3`, then `tea`, `milk`, `sugar`:
 3. sugar
 ```
 
-## Done when
+## Está feito quando
 
-- Three words print as `1. ...`, `2. ...`, `3. ...`.
-- A count of `0` prints nothing.
-- You used `enumerate()` -- no hand-kept counter.
+- Três palavras imprimem-se como `1. ...`, `2. ...`, `3. ...`.
+- Uma contagem de `0` não imprime nada.
+- Usaste `enumerate()` -- sem contador guardado à mão.
 """,
 
-"5.5 hints": r"""`for i, w in enumerate(words, 1):` gives you the number and the word together,
-starting at 1.
+"5.5 hints": r"""`for i, w in enumerate(words, 1):` dá-te o número e a palavra juntos,
+a começar em 1.
 
 ---
 
-Inside the loop, build the line with an f-string: `f"{i}. {w}"`.
+Dentro do ciclo, constrói a linha com uma f-string: `f"{i}. {w}"`.
 
 ---
 
@@ -431,14 +429,14 @@ for i, w in enumerate(words, 1):
     print(f"{i}. {w}")
 """,
 
-"5.5 reference": r"""**`enumerate(items)`** pairs each item with its position, so a `for` loop gets
-both at once — no hand-kept counter.
+"5.5 reference": r"""**`enumerate(items)`** empareira cada item com a sua posição, para que um ciclo `for` obtenha
+ambos de uma vez — sem contador guardado à mão.
 
-- `for i, item in enumerate(lst):` binds `i` to the index (from 0) and `item` to
-  the value each pass.
-- A second argument sets the **starting number**: `enumerate(lst, 1)` numbers
-  from 1, handy for human-facing lists.
-- It's lazy (yields pairs on demand) and works on any iterable.
+- `for i, item in enumerate(lst):` liga `i` ao índice (a partir de 0) e `item` ao
+  valor, em cada passagem.
+- Um segundo argumento define o **número inicial**: `enumerate(lst, 1)` numera
+  a partir de 1, útil para listas voltadas para pessoas.
+- É preguiçoso (produz pares por pedido) e funciona em qualquer iterável.
 
 ```python
 for i, name in enumerate(["a", "b"], 1):
@@ -446,12 +444,12 @@ for i, name in enumerate(["a", "b"], 1):
 ```
 """,
 
-"5.6 brief": r"""# 5.6 -- zip(): pairing lists
+"5.6 brief": r"""# 5.6 -- zip(): emparelhar listas
 
-## Concept
+## Conceito
 
-Two lists often belong together item-by-item: names and scores, questions and
-answers. `zip()` walks them **in step**, handing you one pair per pass:
+Duas listas muitas vezes andam juntas item a item: nomes e pontuações, perguntas e
+respostas. `zip()` percorre-as **em sincronia**, entregando-te um par por passagem:
 
 ```python
 names = ["amy", "ben"]
@@ -462,13 +460,13 @@ for name, score in zip(names, scores):
 # ben 85
 ```
 
-Like `enumerate`, each pass gives a pair that you unpack into two variables.
-The name is the image of a zipper: two rows of teeth joined one-to-one.
+Como o `enumerate`, cada passagem dá um par que desempacotas em duas variáveis.
+O nome vem da imagem de um fecho de correr: duas filas de dentes unidas uma a uma.
 
-If the lists have different lengths, `zip` stops at the **shorter** one --
-extra items on the longer list are simply never visited.
+Se as listas tiverem comprimentos diferentes, o `zip` para na **mais curta** --
+os itens extra na lista mais longa simplesmente nunca são visitados.
 
-## Example
+## Exemplo
 
 ```python
 for a, b in zip("ab", [1, 2]):
@@ -477,32 +475,32 @@ for a, b in zip("ab", [1, 2]):
 # b 2
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n`, then `n` names, then `n` scores (whole numbers). Print one
-line per pair: the name, a space, the score.
+Lê uma contagem `n`, depois `n` nomes, depois `n` pontuações (números inteiros). Imprime uma
+linha por par: o nome, um espaço, a pontuação.
 
-For input `2`, then `amy`, `ben`, then `90`, `85`:
+Para a entrada `2`, depois `amy`, `ben`, depois `90`, `85`:
 
 ```
 amy 90
 ben 85
 ```
 
-## Done when
+## Está feito quando
 
-- Two names and two scores print as two `name score` lines, in order.
-- A count of `0` prints nothing.
-- You used `zip()` to pair the two lists.
+- Dois nomes e duas pontuações imprimem-se como duas linhas `nome pontuação`, por ordem.
+- Uma contagem de `0` não imprime nada.
+- Usaste `zip()` para emparelhar as duas listas.
 """,
 
-"5.6 hints": r"""Read ALL the names into one list first, then all the scores into another --
-only then pair them.
+"5.6 hints": r"""Lê primeiro TODOS os nomes para uma lista, depois todas as pontuações para outra --
+só depois os emparelhas.
 
 ---
 
-`for name, score in zip(names, scores):` gives one pair per pass; print the
-two with a space between (plain `print(name, score)` does that).
+`for name, score in zip(names, scores):` dá um par por passagem; imprime os
+dois com um espaço entre eles (`print(name, score)` simples já faz isso).
 
 ---
 
@@ -517,14 +515,14 @@ for name, score in zip(names, scores):
     print(name, score)
 """,
 
-"5.6 reference": r"""**`zip(a, b)`** walks several iterables **in step**, yielding one tuple of
-matching items per pass — the *i*-th from each. It pairs up parallel sequences
-without indexing.
+"5.6 reference": r"""**`zip(a, b)`** percorre vários iteráveis **em sincronia**, produzindo um tuplo de
+itens correspondentes por passagem — o *i*-ésimo de cada um. Empareira sequências paralelas
+sem usar índices.
 
-- `for x, y in zip(xs, ys):` binds `x` and `y` to the matching items each pass.
-- It stops at the **shortest** input, so extra items in a longer one are ignored.
-- Any number of iterables can be zipped; `dict(zip(keys, values))` builds a dict
-  from two parallel lists.
+- `for x, y in zip(xs, ys):` liga `x` e `y` aos itens correspondentes em cada passagem.
+- Para no iterável **mais curto**, por isso os itens extra num mais comprido são ignorados.
+- Qualquer número de iteráveis pode ser combinado com `zip`; `dict(zip(keys, values))` constrói um dicionário
+  a partir de duas listas paralelas.
 
 ```python
 names, scores = ["Ada", "Linus"], [90, 85]
@@ -533,11 +531,11 @@ for n, s in zip(names, scores):
 ```
 """,
 
-"5.7 brief": r"""# 5.7 -- List comprehensions
+"5.7 brief": r"""# 5.7 -- Compreensões de listas
 
-## Concept
+## Conceito
 
-A very common loop shape is *"build a new list by doing something to each
+Uma forma de ciclo muito comum é *"construir uma nova lista fazendo algo a cada
 item"*:
 
 ```python
@@ -546,24 +544,25 @@ for x in nums:
     doubled.append(x * 2)
 ```
 
-Python has a one-line form of exactly that, called a **list comprehension**:
+O Python tem uma forma de uma linha exatamente para isso, chamada **compreensão de
+lista**:
 
 ```python
 doubled = [x * 2 for x in nums]
 ```
 
-Read it inside-out: *"for each `x` in `nums`, put `x * 2` in a new list"*. The
-square brackets say "I am building a list"; the expression before `for` is
-what each item becomes.
+Lê-a de dentro para fora: *"para cada `x` em `nums`, coloca `x * 2` numa lista nova"*. Os
+parênteses retos dizem "estou a construir uma lista"; a expressão antes de `for` é
+aquilo em que cada item se transforma.
 
-It works with anything you can loop over -- including `range`. Reading `n`
-numbers (which you have done a dozen times now) collapses to:
+Funciona com qualquer coisa que possas percorrer -- incluindo `range`. Ler `n`
+números (o que já fizeste uma dúzia de vezes) reduz-se a:
 
 ```python
 nums = [int(input()) for _ in range(n)]
 ```
 
-## Example
+## Exemplo
 
 ```python
 nums = [1, 2, 3]
@@ -571,12 +570,12 @@ squares = [x * x for x in nums]
 print(squares)    # [1, 4, 9]
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n`, then `n` whole numbers. Build a new list where every number
-is **doubled**, then print its items one per line.
+Lê uma contagem `n`, depois `n` números inteiros. Constrói uma nova lista onde cada
+número está **duplicado**, depois imprime os seus itens um por linha.
 
-For input `3`, then `4`, `-1`, `0`:
+Para a entrada `3`, depois `4`, `-1`, `0`:
 
 ```
 8
@@ -584,19 +583,19 @@ For input `3`, then `4`, `-1`, `0`:
 0
 ```
 
-## Done when
+## Está feito quando
 
-- `4, -1, 0` prints `8, -2, 0` -- each doubled, order kept.
-- A count of `0` prints nothing.
-- You used a list comprehension to build a list.
+- `4, -1, 0` imprime `8, -2, 0` -- cada um duplicado, ordem mantida.
+- Uma contagem de `0` não imprime nada.
+- Usaste uma compreensão de lista para construir uma lista.
 """,
 
-"5.7 hints": r"""The pattern is  new_list = [<what each item becomes> for x in old_list].
+"5.7 hints": r"""O padrão é  nova_lista = [<o que cada item se torna> for x in lista_antiga].
 
 ---
 
-`doubled = [x * 2 for x in nums]` -- then a plain for loop prints each item.
-(Reading the numbers can be a comprehension too: `[int(input()) for _ in range(n)]`.)
+`doubled = [x * 2 for x in nums]` -- depois um `for` simples imprime cada item.
+(Ler os números também pode ser uma compreensão: `[int(input()) for _ in range(n)]`.)
 
 ---
 
@@ -607,15 +606,15 @@ for d in doubled:
     print(d)
 """,
 
-"5.7 reference": r"""A **list comprehension** builds a new list in one expression: for each `x` in
-`items`, it evaluates `expr` and collects the results, in order. It is the
-build-by-loop-and-append pattern compressed into a line.
+"5.7 reference": r"""Uma **compreensão de lista** constrói uma nova lista numa só expressão: para cada `x` em
+`items`, avalia `expr` e reúne os resultados, por ordem. É o
+padrão construir-por-ciclo-e-append comprimido numa linha.
 
-- `[expr for x in items]` is equivalent to starting `result = []` and
-  `result.append(expr)` in a loop — same result, more direct.
-- `expr` can be any expression in `x`: `[n * n for n in nums]`,
+- `[expr for x in items]` equivale a começar com `result = []` e
+  `result.append(expr)` num ciclo — o mesmo resultado, mais direto.
+- `expr` pode ser qualquer expressão em `x`: `[n * n for n in nums]`,
   `[w.upper() for w in words]`.
-- Comprehensions also build sets (`{...}`) and dicts (`{k: v for ...}`).
+- As compreensões também constroem conjuntos (`{...}`) e dicionários (`{k: v for ...}`).
 
 ```python
 [n * n for n in range(5)]       # [0, 1, 4, 9, 16]
@@ -623,21 +622,21 @@ build-by-loop-and-append pattern compressed into a line.
 ```
 """,
 
-"5.8 brief": r"""# 5.8 -- Filtering with comprehensions
+"5.8 brief": r"""# 5.8 -- Filtrar com compreensões
 
-## Concept
+## Conceito
 
-A comprehension can also **choose** which items to keep. Add an `if` at the
-end:
+Uma compreensão também pode **escolher** que itens manter. Acrescenta um `if` no
+final:
 
 ```python
 evens = [x for x in nums if x % 2 == 0]
 ```
 
-Read it: *"each `x` from `nums` -- but only if `x % 2 == 0`"*. Items that fail
-the test are simply left out.
+Lê-a: *"cada `x` de `nums` -- mas só se `x % 2 == 0`"*. Os itens que falham
+o teste são simplesmente deixados de fora.
 
-The two parts are independent and combine freely:
+As duas partes são independentes e combinam-se livremente:
 
 ```python
 [x * 2 for x in nums]                 # transform every item   (5.7)
@@ -645,23 +644,23 @@ The two parts are independent and combine freely:
 [x * 2 for x in nums if x > 0]        # keep some AND transform
 ```
 
-Reminder from 1.9: `x % 2` is the remainder of dividing by 2, so it is `0`
-exactly for even numbers -- and that includes `0` itself and negatives like
+Lembrete de 1.9: `x % 2` é o resto da divisão por 2, por isso é `0`
+exatamente para números pares -- e isso inclui o próprio `0` e negativos como
 `-4`.
 
-## Example
+## Exemplo
 
 ```python
 nums = [1, 2, 3, 4]
 print([x for x in nums if x % 2 == 0])    # [2, 4]
 ```
 
-## Your task
+## A tua tarefa
 
-Read a count `n`, then `n` whole numbers. Keep only the **even** ones (in
-their original order) and print them one per line.
+Lê uma contagem `n`, depois `n` números inteiros. Mantém apenas os **pares** (na
+sua ordem original) e imprime-os um por linha.
 
-For input `5`, then `1`, `2`, `3`, `4`, `-6`:
+Para a entrada `5`, depois `1`, `2`, `3`, `4`, `-6`:
 
 ```
 2
@@ -669,19 +668,19 @@ For input `5`, then `1`, `2`, `3`, `4`, `-6`:
 -6
 ```
 
-## Done when
+## Está feito quando
 
-- `1, 2, 3, 4, -6` prints `2, 4, -6` -- negatives and zero count as even.
-- If no number is even, nothing is printed.
-- You used a comprehension with an `if` clause.
+- `1, 2, 3, 4, -6` imprime `2, 4, -6` -- negativos e zero contam como pares.
+- Se nenhum número for par, nada é impresso.
+- Usaste uma compreensão com uma cláusula `if`.
 """,
 
-"5.8 hints": r""""Even" means the remainder after dividing by 2 is zero: `x % 2 == 0`.
+"5.8 hints": r""""Par" significa que o resto da divisão por 2 é zero: `x % 2 == 0`.
 
 ---
 
-Put that test at the end of the comprehension:
-`evens = [x for x in nums if x % 2 == 0]` -- then print each item.
+Coloca esse teste no final da compreensão:
+`evens = [x for x in nums if x % 2 == 0]` -- depois imprime cada item.
 
 ---
 
@@ -692,16 +691,16 @@ for e in evens:
     print(e)
 """,
 
-"5.8 reference": r"""Adding an **`if`** to a comprehension keeps only the items that pass the test.
-`[x for x in items if test]` collects each `x` for which `test` is true,
-**skipping** the rest.
+"5.8 reference": r"""Acrescentar um **`if`** a uma compreensão mantém apenas os itens que passam o teste.
+`[x for x in items if test]` reúne cada `x` para o qual `test` é verdadeiro,
+**ignorando** os restantes.
 
-- The `if` clause filters; the leading expression still transforms, so the two
-  combine: `[n * n for n in nums if n % 2 == 0]` squares only the evens.
-- It replaces the loop-with-an-`if`-and-`append` pattern.
-- Don't confuse it with a **conditional expression** in the value position
-  (`[a if cond else b for x in items]`), which chooses per item rather than
-  filtering.
+- A cláusula `if` filtra; a expressão inicial continua a transformar, por isso as duas
+  combinam-se: `[n * n for n in nums if n % 2 == 0]` eleva ao quadrado apenas os pares.
+- Substitui o padrão ciclo-com-`if`-e-`append`.
+- Não a confundas com uma **expressão condicional** na posição do valor
+  (`[a if cond else b for x in items]`), que escolhe por item em vez de
+  filtrar.
 
 ```python
 [n for n in range(10) if n % 2 == 0]   # [0, 2, 4, 6, 8]
@@ -709,15 +708,15 @@ for e in evens:
 ```
 """,
 
-"5.9 brief": r"""# 5.9 -- Counting with a dict
+"5.9 brief": r"""# 5.9 -- Contar com um dicionário
 
-## Concept
+## Conceito
 
-*"How many times does each thing appear?"* is one of the most useful questions
-in programming. The answer is the **tally pattern**: a dict where each key is a
-thing you have seen and its value is how many times you have seen it.
+*"Quantas vezes aparece cada coisa?"* é uma das perguntas mais úteis na programação.
+A resposta é o **padrão de contagem**: um dicionário onde cada chave é uma
+coisa que já viste e o seu valor é quantas vezes já a viste.
 
-The whole trick is one line, built on `.get()` from 4.10:
+O truque todo é uma linha, construída sobre o `.get()` de 4.10:
 
 ```python
 counts = {}
@@ -725,14 +724,14 @@ for w in words:
     counts[w] = counts.get(w, 0) + 1
 ```
 
-Read the line slowly: *"the count for `w` becomes whatever it was -- or 0 if
-`w` is new -- plus one."* `.get(w, 0)` is what makes the first sighting work:
-there is no entry yet, so it counts up from 0.
+Lê a linha devagar: *"a contagem de `w` passa a ser o que era -- ou 0 se
+`w` for novo -- mais um."* `.get(w, 0)` é o que faz a primeira aparição funcionar:
+ainda não há entrada, por isso conta a partir de 0.
 
-After the loop, `counts.get(thing, 0)` answers "how many?" for anything --
-including things never seen, which are `0`, not a crash.
+Depois do ciclo, `counts.get(coisa, 0)` responde "quantas vezes?" para qualquer coisa --
+incluindo coisas nunca vistas, que dão `0`, e não um erro.
 
-## Example
+## Exemplo
 
 ```python
 words = ["tea", "milk", "tea"]
@@ -743,31 +742,31 @@ print(counts.get("tea", 0))     # 2
 print(counts.get("cocoa", 0))   # 0
 ```
 
-## Your task
+## A tua tarefa
 
-Read one line of words (separate them with `.split()`, like 4.4), then read a
-**query word** on a second line. Print how many times the query appears in the
-line.
+Lê uma linha de palavras (separa-as com `.split()`, como em 4.4), depois lê uma
+**palavra de consulta** numa segunda linha. Imprime quantas vezes a consulta aparece na
+linha.
 
-For input `tea milk tea`, then `tea`:
+Para a entrada `tea milk tea`, depois `tea`:
 
 ```
 2
 ```
 
-## Done when
+## Está feito quando
 
-- `tea milk tea` with query `tea` prints `2`; query `milk` prints `1`.
-- A query that never appears prints `0` (no crash).
-- You built a dict tally (not a one-off scan).
+- `tea milk tea` com a consulta `tea` imprime `2`; a consulta `milk` imprime `1`.
+- Uma consulta que nunca aparece imprime `0` (sem erro).
+- Construíste uma contagem com dicionário (não uma verificação pontual).
 """,
 
-"5.9 hints": r"""Split the line into a list of words, then loop over it building the tally dict.
+"5.9 hints": r"""Divide a linha numa lista de palavras, depois percorre-a construindo o dicionário de contagem.
 
 ---
 
-The tally line is  counts[w] = counts.get(w, 0) + 1  -- and the final answer is
-another .get with a default: counts.get(query, 0).
+A linha de contagem é  counts[w] = counts.get(w, 0) + 1  -- e a resposta final é
+outro .get com um valor por omissão: counts.get(query, 0).
 
 ---
 
@@ -779,14 +778,14 @@ query = input()
 print(counts.get(query, 0))
 """,
 
-"5.9 reference": r"""The **tally** pattern counts how many times each distinct thing appears, using a
-dict whose keys are the things and whose values are running counts.
+"5.9 reference": r"""O padrão de **contagem** conta quantas vezes aparece cada coisa distinta, usando um
+dicionário cujas chaves são as coisas e cujos valores são contagens correntes.
 
-- For each item, `counts[k] = counts.get(k, 0) + 1` reads the current count
-  (`0` the first time the key is seen, via `.get`'s default) and writes one more.
-- Start from an empty dict `{}`; keys appear as they're first encountered.
-- The standard-library `collections.Counter` does this in one step, but the
-  `.get(k, 0) + 1` idiom shows exactly what's happening.
+- Para cada item, `counts[k] = counts.get(k, 0) + 1` lê a contagem atual
+  (`0` na primeira vez que a chave é vista, através do valor por omissão do `.get`) e escreve mais um.
+- Começa a partir de um dicionário vazio `{}`; as chaves aparecem à medida que são encontradas pela primeira vez.
+- O `collections.Counter` da biblioteca padrão faz isto num só passo, mas o
+  idioma `.get(k, 0) + 1` mostra exatamente o que está a acontecer.
 
 ```python
 counts = {}
@@ -795,26 +794,26 @@ for w in ["a", "b", "a"]:
 ```
 """,
 
-"5.10 brief": r"""# 5.10 -- Capstone: word report
+"5.10 brief": r"""# 5.10 -- Capítulo final: relatório de palavras
 
-## Concept
+## Conceito
 
-Nothing new this time -- this puzzle combines the chapter (and chapter 4) into
-one small, real program: a **word frequency report**, the heart of every
-"most common words" feature you have ever seen.
+Nada de novo desta vez -- este puzzle combina o capítulo (e o capítulo 4) num
+único programa pequeno e real: um **relatório de frequência de palavras**, o coração de
+todas as funcionalidades de "palavras mais comuns" que já viste.
 
-The pieces, all of which you have:
+As peças, todas as quais já tens:
 
-- `.split()` -- the line into words (4.4)
-- the tally pattern -- count each word (5.9)
-- `sorted()` -- order the report (5.4). One new convenience: looping over a
-  dict visits its **keys**, so `sorted(counts)` is simply the keys in
-  alphabetical order.
-- printing a word and its count on one line (1.2)
+- `.split()` -- a linha em palavras (4.4)
+- o padrão de contagem -- contar cada palavra (5.9)
+- `sorted()` -- ordenar o relatório (5.4). Uma nova conveniência: percorrer um
+  dicionário visita as suas **chaves**, por isso `sorted(counts)` são simplesmente as chaves em
+  ordem alfabética.
+- imprimir uma palavra e a sua contagem numa linha (1.2)
 
-## Example
+## Exemplo
 
-For the line `b a b`:
+Para a linha `b a b`:
 
 ```python
 counts = {"b": 2, "a": 1}
@@ -824,32 +823,32 @@ for w in sorted(counts):
 # b 2
 ```
 
-## Your task
+## A tua tarefa
 
-Read one line of words. Print one line per **distinct** word -- the word, a
-space, and how many times it appeared -- in **alphabetical** order.
+Lê uma linha de palavras. Imprime uma linha por palavra **distinta** -- a palavra, um
+espaço, e quantas vezes apareceu -- em ordem **alfabética**.
 
-For input `tea milk tea`:
+Para a entrada `tea milk tea`:
 
 ```
 milk 1
 tea 2
 ```
 
-## Done when
+## Está feito quando
 
-- `tea milk tea` prints `milk 1` then `tea 2` -- distinct words, alphabetical.
-- A single repeated word prints one line with its full count.
-- An empty line prints nothing.
-- You used a dict tally and `sorted()`.
+- `tea milk tea` imprime `milk 1` depois `tea 2` -- palavras distintas, ordem alfabética.
+- Uma única palavra repetida imprime uma linha com a sua contagem total.
+- Uma linha vazia não imprime nada.
+- Usaste uma contagem com dicionário e `sorted()`.
 """,
 
-"5.10 hints": r"""Three steps: split the line, tally the words (5.9), then print -- and
-`sorted(counts)` gives the dict's keys in alphabetical order.
+"5.10 hints": r"""Três passos: divide a linha, conta as palavras (5.9), depois imprime -- e
+`sorted(counts)` dá as chaves do dicionário em ordem alfabética.
 
 ---
 
-After the tally loop:  `for w in sorted(counts): print(w, counts[w])`.
+Depois do ciclo de contagem:  `for w in sorted(counts): print(w, counts[w])`.
 
 ---
 
@@ -861,15 +860,15 @@ for w in sorted(counts):
     print(w, counts[w])
 """,
 
-"5.10 reference": r"""A **word-frequency report** composes the chapter's tools into a small pipeline:
+"5.10 reference": r"""Um **relatório de frequência de palavras** compõe as ferramentas do capítulo num pequeno pipeline:
 
-1. **`split()`** the text into a list of words;
-2. **tally** them into a dict of `word -> count` with `counts.get(w, 0) + 1`;
-3. **`sorted`** the `dict.items()` to order the report — by word, or by count
-   with `key=lambda kv: kv[1]` (and `reverse=True` for most-frequent first).
+1. **`split()`** o texto numa lista de palavras;
+2. **conta**-as num dicionário de `palavra -> contagem` com `counts.get(w, 0) + 1`;
+3. **`sorted`** os `dict.items()` para ordenar o relatório — por palavra, ou por contagem
+   com `key=lambda kv: kv[1]` (e `reverse=True` para a mais frequente primeiro).
 
-Each step is a tool you've met; the skill is seeing that a real task is their
-composition.
+Cada passo é uma ferramenta que já conheces; a competência está em ver que uma tarefa real é a sua
+composição.
 
 ```python
 counts = {}

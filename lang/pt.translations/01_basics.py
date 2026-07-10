@@ -11,74 +11,74 @@ TRANSLATIONS = {
 
 "1.1 brief": r"""# 1.1 -- Hello, output
 
-## Concept
+## Conceito
 
-A **program** is a list of instructions the computer runs from top to bottom.
-The most basic instruction is to **print** -- to put a line of text on the
-screen. In Python you do that with `print(...)`. Whatever you put inside the
-parentheses, in quotes, is shown.
+Um **programa** é uma lista de instruções que o computador executa de cima para baixo.
+A instrução mais básica é **imprimir** -- colocar uma linha de texto no
+ecrã. Em Python fazes isso com `print(...)`. Tudo o que colocares dentro dos
+parênteses, entre aspas, é mostrado.
 
-`print` is a **function**: a built-in action you trigger by writing its name
-followed by parentheses. The thing in quotes is **text** (Python calls text a
-*string* -- a string of characters).
+`print` é uma **função**: uma ação nativa que ativas escrevendo o seu nome
+seguido de parênteses. O que está entre aspas é **texto** (o Python chama texto de
+*cadeia de caracteres* -- uma sequência de caracteres).
 
-## Example
+## Exemplo
 
 ```python
 print("Good morning")
 ```
 
-When this runs, the screen shows:
+Quando isto corre, o ecrã mostra:
 
 ```
 Good morning
 ```
 
-The quotes mark where the text starts and ends; they are not printed. Python
-also adds a line break at the end automatically, so the next print starts on a
-new line.
+As aspas marcam onde o texto começa e acaba; elas próprias não são impressas. O Python
+também acrescenta automaticamente uma quebra de linha no final, por isso o próximo print
+começa numa linha nova.
 
-## Your task
+## A tua tarefa
 
-Make the program print exactly this line:
+Faz o programa imprimir exatamente esta linha:
 
 ```
 Hello, output
 ```
 
-Open the chapter workspace `work.py`, write one `print(...)` that produces that
-line, **save the file**, then run `check`.
+Abre o ficheiro de trabalho do capítulo `work.py`, escreve um `print(...)` que produza essa
+linha, **guarda o ficheiro**, e depois corre `check`.
 
-## Done when
+## Está feito quando
 
-- Running `check` shows CHECK PASSED.
-- The output reads `Hello, output` -- same words, same comma. (The checker
-  ignores capitalisation, but matching the brief exactly is good practice.)
+- Correr `check` mostra CHECK PASSED.
+- O resultado é `Hello, output` -- as mesmas palavras, a mesma vírgula. (A verificação
+  ignora maiúsculas/minúsculas, mas seguir o enunciado à risca é um bom hábito.)
 """,
 
-"1.1 hints": r"""Which built-in function puts text on the screen? You only need one line.
+"1.1 hints": r"""Qual é a função nativa que coloca texto no ecrã? Só precisas de uma linha.
 
 ---
 
-Use `print(...)`. The text goes inside the parentheses, wrapped in double quotes:
-`print("some text")`. Match the wording exactly, including the comma.
+Usa `print(...)`. O texto vai dentro dos parênteses, entre aspas duplas:
+`print("some text")`. Segue exatamente as palavras, incluindo a vírgula.
 
 ---
 
 print("Hello, output")
 """,
 
-"1.1 reference": r"""`print` writes a textual representation of each argument to standard output (the
-terminal), in order, and then writes `end` (a newline by default). It is the
-primary way a program shows the user a result.
+"1.1 reference": r"""`print` escreve uma representação textual de cada argumento na saída padrão (o
+terminal), por ordem, e depois escreve `end` (uma quebra de linha por omissão). É a
+forma principal de um programa mostrar um resultado ao utilizador.
 
-- Each value is converted to text with `str()` first, so `print(42)` and
-  `print("42")` both show `42`.
-- With several arguments, `sep` (default a single space) is placed *between*
-  adjacent values — never before the first or after the last.
-- `end` is appended once, after everything else. Because it defaults to `"\n"`,
-  each `print` call ends the current line and the next output starts fresh.
-- `print` returns `None`; it is called for its side effect, not its value.
+- Cada valor é primeiro convertido em texto com `str()`, por isso `print(42)` e
+  `print("42")` mostram ambos `42`.
+- Com vários argumentos, `sep` (por omissão um único espaço) é colocado *entre*
+  valores adjacentes -- nunca antes do primeiro nem depois do último.
+- `end` é acrescentado uma vez, depois de tudo o resto. Como o valor por omissão é `"\n"`,
+  cada chamada a `print` termina a linha atual e o resultado seguinte começa de novo.
+- `print` devolve `None`; é chamado pelo seu efeito, não pelo seu valor.
 
 ```python
 print("Hello, World!")        # Hello, World!
@@ -86,73 +86,73 @@ print("a", "b", "c")          # a b c
 ```
 """,
 
-"1.2 brief": r"""# 1.2 -- Printing more
+"1.2 brief": r"""# 1.2 -- Imprimir mais
 
-## Concept
+## Conceito
 
-Two new ideas, both about `print`.
+Duas ideias novas, ambas sobre `print`.
 
-**1. Many prints run in order.** Each `print(...)` puts its text on its own line,
-and Python runs them top to bottom. Three `print` lines make three output lines.
+**1. Vários prints correm por ordem.** Cada `print(...)` coloca o seu texto na sua própria linha,
+e o Python corre-os de cima para baixo. Três linhas `print` produzem três linhas de saída.
 
-**2. One print can show several values.** Put several things inside the
-parentheses separated by **commas**, and `print` shows them on one line with a
-single space between each:
+**2. Um print pode mostrar vários valores.** Coloca várias coisas dentro dos
+parênteses separadas por **vírgulas**, e o `print` mostra-as numa linha com um
+único espaço entre cada uma:
 
 ```python
 print("a", "b", "c")
 ```
 
-shows:
+mostra:
 
 ```
 a b c
 ```
 
-You can mix text and numbers this way. Numbers do **not** need quotes; text does.
+Podes misturar texto e números desta forma. Os números **não** precisam de aspas; o texto precisa.
 
-## Example
+## Exemplo
 
 ```python
 print("Scores:")
 print(10, 20, 30)
 ```
 
-shows:
+mostra:
 
 ```
 Scores:
 10 20 30
 ```
 
-The first line is one print; the second print has three values separated by
-commas, so they share a line with spaces between them.
+A primeira linha é um print; o segundo print tem três valores separados por
+vírgulas, por isso partilham uma linha com espaços entre eles.
 
-## Your task
+## A tua tarefa
 
-Produce exactly these two lines:
+Produz exatamente estas duas linhas:
 
 ```
 Counting:
 1 2 3
 ```
 
-Use two `print` statements: the first prints the word, the second prints the
-three numbers `1`, `2`, `3` as separate values (let `print` add the spaces).
+Usa duas instruções `print`: a primeira imprime a palavra, a segunda imprime os
+três números `1`, `2`, `3` como valores separados (deixa o `print` acrescentar os espaços).
 
-## Done when
+## Está feito quando
 
-- The output is exactly two lines: `Counting:` then `1 2 3`.
-- The second line comes from numbers separated by commas, not from typing the
-  text `"1 2 3"` yourself.
+- O resultado é exatamente duas linhas: `Counting:` depois `1 2 3`.
+- A segunda linha vem de números separados por vírgulas, não de escreveres tu mesmo
+  o texto `"1 2 3"`.
 """,
 
-"1.2 hints": r"""You need two print lines. The first prints a word; the second prints numbers.
+"1.2 hints": r"""Precisas de duas linhas de print. A primeira imprime uma palavra; a segunda imprime números.
 
 ---
 
-In the second print, separate the numbers with commas: `print(1, 2, 3)`.
-Let print put the spaces in -- don't type the spaces yourself.
+No segundo print, separa os números com vírgulas: `print(1, 2, 3)`.
+Deixa o print colocar os espaços -- não escrevas os espaços tu mesmo.
 
 ---
 
@@ -160,13 +160,13 @@ print("Counting:")
 print(1, 2, 3)
 """,
 
-"1.2 reference": r"""A program runs top to bottom, so successive `print` statements produce successive
-lines — each call emits its arguments and then a newline.
+"1.2 reference": r"""Um programa corre de cima para baixo, por isso instruções `print` sucessivas produzem linhas
+sucessivas — cada chamada emite os seus argumentos e depois uma quebra de linha.
 
-Passing **several values to one `print`**, separated by commas, is different from
-several `print` calls: the values appear on a *single* line, joined by `sep` (a
-space by default). This is comma-separation in the call, not string concatenation
-— the values keep their own types and are converted independently.
+Passar **vários valores a um só `print`**, separados por vírgulas, é diferente de
+várias chamadas a `print`: os valores aparecem numa *única* linha, unidos por `sep` (um
+espaço por omissão). Isto é separação por vírgulas na chamada, não concatenação de texto
+— os valores mantêm os seus próprios tipos e são convertidos de forma independente.
 
 ```python
 print("one")
@@ -176,85 +176,85 @@ print("x", "y", 3)    # one line:  x y 3
 ```
 """,
 
-"1.3 brief": r"""# 1.3 -- Choosing the separator
+"1.3 brief": r"""# 1.3 -- Escolher o separador
 
-## Concept
+## Conceito
 
-When you give `print` several values, it joins them with a space by default. You
-can change that join string with a special setting called **`sep`** (short for
-*separator*).
+Quando dás ao `print` vários valores, ele junta-os com um espaço por omissão. Podes
+mudar essa cadeia de junção com uma configuração especial chamada **`sep`** (abreviatura de
+*separator*, separador).
 
-A setting like this is written `name=value` inside the parentheses, after your
-values:
+Uma configuração como esta escreve-se `nome=valor` dentro dos parênteses, depois dos
+teus valores:
 
 ```python
 print("a", "b", "c", sep="-")
 ```
 
-shows:
+mostra:
 
 ```
 a-b-c
 ```
 
-`sep="-"` tells `print` to put a dash between values instead of a space. The
-separator goes *between* values only -- not before the first or after the last.
-You can use any text as the separator: `sep=", "`, `sep=""` (nothing), `sep="/"`,
-and so on.
+`sep="-"` diz ao `print` para colocar um traço entre os valores em vez de um espaço. O
+separador só aparece *entre* valores -- nunca antes do primeiro nem depois do último.
+Podes usar qualquer texto como separador: `sep=", "`, `sep=""` (nada), `sep="/"`,
+e assim por diante.
 
-`sep` must be written exactly, with no space before the `=`, and the value in
-quotes because it is text.
+`sep` tem de ser escrito exatamente assim, sem espaço antes do `=`, e o valor entre
+aspas porque é texto.
 
-## Example
+## Exemplo
 
 ```python
 print("home", "user", "docs", sep="/")
 ```
 
-shows:
+mostra:
 
 ```
 home/user/docs
 ```
 
-## Your task
+## A tua tarefa
 
-Print this exact date, using three **numbers** joined by dashes:
+Imprime esta data exata, usando três **números** unidos por traços:
 
 ```
 2024-12-25
 ```
 
-Pass `2024`, `12`, `25` to a single `print` and set `sep` so they are joined with
-`-`. Do not type the dashes as part of the text yourself.
+Passa `2024`, `12`, `25` a um único `print` e define `sep` para que sejam unidos com
+`-`. Não escrevas os traços como parte do texto tu mesmo.
 
-## Done when
+## Está feito quando
 
-- The output is exactly `2024-12-25`.
-- It comes from three numbers plus a `sep` setting, not from one typed string.
+- O resultado é exatamente `2024-12-25`.
+- Vem de três números mais uma configuração `sep`, não de uma cadeia escrita à mão.
 """,
 
-"1.3 hints": r"""Give print the three numbers, then add a setting that changes the separator.
+"1.3 hints": r"""Dá ao print os três números, depois acrescenta uma configuração que muda o separador.
 
 ---
 
-The setting is `sep`. After your three numbers, add `sep="-"` inside the same
-print: `print(a, b, c, sep="-")`.
+A configuração é `sep`. Depois dos teus três números, acrescenta `sep="-"` dentro do
+mesmo print: `print(a, b, c, sep="-")`.
 
 ---
 
 print(2024, 12, 25, sep="-")
 """,
 
-"1.3 reference": r"""`sep` and `end` are keyword-only arguments that control the spacing around a
-`print`'s output.
+"1.3 reference": r"""`sep` e `end` são argumentos exclusivamente nomeados que controlam o espaçamento à volta
+do resultado de um `print`.
 
-- **`sep`** is the string inserted between each pair of adjacent values. The
-  default is `" "`. It never appears before the first value or after the last,
-  so *N* values produce *N − 1* separators.
-- **`end`** is the string written once after the final value. The default is
-  `"\n"`, which is why each `print` ends its line. Set `end=""` to leave the
-  cursor on the same line so the next `print` continues it.
+- **`sep`** é a cadeia inserida entre cada par de valores adjacentes. O valor por
+  omissão é `" "`. Nunca aparece antes do primeiro valor nem depois do último,
+  por isso *N* valores produzem *N − 1* separadores.
+- **`end`** é a cadeia escrita uma vez, depois do último valor. O valor por omissão é
+  `"\n"`, motivo pelo qual cada `print` termina a sua linha. Define `end=""` para deixar o
+  cursor na mesma linha, para que o próximo `print` a continue.
 
 ```python
 print("2024", "01", "15", sep="-")   # 2024-01-15
@@ -263,63 +263,63 @@ print("...")                          # loading... (one line)
 ```
 """,
 
-"1.4 brief": r"""# 1.4 -- Comments
+"1.4 brief": r"""# 1.4 -- Comentários
 
-## Concept
+## Conceito
 
-A **comment** is a note in your code that Python ignores. Anything after a `#` on
-a line is skipped when the program runs. Comments are for humans -- to explain
-what the code does.
+Um **comentário** é uma nota no teu código que o Python ignora. Tudo o que vier depois de um `#` numa
+linha é ignorado quando o programa corre. Os comentários são para humanos -- para explicar
+o que o código faz.
 
 ```python
 # This whole line is a note and does nothing.
 print("Hi")   # Text after # on a code line is also ignored.
 ```
 
-Only `print("Hi")` runs above. The two notes are skipped.
+Só `print("Hi")` corre acima. As duas notas são ignoradas.
 
-A second, very practical use: **commenting out** code. If you put a `#` in front
-of a line of real code, that line stops running -- without deleting it. This is
-how you switch a line off temporarily.
+Um segundo uso, muito prático: **comentar** código. Se colocares um `#` à frente
+de uma linha de código real, essa linha deixa de correr -- sem a apagares. É assim
+que desligas uma linha temporariamente.
 
 ```python
 # print("off")
 print("on")
 ```
 
-Only `on` is printed; the first line is now a comment.
+Só `on` é impresso; a primeira linha é agora um comentário.
 
-## Common misconception
+## Erro comum
 
-Putting `#` in front of a line does **not** delete it or cause an error -- the
-line is simply not run. Remove the `#` and it runs again.
+Colocar `#` à frente de uma linha **não** a apaga nem causa um erro -- a
+linha simplesmente não corre. Remove o `#` e ela volta a correr.
 
-## Your task
+## A tua tarefa
 
-The starter file already contains a line that prints `Hidden`. **Comment it out**
-so it does not run -- do **not** delete it -- and add a line that prints
+O ficheiro inicial já contém uma linha que imprime `Hidden`. **Comenta-a**
+para que não corra -- **não** a apagues -- e acrescenta uma linha que imprima
 `Visible`.
 
-The program must print only:
+O programa tem de imprimir apenas:
 
 ```
 Visible
 ```
 
-## Done when
+## Está feito quando
 
-- The output is exactly `Visible`.
-- The `print("Hidden")` line is still in the file, but commented out with a `#`
-  so it does not run. (This puzzle is about *commenting out*, so deleting the
-  line does not count.)
+- O resultado é exatamente `Visible`.
+- A linha `print("Hidden")` continua no ficheiro, mas comentada com um `#`
+  para que não corra. (Este puzzle é sobre *comentar código*, por isso apagar a
+  linha não conta.)
 """,
 
-"1.4 hints": r"""A line starting with # is ignored. Put one in front of the Hidden line.
+"1.4 hints": r"""Uma linha que começa com # é ignorada. Coloca um à frente da linha Hidden.
 
 ---
 
-Change `print("Hidden")` to `# print("Hidden")`, then add `print("Visible")`
-on its own line.
+Muda `print("Hidden")` para `# print("Hidden")`, depois acrescenta `print("Visible")`
+na sua própria linha.
 
 ---
 
@@ -327,19 +327,19 @@ on its own line.
 print("Visible")
 """,
 
-"1.4 reference": r"""A `#` begins a **comment**: from the `#` to the end of that line, the text is
-ignored by Python. Comments explain *why* code does something; they have no
-effect on what runs.
+"1.4 reference": r"""Um `#` inicia um **comentário**: do `#` até ao fim dessa linha, o texto é
+ignorado pelo Python. Os comentários explicam *porquê* o código faz algo; não têm
+efeito no que corre.
 
-- A comment may sit on its own line or follow code on the same line
+- Um comentário pode estar na sua própria linha ou seguir código na mesma linha
   (`x = 1  # set up`).
-- A `#` inside a string literal is just a character, not a comment
-  (`"#1"` is the text `#1`).
-- Python has **no block-comment syntax**: comment each line with `#`, or — for a
-  throwaway block — use a string literal, which is evaluated and discarded.
+- Um `#` dentro de uma string literal é apenas um carácter, não um comentário
+  (`"#1"` é o texto `#1`).
+- O Python **não tem sintaxe de comentário em bloco**: comenta cada linha com `#`, ou — para um
+  bloco descartável — usa uma string literal, que é avaliada e descartada.
 
-"Commenting out" a line (putting `#` in front) is the quickest way to disable it
-without deleting it.
+"Comentar" uma linha (colocar `#` à frente) é a forma mais rápida de a desativar
+sem a apagar.
 
 ```python
 # this whole line is ignored
@@ -347,24 +347,24 @@ print("hi")   # and this trailing note is too
 ```
 """,
 
-"1.5 brief": r"""# 1.5 -- Storing a value
+"1.5 brief": r"""# 1.5 -- Guardar um valor
 
-## Concept
+## Conceito
 
-A **variable** is a name that holds a value so you can use it later. You create
-one with `=`, the **assignment** sign:
+Uma **variável** é um nome que guarda um valor para poderes usá-lo mais tarde. Crias
+uma com `=`, o sinal de **atribuição**:
 
 ```python
 score = 100
 ```
 
-Read this as "let `score` be `100`." The name goes on the left, the value on the
-right. After that line, writing `score` anywhere means `100`.
+Lê isto como "seja `score` igual a `100`." O nome fica do lado esquerdo, o valor do lado
+direito. Depois dessa linha, escrever `score` em qualquer lado significa `100`.
 
-This is different from `==` (which you will meet later for comparing). A single
-`=` *stores*.
+Isto é diferente de `==` (que vais encontrar mais tarde para comparar). Um único
+`=` *guarda*.
 
-Once stored, you can use the name as many times as you like:
+Uma vez guardado, podes usar o nome tantas vezes quantas quiseres:
 
 ```python
 score = 100
@@ -372,44 +372,44 @@ print(score)
 print(score)
 ```
 
-shows:
+mostra:
 
 ```
 100
 100
 ```
 
-Notice `print(score)` has **no quotes** around `score`. Quotes would make it the
-literal text "score"; without quotes it means the variable's value, `100`.
+Repara que `print(score)` **não tem aspas** à volta de `score`. Aspas fariam disso o
+texto literal "score"; sem aspas significa o valor da variável, `100`.
 
-## Naming rules (quick version)
+## Regras de nomeação (versão rápida)
 
-A variable name can use letters, digits, and underscores, but cannot start with a
-digit and cannot contain spaces. Use clear names: `total`, `user_name`, `count`.
+Um nome de variável pode usar letras, dígitos e sublinhados, mas não pode começar com um
+dígito nem conter espaços. Usa nomes claros: `total`, `user_name`, `count`.
 
-## Your task
+## A tua tarefa
 
-Store the number `42` in a variable, then print that variable **twice** so the
-output is:
+Guarda o número `42` numa variável, depois imprime essa variável **duas vezes** para que o
+resultado seja:
 
 ```
 42
 42
 ```
 
-Use the variable both times -- do not type `42` inside the prints.
+Usa a variável nas duas vezes -- não escrevas `42` dentro dos prints.
 
-## Done when
+## Está feito quando
 
-- The output is `42` on two separate lines.
-- Both lines come from printing your variable (no quotes around its name).
+- O resultado é `42` em duas linhas separadas.
+- Ambas as linhas vêm de imprimir a tua variável (sem aspas à volta do seu nome).
 """,
 
-"1.5 hints": r"""First make a variable with `=`, then print its name on two lines.
+"1.5 hints": r"""Primeiro cria uma variável com `=`, depois imprime o seu nome em duas linhas.
 
 ---
 
-`n = 42` stores the value. Then `print(n)` twice. No quotes around n.
+`n = 42` guarda o valor. Depois `print(n)` duas vezes. Sem aspas à volta de n.
 
 ---
 
@@ -418,16 +418,16 @@ print(n)
 print(n)
 """,
 
-"1.5 reference": r"""Assignment with `=` binds a **name** to a value. Afterwards the name *refers to*
-that value, and using the name anywhere evaluates to it. Reading code, `=` is
-"becomes", not "equals" (equality is `==`).
+"1.5 reference": r"""A atribuição com `=` liga um **nome** a um valor. Depois disso o nome *refere-se a*
+esse valor, e usar o nome em qualquer lado é equivalente a avaliá-lo. Ao ler código, `=` é
+"passa a ser", não "é igual a" (a igualdade é `==`).
 
-- Names are not declared and have no fixed type — the first assignment creates
-  the name, and it simply points at whatever object you assign.
-- A name must start with a letter or underscore and contain letters, digits, or
-  underscores; it is case-sensitive (`total` and `Total` are different).
-- The right-hand side is fully evaluated first, then the result is bound to the
-  name on the left.
+- Os nomes não são declarados e não têm um tipo fixo — a primeira atribuição cria
+  o nome, e este passa simplesmente a apontar para o que quer que atribuas.
+- Um nome tem de começar com uma letra ou sublinhado e conter letras, dígitos ou
+  sublinhados; é sensível a maiúsculas/minúsculas (`total` e `Total` são diferentes).
+- O lado direito é totalmente avaliado primeiro, e só depois o resultado é ligado ao
+  nome do lado esquerdo.
 
 ```python
 greeting = "Hello"
@@ -435,13 +435,13 @@ print(greeting)        # Hello  -- the name stands in for the value
 ```
 """,
 
-"1.6 brief": r"""# 1.6 -- Reassigning a variable
+"1.6 brief": r"""# 1.6 -- Reatribuir uma variável
 
-## Concept
+## Conceito
 
-A variable can be **changed** after it is created. Assigning to the same name
-again replaces the old value with a new one. The name always refers to whatever
-was stored **most recently**.
+Uma variável pode ser **alterada** depois de criada. Atribuir de novo ao mesmo nome
+substitui o valor antigo por um novo. O nome refere-se sempre ao que
+foi guardado **mais recentemente**.
 
 ```python
 x = 10
@@ -450,10 +450,10 @@ x = 20
 print(x)   # 20
 ```
 
-The order matters: the program runs top to bottom, so the first `print(x)` sees
-`10`, and only after the second assignment does `x` become `20`.
+A ordem importa: o programa corre de cima para baixo, por isso o primeiro `print(x)` vê
+`10`, e só depois da segunda atribuição é que `x` passa a `20`.
 
-A common and useful pattern is updating a variable using its own current value:
+Um padrão comum e útil é atualizar uma variável usando o seu próprio valor atual:
 
 ```python
 x = 10
@@ -461,35 +461,35 @@ x = x + 5   # take the current x (10), add 5, store 15 back in x
 print(x)    # 15
 ```
 
-The right side is worked out first (`10 + 5`), then the result is stored back
-into `x`.
+O lado direito é calculado primeiro (`10 + 5`), e só depois o resultado é guardado de volta
+em `x`.
 
-## Common misconception
+## Erro comum
 
-Reassigning does not create a second variable. There is still just one `x`; its
-stored value was swapped. The old value is simply gone.
+Reatribuir não cria uma segunda variável. Continua a haver apenas um `x`; o seu valor
+guardado foi trocado. O valor antigo simplesmente desaparece.
 
-## Your task
+## A tua tarefa
 
-Create a variable holding `10` and print it. Then reassign that same variable to
-`20` and print it again. The output must be:
+Cria uma variável com o valor `10` e imprime-a. Depois reatribui essa mesma variável para
+`20` e imprime-a outra vez. O resultado tem de ser:
 
 ```
 10
 20
 ```
 
-## Done when
+## Está feito quando
 
-- The output is `10` then `20` on two lines.
-- Both lines print the **same** variable, before and after you change it.
+- O resultado é `10` depois `20` em duas linhas.
+- Ambas as linhas imprimem a **mesma** variável, antes e depois de a alterares.
 """,
 
-"1.6 hints": r"""Print the variable, then assign a new value to the same name, then print again.
+"1.6 hints": r"""Imprime a variável, depois atribui um novo valor ao mesmo nome, depois imprime outra vez.
 
 ---
 
-The order is: `x = 10`, `print(x)`, `x = 20`, `print(x)`.
+A ordem é: `x = 10`, `print(x)`, `x = 20`, `print(x)`.
 
 ---
 
@@ -499,16 +499,16 @@ x = 20
 print(x)
 """,
 
-"1.6 reference": r"""A variable is a name, not a box: assigning again **rebinds** the name to a new
-value. The name always holds its most recent assignment; the previous value is
-simply no longer reachable through it.
+"1.6 reference": r"""Uma variável é um nome, não uma caixa: atribuir de novo **reassocia** o nome a um novo
+valor. O nome guarda sempre a sua atribuição mais recente; o valor anterior
+simplesmente deixa de ser alcançável através dele.
 
-- Each `=` replaces what the name points to. Order matters — later assignments
-  win.
-- The right-hand side is evaluated using the name's *current* value, then the
-  result is rebound, so `x = x + 1` reads the old `x` and stores the new one.
-- The augmented forms (`x += 1`, `x *= 2`, …) are shorthand for exactly that:
-  read, combine, rebind.
+- Cada `=` substitui aquilo para onde o nome aponta. A ordem importa — as atribuições
+  posteriores prevalecem.
+- O lado direito é avaliado usando o valor *atual* do nome, e só depois o
+  resultado é reassociado, por isso `x = x + 1` lê o `x` antigo e guarda o novo.
+- As formas aumentadas (`x += 1`, `x *= 2`, …) são abreviaturas exatamente para isso:
+  ler, combinar, reassociar.
 
 ```python
 score = 10
@@ -517,22 +517,22 @@ score = score + 5 # reads 25, stores 30
 ```
 """,
 
-"1.7 brief": r"""# 1.7 -- Text vs number
+"1.7 brief": r"""# 1.7 -- Texto vs número
 
-## Concept
+## Conceito
 
-Python tells two kinds of values apart, and it matters a lot:
+O Python distingue dois tipos de valores, e isso importa muito:
 
-- A **number** like `5` -- written with no quotes. Python calls whole numbers
+- Um **número** como `5` -- escrito sem aspas. O Python chama aos números inteiros
   `int` (integer).
-- A **string** like `"5"` -- written with quotes. It is *text* that happens to
-  look like a number. Python calls it `str`.
+- Uma **cadeia de caracteres** como `"5"` -- escrita entre aspas. É *texto* que por acaso
+  se parece com um número. O Python chama-lhe `str`.
 
-They behave differently with the `+` sign:
+Comportam-se de forma diferente com o sinal `+`:
 
-- With numbers, `+` **adds**: `5 + 5` is `10`.
-- With strings, `+` **joins** (this is called **concatenation**):
-  `"5" + "5"` is `"55"` -- the two pieces of text stuck together.
+- Com números, `+` **soma**: `5 + 5` é `10`.
+- Com cadeias de caracteres, `+` **junta** (a isto chama-se **concatenação**):
+  `"5" + "5"` é `"55"` -- os dois pedaços de texto colados um ao outro.
 
 ```python
 print(5 + 5)        # 10   (numbers add)
@@ -540,38 +540,38 @@ print("5" + "5")    # 55   (text joins)
 print("ab" + "cd")  # abcd
 ```
 
-So `"5"` and `5` look the same on screen but are different types, and `+` treats
-them in completely different ways.
+Portanto `"5"` e `5` parecem iguais no ecrã mas são tipos diferentes, e `+` trata-os
+de formas completamente diferentes.
 
-## Common misconception
+## Erro comum
 
-`"5"` is not the number five. The quotes make it text. You cannot do arithmetic
-with it and expect addition -- `"5" + "5"` gives `"55"`, not `10`.
+`"5"` não é o número cinco. As aspas fazem dele texto. Não podes fazer aritmética
+com ele à espera de uma soma -- `"5" + "5"` dá `"55"`, não `10`.
 
-## Your task
+## A tua tarefa
 
-Print these two lines, in this order:
+Imprime estas duas linhas, por esta ordem:
 
 ```
 55
 10
 ```
 
-- The first line must come from **joining two strings** `"5"` and `"5"` with `+`.
-- The second line must come from **adding two numbers** `5` and `5` with `+`.
+- A primeira linha tem de vir de **juntar duas cadeias de caracteres** `"5"` e `"5"` com `+`.
+- A segunda linha tem de vir de **somar dois números** `5` e `5` com `+`.
 
-## Done when
+## Está feito quando
 
-- Output is `55` then `10`.
-- Line one uses string concatenation; line two uses number addition.
+- O resultado é `55` depois `10`.
+- A primeira linha usa concatenação de texto; a segunda usa soma de números.
 """,
 
-"1.7 hints": r"""Quotes decide everything here. With quotes, + joins; without quotes, + adds.
+"1.7 hints": r"""As aspas decidem tudo aqui. Com aspas, + junta; sem aspas, + soma.
 
 ---
 
-First line: `print("5" + "5")`. Second line: `print(5 + 5)`. Note the quotes
-on the first and none on the second.
+Primeira linha: `print("5" + "5")`. Segunda linha: `print(5 + 5)`. Repara nas aspas
+na primeira e na ausência delas na segunda.
 
 ---
 
@@ -579,36 +579,36 @@ print("5" + "5")
 print(5 + 5)
 """,
 
-"1.7 reference": r"""Every value has a **type**. Two fundamental ones appear immediately:
+"1.7 reference": r"""Todo o valor tem um **tipo**. Dois tipos fundamentais aparecem logo de início:
 
-- a **string** (`str`) is text, written in quotes: `"42"`, `"hello"`;
-- an **integer** (`int`) is a number, written as bare digits: `42`.
+- uma **cadeia de caracteres** (`str`) é texto, escrito entre aspas: `"42"`, `"hello"`;
+- um **inteiro** (`int`) é um número, escrito como dígitos simples: `42`.
 
-The quotes are the whole difference. `type("42")` is `str`; `type(42)` is `int`.
+As aspas são toda a diferença. `type("42")` é `str`; `type(42)` é `int`.
 
-The type decides what an operator means. `+` between two **strings**
-*concatenates* (joins) them; `+` between two **numbers** *adds* them:
+O tipo decide o que um operador significa. `+` entre duas **cadeias de caracteres**
+*concatena* (junta) -as; `+` entre dois **números** *soma*-os:
 
 ```python
 "2" + "2"   # "22"  -- text joined
  2  +  2    #  4    -- numbers added
 ```
 
-Mixing the two with `+` is an error (`TypeError`), because Python won't guess
-whether you meant to add or join. Convert explicitly first: `int("2") + 2` is
-`4`, and `"$" + str(2)` is `"$2"`.
+Misturar os dois com `+` é um erro (`TypeError`), porque o Python não vai adivinhar
+se querias somar ou juntar. Converte explicitamente primeiro: `int("2") + 2` é
+`4`, e `"$" + str(2)` é `"$2"`.
 """,
 
-"1.8 brief": r"""# 1.8 -- Arithmetic and order
+"1.8 brief": r"""# 1.8 -- Aritmética e ordem
 
-## Concept
+## Conceito
 
-Python does math with these signs (called **operators**):
+O Python faz contas com estes sinais (chamados **operadores**):
 
-- `+` add
-- `-` subtract
-- `*` multiply
-- `/` divide
+- `+` somar
+- `-` subtrair
+- `*` multiplicar
+- `/` dividir
 
 ```python
 print(2 + 3)   # 5
@@ -616,55 +616,55 @@ print(10 - 4)  # 6
 print(6 * 7)   # 42
 ```
 
-**Order matters.** Just like in school maths, `*` and `/` happen **before**
-`+` and `-`. So:
+**A ordem importa.** Tal como na matemática da escola, `*` e `/` acontecem **antes**
+de `+` e `-`. Portanto:
 
 ```python
 print(2 + 3 * 4)   # 14, not 20  -- 3*4 first, then +2
 ```
 
-To force a different order, wrap a part in **parentheses** `( )`. Whatever is
-inside parentheses is worked out first:
+Para forçar uma ordem diferente, envolve uma parte em **parênteses** `( )`. O que estiver
+dentro dos parênteses é calculado primeiro:
 
 ```python
 print((2 + 3) * 4)   # 20  -- 2+3 first, then *4
 ```
 
-This is the single most common source of "wrong number" bugs, so it is worth
-getting comfortable with now.
+Esta é a fonte mais comum de erros de "número errado", por isso vale a pena
+familiarizares-te com isto já.
 
-## Example
+## Exemplo
 
 ```python
 print(1 + 2 * 3)     # 7
 print((1 + 2) * 3)   # 9
 ```
 
-## Your task
+## A tua tarefa
 
-Print these two lines:
+Imprime estas duas linhas:
 
 ```
 14
 20
 ```
 
-- The first line is `2 + 3 * 4` with no parentheses (multiplication first).
-- The second line is the same numbers but with parentheses so the addition
-  happens first: `(2 + 3) * 4`.
+- A primeira linha é `2 + 3 * 4` sem parênteses (multiplicação primeiro).
+- A segunda linha usa os mesmos números mas com parênteses para que a soma
+  aconteça primeiro: `(2 + 3) * 4`.
 
-## Done when
+## Está feito quando
 
-- Output is `14` then `20`.
-- The difference between the lines comes only from parentheses changing the
-  order.
+- O resultado é `14` depois `20`.
+- A diferença entre as linhas vem apenas dos parênteses a mudar a
+  ordem.
 """,
 
-"1.8 hints": r"""Multiplication runs before addition unless parentheses say otherwise.
+"1.8 hints": r"""A multiplicação corre antes da soma, a não ser que os parênteses digam o contrário.
 
 ---
 
-First line: `print(2 + 3 * 4)`. Second line: add parentheses around 2 + 3:
+Primeira linha: `print(2 + 3 * 4)`. Segunda linha: acrescenta parênteses à volta de 2 + 3:
 `print((2 + 3) * 4)`.
 
 ---
@@ -673,19 +673,19 @@ print(2 + 3 * 4)
 print((2 + 3) * 4)
 """,
 
-"1.8 reference": r"""The arithmetic operators are `+` (add), `-` (subtract), `*` (multiply),
-`/` (divide), `//` (floor-divide), `%` (remainder), and `**` (power).
+"1.8 reference": r"""Os operadores aritméticos são `+` (somar), `-` (subtrair), `*` (multiplicar),
+`/` (dividir), `//` (divisão inteira), `%` (resto), e `**` (potência).
 
-They follow **precedence** (order of operations), highest to lowest:
+Seguem uma **precedência** (ordem das operações), da mais alta para a mais baixa:
 
 1. `**`
-2. unary `-` (negation)
+2. `-` unário (negação)
 3. `*`, `/`, `//`, `%`
 4. `+`, `-`
 
-Operators of equal precedence evaluate **left to right**, except `**`, which is
-right-associative (`2 ** 3 ** 2` is `2 ** 9`). **Parentheses** override all of
-this — evaluate them first.
+Operadores com a mesma precedência são avaliados **da esquerda para a direita**, exceto `**`, que é
+associativo à direita (`2 ** 3 ** 2` é `2 ** 9`). Os **parênteses** sobrepõem-se a
+tudo isto — são avaliados primeiro.
 
 ```python
 2 + 3 * 4      # 14   -- * before +
@@ -694,18 +694,18 @@ this — evaluate them first.
 ```
 """,
 
-"1.9 brief": r"""# 1.9 -- Three kinds of division
+"1.9 brief": r"""# 1.9 -- Três tipos de divisão
 
-## Concept
+## Conceito
 
-Dividing has three useful operators in Python:
+Dividir tem três operadores úteis em Python:
 
-- `/`  normal division -- always gives a decimal number (Python calls these
-  `float`). `7 / 2` is `3.5`.
-- `//` floor division -- divides and throws away the fractional part, giving a
-  whole number. `7 // 2` is `3`.
-- `%`  modulo -- gives the **remainder** after division. `7 % 2` is `1`
-  (because 2 goes into 7 three times with 1 left over).
+- `/`  divisão normal -- dá sempre um número decimal (o Python chama-lhes
+  `float`). `7 / 2` é `3.5`.
+- `//` divisão inteira -- divide e descarta a parte fracionária, dando um
+  número inteiro. `7 // 2` é `3`.
+- `%`  módulo -- dá o **resto** depois da divisão. `7 % 2` é `1`
+  (porque o 2 cabe três vezes no 7, sobrando 1).
 
 ```python
 print(7 / 2)    # 3.5
@@ -713,20 +713,20 @@ print(7 // 2)   # 3
 print(7 % 2)    # 1
 ```
 
-A number with a decimal point, like `3.5`, is a `float`. A whole number with no
-point, like `3`, is an `int`. Notice `/` gives `3.5` even when it divides
-evenly-looking numbers: `4 / 2` is `2.0`, not `2`.
+Um número com um ponto decimal, como `3.5`, é um `float`. Um número inteiro sem
+ponto, como `3`, é um `int`. Repara que `/` dá `3.5` mesmo quando divide
+números que parecem dar um resultado exato: `4 / 2` é `2.0`, não `2`.
 
-`%` is surprisingly handy: a number is even exactly when `n % 2` is `0`.
+`%` é surpreendentemente útil: um número é par exatamente quando `n % 2` é `0`.
 
-## Common misconception
+## Erro comum
 
-`/` does not round to a whole number. `7 / 2` is `3.5`, never `3`. If you want the
-whole-number part, that is what `//` is for.
+`/` não arredonda para um número inteiro. `7 / 2` é `3.5`, nunca `3`. Se quiseres a
+parte inteira, é para isso que serve o `//`.
 
-## Your task
+## A tua tarefa
 
-Using the number 7 and 2, print these three lines in order:
+Usando os números 7 e 2, imprime estas três linhas por ordem:
 
 ```
 3.5
@@ -734,19 +734,19 @@ Using the number 7 and 2, print these three lines in order:
 1
 ```
 
-Use `/` for the first, `//` for the second, and `%` for the third.
+Usa `/` para a primeira, `//` para a segunda, e `%` para a terceira.
 
-## Done when
+## Está feito quando
 
-- Output is exactly `3.5`, then `3`, then `1`.
-- Each line uses the matching operator (`/`, `//`, `%`).
+- O resultado é exatamente `3.5`, depois `3`, depois `1`.
+- Cada linha usa o operador correspondente (`/`, `//`, `%`).
 """,
 
-"1.9 hints": r"""There are three division operators: /, //, and %. One per line.
+"1.9 hints": r"""Há três operadores de divisão: /, // e %. Um por linha.
 
 ---
 
-`print(7 / 2)` gives 3.5, `print(7 // 2)` gives 3, `print(7 % 2)` gives 1.
+`print(7 / 2)` dá 3.5, `print(7 // 2)` dá 3, `print(7 % 2)` dá 1.
 
 ---
 
@@ -755,18 +755,18 @@ print(7 // 2)
 print(7 % 2)
 """,
 
-"1.9 reference": r"""Python has three division operators:
+"1.9 reference": r"""O Python tem três operadores de divisão:
 
-- **`/` true division** always produces a **`float`**, even when the result is
-  whole: `7 / 2 == 3.5`, and `4 / 2 == 2.0` (note the `.0`).
-- **`//` floor division** divides and rounds *down* toward negative infinity,
-  giving an `int` for two ints: `7 // 2 == 3`. With a negative operand it still
-  rounds down, so `-7 // 2 == -4`, not `-3`.
-- **`%` remainder (modulo)** is what's left over: `7 % 2 == 1`. In Python the
-  result takes the **sign of the divisor**, so `-7 % 2 == 1`.
+- **`/` divisão verdadeira** produz sempre um **`float`**, mesmo quando o resultado é
+  inteiro: `7 / 2 == 3.5`, e `4 / 2 == 2.0` (repara no `.0`).
+- **`//` divisão inteira** divide e arredonda *para baixo*, em direção ao infinito negativo,
+  dando um `int` para dois inteiros: `7 // 2 == 3`. Com um operando negativo continua a
+  arredondar para baixo, por isso `-7 // 2 == -4`, não `-3`.
+- **`%` resto (módulo)** é o que sobra: `7 % 2 == 1`. Em Python o
+  resultado tem o **sinal do divisor**, por isso `-7 % 2 == 1`.
 
-For any integers, `a == (a // b) * b + (a % b)` holds. `divmod(a, b)` returns the
-pair `(a // b, a % b)` at once. Dividing by zero raises `ZeroDivisionError`.
+Para quaisquer inteiros, `a == (a // b) * b + (a % b)` é verdade. `divmod(a, b)` devolve o
+par `(a // b, a % b)` de uma só vez. Dividir por zero levanta `ZeroDivisionError`.
 
 ```python
 17 / 5    # 3.4
@@ -775,73 +775,73 @@ pair `(a // b, a % b)` at once. Dividing by zero raises `ZeroDivisionError`.
 ```
 """,
 
-"1.10 brief": r"""# 1.10 -- Asking the user
+"1.10 brief": r"""# 1.10 -- Perguntar ao utilizador
 
-## Concept
+## Conceito
 
-`input()` pauses the program, lets the person type a line, and **gives back what
-they typed as text** (a string). You usually store that in a variable:
+`input()` pausa o programa, deixa a pessoa escrever uma linha, e **devolve o que
+ela escreveu como texto** (uma cadeia de caracteres). Normalmente guardas isso numa variável:
 
 ```python
 name = input()
 print("Hi, " + name)
 ```
 
-If the person types `Sam`, the program prints `Hi, Sam`.
+Se a pessoa escrever `Sam`, o programa imprime `Hi, Sam`.
 
-`input()` always returns a **string**, even if the person types digits. (You will
-deal with that in the next puzzle.)
+`input()` devolve sempre uma **cadeia de caracteres**, mesmo que a pessoa escreva dígitos. (Vais
+lidar com isso no próximo puzzle.)
 
-You can join the typed text with other text using `+`, exactly like in puzzle 1.7:
+Podes juntar o texto escrito com outro texto usando `+`, tal como no puzzle 1.7:
 
 ```python
 city = input()
 print("You live in " + city)
 ```
 
-> Note: when you run `check`, the checker feeds the input for you automatically
-> -- you do not type anything by hand.
+> Nota: quando corres `check`, o verificador fornece a entrada por ti automaticamente
+> -- não precisas de escrever nada à mão.
 
-## Example
+## Exemplo
 
-Input typed: `Berlin`
+Entrada escrita: `Berlin`
 
 ```python
 city = input()
 print("Welcome to " + city)
 ```
 
-Output:
+Resultado:
 
 ```
 Welcome to Berlin
 ```
 
-## Your task
+## A tua tarefa
 
-Read one line of input (a name) and greet it. If the input is `World`, the output
-must be exactly:
+Lê uma linha de entrada (um nome) e cumprimenta-a. Se a entrada for `World`, o resultado
+tem de ser exatamente:
 
 ```
 Hello, World
 ```
 
-So: read the name with `input()`, then print `Hello, ` joined with the name. Mind
-the comma and the single space after it.
+Portanto: lê o nome com `input()`, depois imprime `Hello, ` unido ao nome. Presta atenção
+à vírgula e ao único espaço depois dela.
 
-## Done when
+## Está feito quando
 
-- Given input `World`, output is `Hello, World`.
-- Given any other name, it greets that name the same way (the checker tries
-  more than one).
+- Dada a entrada `World`, o resultado é `Hello, World`.
+- Dado qualquer outro nome, cumprimenta esse nome da mesma forma (o verificador tenta
+  mais do que um).
 """,
 
-"1.10 hints": r"""Store what input() returns in a variable, then build the greeting with +.
+"1.10 hints": r"""Guarda o que `input()` devolve numa variável, depois constrói o cumprimento com +.
 
 ---
 
-`name = input()` then `print("Hello, " + name)`. The text before the name
-includes the comma and a space: "Hello, ".
+`name = input()` depois `print("Hello, " + name)`. O texto antes do nome
+inclui a vírgula e um espaço: "Hello, ".
 
 ---
 
@@ -849,15 +849,15 @@ name = input()
 print("Hello, " + name)
 """,
 
-"1.10 reference": r"""`input` reads **one line** from standard input — everything the user types until
-they press Enter — strips the trailing newline, and returns it as a **string**.
+"1.10 reference": r"""`input` lê **uma linha** da entrada padrão — tudo o que o utilizador escreve até
+premir Enter — remove a quebra de linha final, e devolve-a como uma **cadeia de caracteres**.
 
-- The return value is *always* a `str`, even if the user typed digits:
-  `input()` on `42` returns `"42"`, not `42`. To do arithmetic, convert it
-  (see `int()`).
-- The optional `prompt` argument is written to the screen first, without a
-  trailing newline, so the user types on the same line.
-- If the input stream ends with no line to read (end-of-file), `input` raises
+- O valor devolvido é *sempre* um `str`, mesmo que o utilizador tenha escrito dígitos:
+  `input()` sobre `42` devolve `"42"`, não `42`. Para fazer aritmética, converte-o
+  (vê `int()`).
+- O argumento opcional `prompt` é escrito no ecrã primeiro, sem uma
+  quebra de linha final, para que o utilizador escreva na mesma linha.
+- Se o fluxo de entrada terminar sem haver linha para ler (fim de ficheiro), `input` levanta
   `EOFError`.
 
 ```python
@@ -866,55 +866,55 @@ print("Hi, " + name)
 ```
 """,
 
-"1.11 brief": r"""# 1.11 -- A number from input
+"1.11 brief": r"""# 1.11 -- Um número a partir da entrada
 
-## Concept
+## Conceito
 
-`input()` always gives back **text**, even when the person types digits. If you
-try to do math on it, `+` will join instead of add -- remember puzzle 1.7:
+`input()` devolve sempre **texto**, mesmo quando a pessoa escreve dígitos. Se tentares
+fazer contas com isso, `+` vai juntar em vez de somar -- lembra-te do puzzle 1.7:
 
 ```python
 n = input()      # user types 21  ->  n is the string "21"
 print(n + n)     # "2121", not 42
 ```
 
-To do arithmetic, first **convert** the text to a number with `int(...)`:
+Para fazer aritmética, primeiro **converte** o texto num número com `int(...)`:
 
 ```python
 n = int(input())   # "21" -> 21, a real number now
 print(n * 2)       # 42
 ```
 
-`int(...)` takes text that looks like a whole number and turns it into an `int`
-you can compute with. This pattern -- `int(input())` -- is extremely common.
+`int(...)` pega em texto que se parece com um número inteiro e transforma-o num `int`
+com que podes calcular. Este padrão -- `int(input())` -- é extremamente comum.
 
-## Common misconception
+## Erro comum
 
-`int` does not just "remove the quotes"; it produces a different type. After
-`int(input())` the value is a number, so `+`, `*`, `//`, and friends do real math.
+`int` não se limita a "remover as aspas"; produz um tipo diferente. Depois de
+`int(input())` o valor é um número, por isso `+`, `*`, `//` e companhia fazem contas a sério.
 
-## Your task
+## A tua tarefa
 
-Read a whole number from input, then print **double** it. Examples:
+Lê um número inteiro da entrada, depois imprime-o **duplicado**. Exemplos:
 
-- input `21` -> output `42`
-- input `0`  -> output `0`
-- input `-5` -> output `-10`
+- entrada `21` -> resultado `42`
+- entrada `0`  -> resultado `0`
+- entrada `-5` -> resultado `-10`
 
-So: read with `input()`, convert with `int(...)`, multiply by 2, print the result.
+Portanto: lê com `input()`, converte com `int(...)`, multiplica por 2, imprime o resultado.
 
-## Done when
+## Está feito quando
 
-- For input `21` the output is `42`.
-- It also works for `0` and for a negative number like `-5` (the checker tries
-  these).
+- Para a entrada `21` o resultado é `42`.
+- Também funciona para `0` e para um número negativo como `-5` (o verificador testa
+  estes casos).
 """,
 
-"1.11 hints": r"""input() gives text. You must turn it into a number before doing math.
+"1.11 hints": r"""`input()` dá texto. Tens de o transformar num número antes de fazeres contas.
 
 ---
 
-Wrap input in int: `n = int(input())`. Then `print(n * 2)`.
+Envolve o input em int: `n = int(input())`. Depois `print(n * 2)`.
 
 ---
 
@@ -922,17 +922,17 @@ n = int(input())
 print(n * 2)
 """,
 
-"1.11 reference": r"""`int` converts a value to an **integer**. Its most common use is turning the
-**string** that `input()` returns into a number you can compute with.
+"1.11 reference": r"""`int` converte um valor num **inteiro**. O seu uso mais comum é transformar a
+**cadeia de caracteres** que `input()` devolve num número com que podes calcular.
 
-- `int("42")` is `42`. Surrounding whitespace is ignored (`int(" 42 ")` works);
-  a leading sign is allowed (`int("-5")`).
-- Text that isn't a whole number raises `ValueError` — `int("3.5")` and
-  `int("ten")` both fail. For decimals, use `float("3.5")`.
-- Called on a `float`, `int` truncates *toward zero* (`int(3.9)` is `3`,
-  `int(-3.9)` is `-3`).
+- `int("42")` é `42`. Espaços em branco à volta são ignorados (`int(" 42 ")` funciona);
+  um sinal inicial é permitido (`int("-5")`).
+- Texto que não seja um número inteiro levanta `ValueError` — `int("3.5")` e
+  `int("ten")` falham ambos. Para decimais, usa `float("3.5")`.
+- Chamado sobre um `float`, `int` trunca *em direção a zero* (`int(3.9)` é `3`,
+  `int(-3.9)` é `-3`).
 
-Because `input()` always yields text, reading a number is a two-step idiom:
+Como `input()` produz sempre texto, ler um número é um idioma de dois passos:
 
 ```python
 n = int(input("How many? "))   # read text, then parse it to an int
