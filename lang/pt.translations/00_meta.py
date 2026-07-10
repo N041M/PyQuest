@@ -11,6 +11,8 @@ TRANSLATIONS = {
 
 "name": "Português",
 
+"ui app.lang_nudge": "O PyQuest também fala %s -- escreve  language %s  no menu.",
+
 "ui app.no_loaded_menu": "Ainda não há nenhum puzzle carregado -- aqui está o menu.",
 
 "ui app.no_puzzles": "Não foram encontrados puzzles em %s",
@@ -27,7 +29,19 @@ TRANSLATIONS = {
 
 "ui app.unknown_suggest": "Comando desconhecido '%s'. Querias dizer  %s ?",
 
+"ui app.wb_where": "Estavas em %s · %s.",
+
 "ui app.welcome": "Bem-vindo ao PyQuest!",
+
+"ui app.welcome_back.few": "Welcome back -- it's been %d days.",
+
+"ui app.welcome_back.one": "Bem-vindo de volta -- passou %d dia.",
+
+"ui app.welcome_back.other": "Bem-vindo de volta -- passaram %d dias.",
+
+"ui brief.none": "Este puzzle não tem enunciado.",
+
+"ui brief.title": "enunciado · %s · %s",
 
 "ui card.chapter": "capítulo %d · %s",
 
@@ -45,6 +59,14 @@ TRANSLATIONS = {
 
 "ui card.solved": "resolvido",
 
+"ui chapter.intro": "capítulo %d · %s",
+
+"ui chapter.puzzles.few": "%d puzzles",
+
+"ui chapter.puzzles.one": "%d puzzle",
+
+"ui chapter.puzzles.other": "%d puzzles",
+
 "ui check.banner_not_yet": "ainda não",
 
 "ui check.banner_so_close": "quase lá",
@@ -57,7 +79,11 @@ TRANSLATIONS = {
 
 "ui check.bonus_yes": "bónus: ideal — solução eficiente",
 
+"ui check.chapter_done": "capítulo %d concluído -- %d/%d",
+
 "ui check.code_saved": "o teu código está guardado.",
+
+"ui check.course_done": "CURSO CONCLUÍDO -- todos os puzzles resolvidos!",
 
 "ui check.crash_body": r"""O Python levantou um erro%s:
 
@@ -73,6 +99,8 @@ Lê o nome do erro: indica o que correu mal.
 "ui check.crash_title2": "Falha -- o teu código encontrou um erro",
 
 "ui check.expected": "Esperado:",
+
+"ui check.first_diff": "%s assinala a linha %d -- a primeira linha que difere.",
 
 "ui check.got": "Obtido:",
 
@@ -115,6 +143,12 @@ número um de uma verificação que "devia" passar mas não passa.
 
 "ui check.start_first": "Começa primeiro um:  ",
 
+"ui check.streak.few": "%d-day streak",
+
+"ui check.streak.one": "%d dia seguido",
+
+"ui check.streak.other": "%d dias seguidos",
+
 "ui check.syntax_body": r"""O Python parou em %s
 
 Isto costuma significar um erro de digitação: falta uma aspa, um parêntese,
@@ -126,6 +160,30 @@ dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linh
 "ui check.tests_unloadable": r"""Interno: não foi possível carregar os testes deste puzzle.
 """,
 
+"ui check.tip_attributeerror": "AttributeError: esse valor não tem esse método ou atributo -- verifica em que tipo o estás a chamar.",
+
+"ui check.tip_indexerror": "IndexError: essa posição não existe -- as posições começam em 0 e a última é len(...) - 1.",
+
+"ui check.tip_keyerror": "KeyError: essa chave não está no dicionário -- verifica a escrita exata, ou lê com .get(chave).",
+
+"ui check.tip_nameerror": "NameError: esse nome ainda não está definido -- verifica a escrita, ou define-o acima da linha que o usa.",
+
+"ui check.tip_typeerror": "TypeError: os tipos dos valores não encaixam na operação -- como somar texto a um número; converte primeiro com str() ou int().",
+
+"ui check.tip_unbound": "UnboundLocalError: a variável é lida antes de receber valor neste caminho -- dá-lhe primeiro um valor inicial.",
+
+"ui check.tip_valueerror": "ValueError: o tipo está certo mas o valor não funciona -- como int('abc').",
+
+"ui check.tip_zerodivision": "ZeroDivisionError: divisão por zero -- garante que o denominador não pode ser 0 antes de dividir.",
+
+"ui check.today.few": "%d solved today",
+
+"ui check.today.one": "%d resolvido hoje",
+
+"ui check.today.other": "%d resolvidos hoje",
+
+"ui check.unchanged": "o work.py está byte a byte igual à última tentativa -- guardaste-o no teu editor?",
+
 "ui check.was_last": "esse foi o último puzzle do curso.",
 
 "ui check.wrong_title": "Resultado errado -- o código corre mas a resposta está incorreta",
@@ -134,9 +192,39 @@ dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linh
 
 "ui cockpit.footer": "setas movem · Enter corre · escreve um verbo · Esc para o shell",
 
+"ui date.days_ago.few": "%d days ago",
+
+"ui date.days_ago.one": "há %d dia",
+
+"ui date.days_ago.other": "há %d dias",
+
 "ui date.today": "hoje",
 
 "ui date.yesterday": "ontem",
+
+"ui doctor.color_off": "sem cor",
+
+"ui doctor.color_on": "cor",
+
+"ui doctor.cols": "colunas",
+
+"ui doctor.keys_off": "entrada escrita",
+
+"ui doctor.keys_on": "setas",
+
+"ui doctor.paste_hint": "cola este bloco num relatório de erro.",
+
+"ui doctor.persistent": "atalhos persistentes: %s",
+
+"ui doctor.profiles": "perfis",
+
+"ui doctor.puzzles.few": "%d puzzles",
+
+"ui doctor.puzzles.one": "%d puzzle",
+
+"ui doctor.puzzles.other": "%d puzzles",
+
+"ui doctor.title": "diagnóstico",
 
 "ui goto.footer": "corre  %s   ex.  %s   (um número de capítulo simples também funciona: %s)",
 
@@ -147,6 +235,60 @@ dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linh
 "ui goto.title": "ir para · escolhe um puzzle",
 
 "ui help.available_now": "disponível agora",
+
+"ui help.desc.brief": "lê o enunciado do puzzle atual aqui no terminal",
+
+"ui help.desc.check": "valida o teu work.py",
+
+"ui help.desc.doctor": "relatório do ambiente: versões, terminal, perfil -- cola num relatório de erro",
+
+"ui help.desc.export": "guarda o progresso deste perfil num ficheiro portátil",
+
+"ui help.desc.goto": "salta para um puzzle (goto 2.4, ou goto 2 para o capítulo 2; sem argumento abre um seletor)",
+
+"ui help.desc.help": "mostra esta lista de comandos",
+
+"ui help.desc.hint": "revela a próxima dica",
+
+"ui help.desc.import": "carrega um perfil de um ficheiro exportado",
+
+"ui help.desc.map": "mostra a árvore de capítulos/puzzles (map all expande capítulos resolvidos)",
+
+"ui help.desc.menu": "abre o menu principal (começa aqui, ou sai de um puzzle)",
+
+"ui help.desc.mode": "define a dificuldade: easy | normal | hard",
+
+"ui help.desc.next": "avança quando este puzzle estiver resolvido",
+
+"ui help.desc.note": "aponta uma nota pessoal neste puzzle (note mostra-a, note clear apaga-a)",
+
+"ui help.desc.restart": "recomeça este puzzle: código em branco + progresso limpo (retry mantém-no resolvido)",
+
+"ui help.desc.resume": "salta para o primeiro puzzle que ainda não resolveste",
+
+"ui help.desc.retry": "limpa o espaço de trabalho para praticar de novo (continua resolvido)",
+
+"ui help.desc.search": "encontra um puzzle por uma palavra do título ou do conceito",
+
+"ui help.desc.setup": "configura os comandos curtos (local ou persistente)",
+
+"ui help.desc.skip": "desiste e avança sem resolver (não em modo hard)",
+
+"ui help.desc.solution": "mostra a solução de referência",
+
+"ui help.desc.stats": "os teus números: tentativas, dicas, conclusão por capítulo",
+
+"ui help.desc.status": "mostra o progresso e o puzzle atual",
+
+"ui help.desc.textbook": "sintaxe e dicas até onde chegaste (textbook all: tudo · textbook <capítulo|palavra>: uma fatia)",
+
+"ui help.desc.theme": "muda o tema de cores (neon, amber, forest, mono, ou um preset de themes/)",
+
+"ui help.desc.uninstall": "remove os atalhos persistentes",
+
+"ui help.desc.user": "muda de perfil ou cria um novo",
+
+"ui help.desc.wipe": "apaga progresso: este perfil (wipe profile), ou todos os perfis + definições (wipe everything, pede para escrever ERASE)",
 
 "ui help.footer": "%s disponível agora   %s precisa de um puzzle carregado",
 
@@ -188,6 +330,12 @@ dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linh
 
 "ui keys.esc": "Esc voltar",
 
+"ui keys.filter": "escreve para filtrar",
+
+"ui keys.filter_matches": "%d de %d correspondem · Enter escolhe",
+
+"ui keys.no_filter_match": "sem resultados -- Backspace edita, Enter envia o texto, Esc volta",
+
 "ui keys.position": "%d de %d",
 
 "ui keys.type": "escreve para entrar num",
@@ -197,6 +345,8 @@ dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linh
 "ui lang.prompt": "código do idioma  (0 = voltar) > ",
 
 "ui lang.set": "idioma definido para %s.",
+
+"ui map.folded": "todos os %d resolvidos -- expande com  %s",
 
 "ui map.title": "mapa",
 
@@ -310,6 +460,12 @@ dois pontos, ou a indentação está errada. Abre o work.py e verifica essa linh
 
 "ui search.broaden": "tenta uma palavra mais genérica, ou navega pelo  ",
 
+"ui search.matches.few": "%d matches -- open one with  %s",
+
+"ui search.matches.one": "%d resultado -- abre um com  %s",
+
+"ui search.matches.other": "%d resultados -- abre um com  %s",
+
 "ui search.no_match": "nenhum puzzle corresponde a '%s'.",
 
 "ui search.title": "procurar · %s",
@@ -399,6 +555,12 @@ shell; ainda podes correr `%s start.py <comando>`.)
 
 "ui solution.why": "porque funciona",
 
+"ui stats.all_solved.few": "all %d puzzles solved -- %d on the first try, no hints.",
+
+"ui stats.all_solved.one": "%d puzzle resolvido -- %d à primeira, sem dicas.",
+
+"ui stats.all_solved.other": "todos os %d puzzles resolvidos -- %d à primeira, sem dicas.",
+
 "ui stats.by_chapter": "por capítulo",
 
 "ui stats.clean_tail": "resolvido à primeira, sem dicas",
@@ -410,6 +572,8 @@ shell; ainda podes correr `%s start.py <comando>`.)
 "ui stats.f_clean": "limpo",
 
 "ui stats.f_hints": "dicas",
+
+"ui stats.f_pace": "ritmo",
 
 "ui stats.f_since": "desde",
 
@@ -425,6 +589,14 @@ shell; ainda podes correr `%s start.py <comando>`.)
 
 "ui stats.in_a_row": "seguidos",
 
+"ui stats.last_14": "resolvidos, últimos 14 dias",
+
+"ui stats.streak.few": "%d days",
+
+"ui stats.streak.one": "%d dia",
+
+"ui stats.streak.other": "%d dias",
+
 "ui stats.title": "estatísticas · %s",
 
 "ui stats.today_tail": "resolvidos hoje",
@@ -432,6 +604,12 @@ shell; ainda podes correr `%s start.py <comando>`.)
 "ui stats.tries_tail": "execuções de check em todos os puzzles",
 
 "ui stats.x_of_y": "%d de %d",
+
+"ui status.all_complete.few": "%s  All %d puzzles complete.",
+
+"ui status.all_complete.one": "%s  %d puzzle completo.",
+
+"ui status.all_complete.other": "%s  Todos os %d puzzles completos.",
 
 "ui status.no_current": "Nenhum puzzle atual.  ",
 
@@ -459,19 +637,33 @@ shell; ainda podes correr `%s start.py <comando>`.)
 
 "ui textbook.md_title": "Manual do PyQuest",
 
+"ui textbook.md_topic": "Só %s. Corre `textbook` para tudo o que já alcançaste, `textbook all` para a linguagem inteira.",
+
+"ui textbook.no_topic": "nenhum capítulo ou tema corresponde a '%s'.",
+
 "ui textbook.open_it": "abre-o no teu editor",
 
 "ui textbook.ready": "Manual pronto: %s.",
 
 "ui textbook.revert": "volta só ao que já alcançaste:  ",
 
+"ui textbook.scope_chapter": "capítulo %s",
+
 "ui textbook.see_all": "vê a linguagem completa:  ",
+
+"ui textbook.topic_hint": "tenta um número de capítulo ou uma palavra:",
 
 "ui textbook.where_full": "a referência completa",
 
 "ui textbook.where_none": "ainda nada alcançado",
 
 "ui textbook.where_reached": "o que já alcançaste -- %d de %d",
+
+"ui textbook.where_topic.few": "%s -- %d topics",
+
+"ui textbook.where_topic.one": "%s -- %d tema",
+
+"ui textbook.where_topic.other": "%s -- %d temas",
 
 "ui theme.add_own": "adiciona o teu: coloca um ficheiro JSON em themes/ (vê themes/README.md)",
 
@@ -486,6 +678,18 @@ shell; ainda podes correr `%s start.py <comando>`.)
 "ui theme.set_with": "define com  ",
 
 "ui theme.unknown": "tema desconhecido '%s'. opções: %s",
+
+"ui transfer.answers.few": "%d saved answers",
+
+"ui transfer.answers.one": "%d resposta guardada",
+
+"ui transfer.answers.other": "%d respostas guardadas",
+
+"ui transfer.dropped.few": "note: %d completed id(s) aren't in this version's content and were dropped.",
+
+"ui transfer.dropped.one": "nota: %d id concluído não existe nesta versão do conteúdo e foi descartado.",
+
+"ui transfer.dropped.other": "nota: %d id(s) concluído(s) não existem nesta versão do conteúdo e foram descartados.",
 
 "ui transfer.exists_hint": "Importa com um nome novo, ou substitui-o:",
 
@@ -502,6 +706,12 @@ shell; ainda podes correr `%s start.py <comando>`.)
 "ui transfer.not_export": "%s não é um ficheiro de exportação do PyQuest.",
 
 "ui transfer.pass_name": "Indica um nome válido:  %s",
+
+"ui transfer.puzzles.few": "%d puzzles completed",
+
+"ui transfer.puzzles.one": "%d puzzle concluído",
+
+"ui transfer.puzzles.other": "%d puzzles concluídos",
 
 "ui transfer.read_fail": "Não foi possível ler %s como uma exportação do PyQuest.",
 
@@ -562,6 +772,22 @@ shell; ainda podes correr `%s start.py <comando>`.)
 "ui user.switch_first": "Muda primeiro para outro:  %s",
 
 "ui user.switched_to": "mudado para",
+
+"ui wipe.all_cancelled": "Cancelado -- nada foi apagado.",
+
+"ui wipe.all_done": "Tudo limpo -- todos os perfis apagados.",
+
+"ui wipe.all_fresh": "O PyQuest está como novo; o próximo arranque começa do zero.",
+
+"ui wipe.all_hint": "(para apagar todos os perfis e recomeçar do zero:  %s)",
+
+"ui wipe.all_how": "Escreve %s (exatamente) para avançar; qualquer outra coisa cancela.",
+
+"ui wipe.all_tty_only": "Corre isto num terminal -- precisa de uma confirmação escrita.",
+
+"ui wipe.all_warn": "Isto apaga TODOS os perfis desta instalação --",
+
+"ui wipe.all_warn_2": "todo o progresso, código guardado, notas e definições (tema, idioma).",
 
 "ui wipe.cleared": "Progresso, código guardado e área de trabalho deste perfil foram apagados.",
 
