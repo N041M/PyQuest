@@ -30,12 +30,13 @@ def cmd_theme(arg):
     if not arg:
         print(header(t("theme.list_title", "themes"), "cyan"))
         print("")
+        width = max(len(name) for name in THEME_NAMES)
         for name in THEME_NAMES:
             apply_theme(name)                       # color the row in its theme
             mark = OK if name == current else "·"
             print(PAD + " %s  %s   %s"
                   % (paint(mark, "green" if name == current else "gray"),
-                     paint(name.ljust(7), "byellow", "bold"), _swatch()))
+                     paint(name.ljust(width), "byellow", "bold"), _swatch()))
         apply_theme(current)                        # restore
         print("")
         print(PAD + paint(t("theme.set_with", "set with  ") + cli("theme <name>"),

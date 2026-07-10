@@ -1,0 +1,15 @@
+{
+  "cyan": 36,
+  "byellow": 178,
+  "bcyan": 62,
+  "green": 100,
+  "red": 166,
+  "yellow": 136,
+  "magenta": 168,
+  "blue": 32,
+  "white": 230,
+  "gray": 60,
+  "bgreen": 112,
+  "bred": 172,
+  "ramp": [136, 172, 166, 168, 62, 32]
+}
