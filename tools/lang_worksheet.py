@@ -9,6 +9,13 @@ edit, then split into the pack the engine loads.
                                                    one entry per translatable piece
                                                    (every puzzle's brief/hints/
                                                    reference), prefilled with English
+    python3 tools/lang_worksheet.py update <code>  refresh an existing worksheet
+                                                   after the source moved on: keep
+                                                   every translation, add labels
+                                                   for new strings (seeded from the
+                                                   live pack when it already has
+                                                   them), drop labels that name
+                                                   nothing anymore
     python3 tools/lang_worksheet.py apply <code>   merge the folder's files and
                                                    split them into lang/<code>/
                                                    (pack.json, strings.json,
@@ -16,6 +23,10 @@ edit, then split into the pack the engine loads.
     python3 tools/lang_worksheet.py split <code>   convert an old single-file
                                                    lang/<code>.translations.py into
                                                    the per-chapter folder
+
+UI strings cover t() calls, tp() plurals (as `ui <key>.one/.few/.other` -- a
+language keeps the categories it needs, the rest fall back), and each verb's
+one-line help from the registry (`ui help.desc.<verb>`).
 
 You edit small dicts -- one file per chapter -- changing each value to your
 language, or leaving it as the English to keep English. Multi-line content is a
@@ -58,9 +69,20 @@ META_STEM = "00_meta"   # the file holding the pack name + UI strings
 
 
 # ---- reading the English source -------------------------------------------
+# tp() plural templates become one worksheet label per CLDR category the
+# engine's packs can use. English only has one/other; `few` is prefilled from
+# the English `other` so a language that needs it (Czech) has a slot, and a
+# language that doesn't simply leaves it as-is (an unchanged value never lands
+# in strings.json).
+_PLURAL_CATEGORIES = ("one", "few", "other")
+
+
 def _ui_strings():
-    """Every (key, English) wired through i18n.t("key", "English") in engine/,
-    first occurrence wins, sorted by key."""
+    """Every UI (key, English) the engine can localize, sorted by key: each
+    i18n.t("key", "English") call, each i18n.tp("key", n, one=..., other=...)
+    plural as its per-category "<key>.<cat>" entries, and each registry verb's
+    help line as "help.desc.<verb>" (help.py looks those up dynamically).
+    First occurrence wins."""
     out = {}
     for dirpath, dirs, files in os.walk(ENGINE_DIR):
         dirs[:] = [d for d in dirs if d != "__pycache__"]
@@ -73,19 +95,58 @@ def _ui_strings():
             except (SyntaxError, OSError):
                 continue
             for node in ast.walk(tree):
-                if not isinstance(node, ast.Call) or len(node.args) < 2:
+                if not isinstance(node, ast.Call) or not node.args:
                     continue
                 fn = node.func
                 called = (fn.attr if isinstance(fn, ast.Attribute)
                           else fn.id if isinstance(fn, ast.Name) else None)
-                if called != "t":
+                key = node.args[0]
+                if not (isinstance(key, ast.Constant)
+                        and isinstance(key.value, str)):
                     continue
-                key, dflt = node.args[0], node.args[1]
-                if (isinstance(key, ast.Constant) and isinstance(key.value, str)
-                        and isinstance(dflt, ast.Constant)
-                        and isinstance(dflt.value, str)):
-                    out.setdefault(key.value, dflt.value)
+                if called == "t" and len(node.args) >= 2:
+                    dflt = node.args[1]
+                    if (isinstance(dflt, ast.Constant)
+                            and isinstance(dflt.value, str)):
+                        out.setdefault(key.value, dflt.value)
+                elif called == "tp":
+                    forms = {kw.arg: kw.value.value for kw in node.keywords
+                             if kw.arg in _PLURAL_CATEGORIES
+                             and isinstance(kw.value, ast.Constant)
+                             and isinstance(kw.value.value, str)}
+                    other = forms.get("other") or forms.get("one")
+                    if not other:
+                        continue
+                    for cat in _PLURAL_CATEGORIES:
+                        out.setdefault("%s.%s" % (key.value, cat),
+                                       forms.get(cat, other))
+    out.update((k, v) for k, v in _registry_help().items() if k not in out)
     return sorted(out.items())
+
+
+def _registry_help():
+    """("help.desc.<verb>", <help line>) for every row of the registry's VERBS
+    table, read as data from the source. help.py localizes each row's one-line
+    description via the dynamic key t("help.desc." + verb, ...), which the
+    call-site scan above can't see -- this makes those lines translatable too."""
+    path = os.path.join(ENGINE_DIR, "commands", "registry.py")
+    try:
+        with open(path, encoding="utf-8") as f:
+            tree = ast.parse(f.read())
+    except (OSError, SyntaxError):
+        return {}
+    for node in tree.body:
+        if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == "VERBS"):
+            try:
+                rows = ast.literal_eval(node.value)
+            except ValueError:
+                return {}
+            return {"help.desc.%s" % r[0]: r[4] for r in rows
+                    if isinstance(r, tuple) and len(r) == 5
+                    and isinstance(r[0], str) and isinstance(r[4], str)}
+    return {}
 
 
 def _puzzles():
@@ -304,6 +365,66 @@ def new(code):
     return 0
 
 
+def update(code):
+    """Refresh an existing worksheet against the current source: keep every
+    entry the translator already made, add a label for anything new (prefilled
+    with the pack's live value when strings.json already carries one -- so
+    hand-added keys like plural forms flow back into the worksheet -- else
+    with the English), and drop labels that no longer name anything, reported.
+    `new` stays the first-creation command; this is the "the source moved on"
+    one."""
+    try:
+        existing = _load(code)
+    except ValueError as e:
+        print("couldn't read translations for '%s': %s" % (code, e))
+        return 1
+    canonical = _entries()
+    pack_strings, pack_name = {}, None
+    sp = os.path.join(LANG_DIR, code, "strings.json")
+    pp = os.path.join(LANG_DIR, code, "pack.json")
+    try:
+        with open(sp, encoding="utf-8") as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            pack_strings = data
+    except (OSError, ValueError):
+        pass
+    try:
+        with open(pp, encoding="utf-8") as f:
+            meta = json.load(f)
+        if isinstance(meta, dict) and isinstance(meta.get("name"), str):
+            pack_name = meta["name"]
+    except (OSError, ValueError):
+        pass
+
+    entries, added, seeded = [], 0, 0
+    for label, en in canonical:
+        if label == "name":
+            val = existing.get(label)
+            if (not val or val == NAME_PLACEHOLDER) and pack_name:
+                val = pack_name                  # the pack already knows it
+            entries.append((label, val or en))
+        elif label in existing:
+            entries.append((label, existing[label]))
+        elif label.startswith("ui ") and label[3:] in pack_strings:
+            entries.append((label, pack_strings[label[3:]]))
+            seeded += 1
+        else:
+            entries.append((label, en))
+            added += 1
+    dropped = sorted(set(existing) - {label for label, _ in canonical})
+    groups = _write_split(code, entries)
+    _report_written(code, groups)
+    print("  %d new label(s) prefilled with English, %d seeded from the "
+          "live pack" % (added, seeded))
+    if dropped:
+        print("  ! dropped %d label(s) that name nothing in the source: %s"
+              % (len(dropped), ", ".join(dropped)))
+    print("  translate the new values, then: "
+          "python3 tools/lang_worksheet.py apply %s" % code)
+    return 0
+
+
 def split(code):
     """Convert a legacy single lang/<code>.translations.py into the folder form."""
     single = _file(code)
@@ -400,7 +521,7 @@ def apply(code):
 
 
 def main(argv):
-    cmds = {"new": new, "apply": apply, "split": split}
+    cmds = {"new": new, "update": update, "apply": apply, "split": split}
     if len(argv) == 2 and argv[0] in cmds:
         return cmds[argv[0]](argv[1])
     print(__doc__)

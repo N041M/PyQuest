@@ -22,6 +22,19 @@ python3 tools/lang_worksheet.py apply <code>   # builds lang/<code>/ from the fo
 python3 tools/check_pack.py <code>             # validate
 ```
 
+When PyQuest itself gains or drops strings later, refresh your worksheet in
+place — translations you already made are kept, new labels arrive prefilled
+(from your live pack when it already carries them, else the English), and
+labels that no longer exist are dropped with a note:
+
+```
+python3 tools/lang_worksheet.py update <code>
+```
+
+The UI strings cover plain text, plural forms (`ui <key>.one/.few/.other` —
+fill the categories your language uses, the rest keep falling back), and each
+command's one-line `help` description (`ui help.desc.<verb>`).
+
 The folder mirrors the pack's chapters, so you translate one small file at a
 time:
 

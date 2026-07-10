@@ -49,6 +49,25 @@ def _content_issues(code):
     return ok, problems
 
 
+def _content_total():
+    """How many translatable files the course ships -- the denominator for a
+    pack's content coverage."""
+    total = 0
+    for _dirpath, _dirs, files in os.walk(CHAPTERS_DIR):
+        total += sum(1 for n in files if n in LOCALIZED_CONTENT)
+    return total
+
+
+def _ui_total():
+    """How many UI strings the engine exposes for translation (the worksheet
+    scanner's count), or None when the scanner isn't importable."""
+    try:
+        import lang_worksheet
+        return sum(1 for _label, _en in lang_worksheet._ui_strings())
+    except Exception:
+        return None
+
+
 def check(code):
     """Validate one pack. Returns True when clean, printing a report either way."""
     load_ok, info = i18n.validate(code)
@@ -60,14 +79,20 @@ def check(code):
 
     strings = i18n._load_json(os.path.join(LANG_DIR, code, "strings.json"))
     if isinstance(strings, dict):
-        print("  strings.json: %d key(s) translated" % len(strings))
+        ui_total = _ui_total()
+        tail = " of %d (%d%%)" % (ui_total, round(100 * len(strings) / ui_total)) \
+            if ui_total else ""
+        print("  ui strings: %d translated%s" % (len(strings), tail))
 
     ok, problems = _content_issues(code)
+    total = _content_total()
     if not ok and not problems:
-        print("  content overrides: none")
+        print("  content overrides: none (%d translatable file(s))" % total)
     else:
-        print("  content overrides: %d valid, %d problem(s)"
-              % (len(ok), len(problems)))
+        cover = " -- %d%% of %d file(s)" % (round(100 * len(ok) / total), total) \
+            if total else ""
+        print("  content overrides: %d valid, %d problem(s)%s"
+              % (len(ok), len(problems), cover))
     for path in sorted(ok):
         print("    + %s" % path)
     for path, reason in sorted(problems):
