@@ -12,7 +12,7 @@ from ..config import load_settings, set_setting, MODES
 from ..theme import apply_theme, THEME_NAMES
 from ..state import (current_puzzle, load_answers, archive_current,
                      save_progress, load_progress, default_progress,
-                     ensure_workspace, answers_path, progress_path,
+                     reseed_workspace, answers_path, progress_path,
                      list_users, current_user, ensure_user, valid_username,
                      delete_user, rename_user, write_work, WELCOME_WORK)
 from ..render import paint, header, cli, PAD, OK, NO, ARROW
@@ -122,7 +122,10 @@ def cmd_user(arg, puzzles, by_id, prog):
     for k, v in (("mode", "normal"), ("completed", []), ("stats", {}),
                  ("highest", 0)):
         newprog.setdefault(k, v)
-    ensure_workspace(current_puzzle(newprog, by_id, puzzles), load_answers(),
+    # Reseed (not merely ensure) work.py so the workspace shows THIS profile's
+    # current puzzle -- otherwise a stale file left in the target user's folder
+    # would keep the wrong puzzle on screen and get archived under the new id.
+    reseed_workspace(current_puzzle(newprog, by_id, puzzles), load_answers(),
                      newprog.get("active"))
     word = (t("user.created_switched", "created and switched to") if creating
             else t("user.switched_to", "switched to"))

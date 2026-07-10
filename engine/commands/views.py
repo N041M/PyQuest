@@ -315,16 +315,18 @@ def cmd_textbook(puzzles, by_id, prog, arg=None):
     full = (arg or "").strip().lower() in ("all", "full", "everything", "a", "*")
     total = len(puzzles)
     highest, cur = prog.get("highest", 0), prog.get("current")
-    # A puzzle counts as reached once solved, or once the learner is actually in
-    # the course (active / has solves) and has got to it. Before that -- a fresh
-    # or just-reset profile -- nothing is reached, so the reached view is empty
-    # rather than pretending 1.1 (index 0 <= highest 0) was seen.
+    # A puzzle counts as reached once solved, or once the learner has got to it.
+    # The CURRENT puzzle always counts -- even on a fresh profile -- so the
+    # textbook opens on the topic you're pointed at rather than blank; everything
+    # up to the earned high-water mark counts once the learner is actually in the
+    # course (active / has solves). Nothing AHEAD of the current puzzle is shown,
+    # so the reveal stays progressive (no spoilers).
     started = bool(prog.get("active")) or bool(prog["completed"])
 
     def reached(p):
         if p["id"] in prog["completed"]:
             return True
-        return started and (p["id"] == cur or p["index"] <= highest)
+        return p["id"] == cur or (started and p["index"] <= highest)
 
     shown = puzzles if full else [p for p in puzzles if reached(p)]
     # Not every puzzle contributes an entry: the count is topics that actually

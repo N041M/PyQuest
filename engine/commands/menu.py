@@ -57,7 +57,7 @@ def cmd_menu(puzzles, by_id, prog):
         _menu_options(puzzles, by_id, prog)
         print(PAD + paint(i18n.t("menu.tty_only",
                           "(run this in a terminal to choose)"), "gray"))
-        return
+        return prog
     while True:
         # Redraw the wordmark each time we land on the hub -- on first entry and
         # on every return from a submenu (settings, level) or an inline verb --
@@ -67,7 +67,7 @@ def cmd_menu(puzzles, by_id, prog):
         raw = _menu_input(puzzles, by_id, prog)
         if raw is None:                          # Ctrl-C / EOF -> leave the hub
             print("")
-            return
+            return prog
         # Split into a verb + the rest, so "goto 2.4", "theme ocean" and
         # "user alice" work as one line. The head matches case-insensitively;
         # the argument keeps its case (usernames are case-sensitive).
@@ -80,7 +80,7 @@ def cmd_menu(puzzles, by_id, prog):
             activate(prog, cur, load_answers())     # load the puzzle into work.py
             print("")
             print_current_card(prog, cur, arriving=True, puzzles=puzzles)
-            return
+            return prog
         elif head in ("2", "level", "select", "goto", "load"):
             if arg:                                 # "goto 2.4" -- jump straight
                 target = _resolve_goto(arg, puzzles, by_id, prog)
@@ -93,7 +93,7 @@ def cmd_menu(puzzles, by_id, prog):
                 _menu_level(puzzles, by_id, prog)
         elif head in ("resume",):                    # jump to first unsolved, then go
             cmd_resume(puzzles, by_id, prog)
-            return
+            return prog
         elif head in ("search", "find"):             # discovery, runs in place
             print("")
             cmd_search(puzzles, by_id, prog, arg)
@@ -119,7 +119,7 @@ def cmd_menu(puzzles, by_id, prog):
             print(PAD + paint(i18n.t("menu.see_you",
                               "see you in the terminal -- solve with  ")
                               + cli("check"), "gray"))
-            return
+            return prog
         elif canonical(head) in _INLINE:
             print("")                               # run inspection verbs in place
             _INLINE[canonical(head)](puzzles, by_id, prog)
@@ -516,58 +516,134 @@ def _menu_language():
         _apply_language(c)
 
 
+# Typed words that open the "create a profile" flow from the profiles pane (the
+# arrow list also carries a "+ new profile" entry that does the same). Like the
+# delete/rename keywords, a profile literally named one of these can't be reached
+# by TYPING its name -- arrow-selecting it still works.
+_NEW_PROFILE = ("new", "create", "add")
+
+
+def _prompt_new_profile(puzzles, by_id, prog, name=""):
+    """Create a new profile and switch to it. Given a name, use it; otherwise ask
+    for one, and a blank answer (or Esc/Ctrl-C) cancels. Returns (prog, switched):
+    `switched` is True only when the active profile actually changed, so the pane
+    drops back to settings on a real switch and stays put on a cancel/no-op --
+    read from current_user(), not cmd_user's return-identity."""
+    name = (name or "").strip()
+    if not name:
+        try:
+            name = input(PAD + paint(i18n.t("profiles.new_prompt",
+                                     "new profile name  (blank = cancel) > "),
+                                     "cyan", "bold")).strip()
+        except (EOFError, KeyboardInterrupt):
+            return prog, False
+    if not name:
+        return prog, False
+    if name.lower().startswith("user "):
+        name = name[5:].strip()
+    before = current_user()
+    prog = cmd_user(name, puzzles, by_id, prog)     # creates if new, else switches
+    return prog, current_user() != before
+
+
 def _menu_users(puzzles, by_id, prog):
     # Stay in the profiles pane until 0/back (the rule), Esc, or a blank line.
     while True:
         if keys.supported():
             names = list_users()
             cur = current_user()
+            new_label = i18n.t("profiles.new_entry", "+ new profile")
+            options = [new_label] + names           # the create action leads it
             print("")
             print(header(i18n.t("profiles.title", "profiles"), "cyan"))
             print(PAD + paint(i18n.t("profiles.arrow_hint",
-                              "arrow to a name to switch · or type "
-                              "'rename a b' / 'delete a'"), "gray"))
-            res = keys.pick("profiles", names,
-                            index=names.index(cur) if cur in names else 0,
+                              "arrow to a name to switch · '+ new profile' to "
+                              "create · or type 'rename a b' / 'delete a'"),
+                              "gray"))
+            res = keys.pick("profiles", options,
+                            index=names.index(cur) + 1 if cur in names else 0,
                             allow_typing=True)
             if res is None:
                 return prog
-            choice = names[res] if isinstance(res, int) else res
-            if choice.lower().startswith("user "):
-                choice = choice[5:].strip()
-            # cmd_user parses bare names plus delete/rename subcommands.
+            if isinstance(res, int):
+                if res == 0:                        # "+ new profile"
+                    prog, switched = _prompt_new_profile(puzzles, by_id, prog)
+                    if switched:                    # created/switched -> done here
+                        return prog
+                    continue                        # cancelled -> stay in the pane
+                # Arrow-selecting a name is "enter this profile" -- a switch, and
+                # you're done here, so drop back to the settings pane rather than
+                # re-opening the profiles list on top of the switch message.
+                return cmd_user(options[res], puzzles, by_id, prog)
+            # A typed line: create (new/create/add [name]), management (rename/
+            # delete), or a name. Run it and stay so the result shows and edits
+            # can chain.
+            head, _, tail = res.partition(" ")
+            if head.lower() in _NEW_PROFILE:
+                prog, switched = _prompt_new_profile(puzzles, by_id, prog, tail)
+                if switched:
+                    return prog
+                continue
+            choice = res[5:].strip() if res.lower().startswith("user ") else res
             prog = cmd_user(choice, puzzles, by_id, prog)
             continue
         cmd_user("", puzzles, by_id, prog)          # list users + management help
         try:
             c = input(PAD + paint(i18n.t("profiles.prompt",
-                                  "name to switch · 'rename a b' · "
+                                  "name to switch/create · 'rename a b' · "
                                   "'delete a'  (0 = back) > "), "cyan",
                                   "bold")).strip()
         except (EOFError, KeyboardInterrupt):
             return prog
         if _leaving(c):
             return prog
+        head, _, tail = c.partition(" ")
+        if head.lower() in _NEW_PROFILE:
+            # typed fallback loops until 0/back, so the switched flag is moot here
+            prog = _prompt_new_profile(puzzles, by_id, prog, tail)[0]
+            continue
         if c.lower().startswith("user "):           # forgive "user alice"
             c = c[5:].strip()
         prog = cmd_user(c, puzzles, by_id, prog)
 
 
+def _shortcuts_action(i):
+    """Run one shortcuts choice by index (0 local · 1 persist · 2 uninstall),
+    shared by the arrow picker and the typed fallback so they can't drift."""
+    if i == 0:
+        print(PAD + paint(i18n.t("shortcuts.run_yourself",
+                          "Run this yourself (a program can't source into your "
+                          "shell):"), "gray"))
+        print(PAD + paint(_local_source_cmd(), "yellow", "bold"))
+    elif i == 1:
+        cmd_setup_persist()
+    elif i == 2:
+        cmd_uninstall()
+
+
 def _menu_shortcuts():
+    # Arrow-navigable wherever the terminal supports raw input (keys.pick), with
+    # the typed prompt as the fallback -- the same shape as the theme/mode/
+    # profiles/language panes, so entering this one from the arrow-driven
+    # settings pane doesn't drop you onto a prompt that ignores the arrow keys.
+    labels = (i18n.t("shortcuts.opt_local",
+                     "enable for THIS terminal (local, nothing saved)"),
+              i18n.t("shortcuts.opt_persist",
+                     "install persistently (one line in your startup file)"),
+              i18n.t("shortcuts.opt_uninstall",
+                     "uninstall (remove the persistent line)"))
     print("")
     print(header(i18n.t("shortcuts.title", "shortcuts"), "cyan"))
     print("")
     _disclaimer()
     print("")
-    print(PAD + paint(" 1 ", "byellow", "bold")
-          + "  " + i18n.t("shortcuts.opt_local",
-                          "enable for THIS terminal (local, nothing saved)"))
-    print(PAD + paint(" 2 ", "byellow", "bold")
-          + "  " + i18n.t("shortcuts.opt_persist",
-                          "install persistently (one line in your startup file)"))
-    print(PAD + paint(" 3 ", "byellow", "bold")
-          + "  " + i18n.t("shortcuts.opt_uninstall",
-                          "uninstall (remove the persistent line)"))
+    if keys.supported():
+        res = keys.pick("shortcuts", list(labels))    # ESC / q -> None -> back
+        if res is not None:
+            _shortcuts_action(res)
+        return
+    for n, lbl in enumerate(labels, 1):
+        print(PAD + paint(" %d " % n, "byellow", "bold") + "  " + lbl)
     print(PAD + paint(" 0 ", "byellow", "bold") + "  "
           + i18n.t("ui.back", "back"))
     try:
@@ -577,11 +653,8 @@ def _menu_shortcuts():
     if _leaving(c):
         return
     if c in ("1", "local"):
-        print(PAD + paint(i18n.t("shortcuts.run_yourself",
-                          "Run this yourself (a program can't source into your "
-                          "shell):"), "gray"))
-        print(PAD + paint(_local_source_cmd(), "yellow", "bold"))
+        _shortcuts_action(0)
     elif c in ("2", "persist", "install"):
-        cmd_setup_persist()
+        _shortcuts_action(1)
     elif c in ("3", "uninstall", "remove"):
-        cmd_uninstall()
+        _shortcuts_action(2)

@@ -95,7 +95,10 @@ def dispatch(args, puzzles, by_id, prog):
     elif cmd == "import":
         cmd_import(puzzles, by_id, prog, arg, arg2, arg3)
     elif cmd == "menu":
-        cmd_menu(puzzles, by_id, prog)
+        # capture prog: the menu can switch profile (a new prog), and _play must
+        # run against that, not the pre-menu one -- else the card and the checker
+        # read different progs (card shows the new puzzle, check runs the old).
+        prog = cmd_menu(puzzles, by_id, prog)
     elif cmd == "setup":
         if arg == "persist":
             cmd_setup_persist()

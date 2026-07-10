@@ -254,6 +254,18 @@ def ensure_workspace(puzzle, answers, active=False):
     show the puzzle-free welcome placeholder."""
     if os.path.isfile(work_path()):
         return
+    reseed_workspace(puzzle, answers, active)
+
+
+def reseed_workspace(puzzle, answers, active=False):
+    """Force work.py to match a profile's state: the active puzzle's saved draft
+    (or its fresh starter) when a puzzle is loaded, else the welcome placeholder.
+
+    Unlike ensure_workspace (create-if-missing), this ALWAYS rewrites. Used when
+    switching profile: each user has their own work.py, but the incoming file may
+    be stale relative to that profile's `current` puzzle (e.g. seeded by an
+    import or an older session), and trusting it lets the learner edit the wrong
+    puzzle -- whose code a later `check` then archives under the current id."""
     if active and puzzle is not None:
         saved = answers.get(puzzle["id"], {}).get("code")
         write_work(saved if saved else read_starter(puzzle))

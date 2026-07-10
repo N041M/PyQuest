@@ -329,7 +329,12 @@ def load_dodges(pdir):
         return []
     spec = importlib.util.spec_from_file_location("pyquest_dodges", path)
     mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    saved = sys.dont_write_bytecode          # keep chapters/ free of __pycache__
+    sys.dont_write_bytecode = True
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        sys.dont_write_bytecode = saved
     return list(getattr(mod, "DODGES", []))
 
 

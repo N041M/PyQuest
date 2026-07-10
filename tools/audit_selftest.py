@@ -626,6 +626,90 @@ def _engine_selftest():
                 if os.path.isdir(user_dir(n)):
                     shutil.rmtree(user_dir(n))
 
+    def _sandbox_users():
+        """A throwaway users/ dir wired into config + state, returned with a
+        restore callback. Lets user-switch tests run without touching real
+        profiles or the real settings.json (the active user)."""
+        import tempfile
+        import shutil
+        import engine.config as cfg
+        import engine.state as state
+        saved = (cfg.USERS_DIR, cfg.SETTINGS_PATH, cfg._LEGACY_SETTINGS,
+                 state.USERS_DIR)
+        sand = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        cfg.USERS_DIR = os.path.join(sand, "users")
+        cfg.SETTINGS_PATH = os.path.join(cfg.USERS_DIR, "settings.json")
+        cfg._LEGACY_SETTINGS = os.path.join(sand, "nope.json")
+        state.USERS_DIR = cfg.USERS_DIR
+        os.makedirs(cfg.USERS_DIR, exist_ok=True)
+
+        def restore():
+            (cfg.USERS_DIR, cfg.SETTINGS_PATH, cfg._LEGACY_SETTINGS,
+             state.USERS_DIR) = saved
+            shutil.rmtree(sand, ignore_errors=True)
+        return cfg, state, restore
+
+    def t_reseed_on_switch():
+        """Switching profile reseeds work.py to the INCOMING profile's current
+        puzzle, so a stale workspace left in that folder can't survive the switch
+        and get archived under the wrong id (the profile-desync bug)."""
+        import json
+        from engine.content import discover, read_starter
+        from engine.commands.profiles import cmd_user
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+
+            def setj(path, obj):
+                with open(path, "w") as f:
+                    json.dump(obj, f)
+            setj(cfg.SETTINGS_PATH, {"user": "alice"})
+            state.ensure_user("alice")
+            setj(state.progress_path("alice"), state.default_progress(puzzles))
+            setj(os.path.join(cfg.USERS_DIR, "alice", "answers.json"), {})
+            # bob is on the 2nd puzzle, but his work.py is a stale leftover
+            state.ensure_user("bob")
+            target = puzzles[1]
+            bp = state.default_progress(puzzles)
+            bp["current"], bp["active"] = target["id"], True
+            setj(state.progress_path("bob"), bp)
+            setj(os.path.join(cfg.USERS_DIR, "bob", "answers.json"), {})
+            with open(os.path.join(cfg.USERS_DIR, "bob", "work.py"), "w") as f:
+                f.write("STALE-LEFTOVER\n")
+            prog, _ = state.load_progress(puzzles)              # alice
+            cmd_user("bob", puzzles, by_id, prog)               # switch to bob
+            got = state.read_work()
+            assert "STALE-LEFTOVER" not in got, "switch left a stale work.py"
+            assert got == read_starter(target), \
+                "work.py not reseeded to the incoming profile's current puzzle"
+        finally:
+            restore()
+
+    def t_no_bytecode_in_data():
+        """Importing a puzzle's tests.py (every check does) and a learner file in
+        import mode must not drop a __pycache__ next to the source -- chapters/ is
+        pure data and users/<name>/ is state; neither should collect bytecode."""
+        import shutil as _sh
+        import tempfile
+        from engine.content import load_tests
+        from engine.toolkit import Toolkit
+        d = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        try:
+            with open(os.path.join(d, "tests.py"), "w") as f:
+                f.write("def check(T):\n    pass\n")
+            load_tests(d)
+            assert not os.path.isdir(os.path.join(d, "__pycache__")), \
+                "load_tests wrote bytecode into the lesson folder"
+            work = os.path.join(d, "work.py")
+            with open(work, "w") as f:
+                f.write("value = 42\n")
+            Toolkit(work, "import").load()                  # import-mode runner
+            assert not os.path.isdir(os.path.join(d, "__pycache__")), \
+                "import-mode run wrote bytecode next to the learner file"
+        finally:
+            _sh.rmtree(d, ignore_errors=True)
+
     def t_discover_tolerates_bad_meta():
         from engine.config import CHAPTERS_DIR
         from engine.content import discover
@@ -677,6 +761,40 @@ def _engine_selftest():
         assert "### Syntax" not in md and "### Tips" not in md  # old bundles gone
         assert "2 of 2 topics" in md              # count is entries, not puzzles
         assert not md.rstrip().endswith("---")    # no rule left dangling
+
+    def t_textbook_fresh_shows_current():
+        """A fresh profile's textbook opens on the CURRENT puzzle (the topic it
+        is pointed at), not blank -- while still hiding everything ahead, so the
+        reveal stays progressive."""
+        import json
+        from engine.content import discover
+        from engine.commands.views import cmd_textbook, _has_entry
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+
+            def setj(path, obj):
+                with open(path, "w") as f:
+                    json.dump(obj, f)
+            setj(cfg.SETTINGS_PATH, {"user": "newbie"})
+            state.ensure_user("newbie")
+            prog = state.default_progress(puzzles)          # fresh: active False
+            setj(state.progress_path("newbie"), prog)
+            setj(os.path.join(cfg.USERS_DIR, "newbie", "answers.json"), {})
+            cmd_textbook(puzzles, by_id, prog, None)         # bare `textbook`
+            md = open(state.textbook_path()).read()
+            first = puzzles[0]
+            # exactly the current topic shows (one section) when it has an entry,
+            # and nothing ahead -- so the count is 1, not the whole language.
+            expected = 1 if _has_entry(first) else 0
+            assert md.count("### ") == expected, \
+                "fresh textbook has %d topic sections, want %d" % (
+                    md.count("### "), expected)
+            entries_total = sum(1 for p in puzzles if _has_entry(p))
+            assert entries_total > expected, "test premise: course has more topics"
+        finally:
+            restore()
 
     def t_command_registry():
         from engine.commands.registry import (canonical, suggest,
@@ -1449,7 +1567,9 @@ def _engine_selftest():
                t_structural_checks,
                t_liveness_import_mode, t_atomic_write_json, t_corrupt_backup,
                t_username_validation, t_user_lifecycle,
+               t_reseed_on_switch, t_no_bytecode_in_data,
                t_discover_tolerates_bad_meta, t_textbook_omits_empty,
+               t_textbook_fresh_shows_current,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
                t_key_decode, t_i18n, t_i18n_content, t_check_pack,
                t_lang_worksheet, t_new_puzzle, t_seed_reproducible,

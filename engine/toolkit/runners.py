@@ -91,6 +91,12 @@ class RunnersMixin:
             sys.modules.pop(name, None)
             spec = importlib.util.spec_from_file_location(name, self.path)
             mod = importlib.util.module_from_spec(spec)
+            # Importing the learner's file must not drop a __pycache__ beside it:
+            # in play that would litter users/<name>/, and in the audit (which
+            # imports each solution.py) it would litter the pure-data lesson
+            # folders. Suppress bytecode for the duration of the import.
+            saved_dwb = sys.dont_write_bytecode
+            sys.dont_write_bytecode = True
             try:
                 self._guarded("while importing your file",
                               spec.loader.exec_module, mod)
@@ -100,6 +106,8 @@ class RunnersMixin:
                 raise PuzzleSyntaxError("line %s: %s" % (e.lineno, e.msg))
             except Exception:
                 raise PuzzleCrashError(short_tb())
+            finally:
+                sys.dont_write_bytecode = saved_dwb
             self._module = mod
         return self._module
 

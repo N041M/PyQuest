@@ -132,5 +132,13 @@ def load_tests(dirpath):
     sys.modules.pop(name, None)
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
+    # Don't leave a __pycache__/tests.*.pyc behind: chapters/ is pure data, and
+    # every `check` imports this module -- writing bytecode there would litter
+    # each lesson folder with engine artifacts on every run.
+    saved = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        spec.loader.exec_module(mod)
+    finally:
+        sys.dont_write_bytecode = saved
     return mod

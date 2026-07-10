@@ -39,6 +39,8 @@ def keys_selftest():
     import signal
     import threading
     import time
+    import tempfile
+    import shutil
     from engine import keys
     import engine.commands.menu as menu
     import engine.commands.cards as cards
@@ -188,6 +190,63 @@ def keys_selftest():
             menu.current_puzzle = orig
         assert out == "2", "compact menu DOWN,ENTER -> %r (want '2')" % out
 
+    def t_menu_switch_propagates():
+        # A profile switched INSIDE the menu must propagate out of cmd_menu (via
+        # dispatch) so _play/check run against the new profile, not the pre-menu
+        # one. Regression for the card-vs-checker desync. In a sandboxed users/,
+        # 'alice' sits on a later puzzle; at the hub we type 'user bob' to switch
+        # (creating bob fresh, current = the first puzzle) then '0' to leave. The
+        # prog dispatch returns must be bob's (first puzzle), not alice's.
+        import json
+        import engine.config as cfg
+        import engine.state as state
+        from engine.content import discover
+        from engine.app import dispatch
+        saved = (cfg.USERS_DIR, cfg.SETTINGS_PATH, cfg._LEGACY_SETTINGS,
+                 state.USERS_DIR)
+        sand = tempfile.mkdtemp(prefix="pyquest_keystest_")
+        cfg.USERS_DIR = os.path.join(sand, "users")
+        cfg.SETTINGS_PATH = os.path.join(cfg.USERS_DIR, "settings.json")
+        cfg._LEGACY_SETTINGS = os.path.join(sand, "nope.json")
+        state.USERS_DIR = cfg.USERS_DIR
+        try:
+            os.makedirs(cfg.USERS_DIR, exist_ok=True)
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            first, later = puzzles[0]["id"], puzzles[7]["id"]
+
+            def setj(path, obj):
+                with open(path, "w") as f:
+                    json.dump(obj, f)
+            setj(cfg.SETTINGS_PATH, {"user": "alice"})
+            state.ensure_user("alice")
+            ap = state.default_progress(puzzles)
+            ap["current"], ap["active"], ap["highest"] = later, True, 99
+            setj(state.progress_path("alice"), ap)
+            setj(os.path.join(cfg.USERS_DIR, "alice", "answers.json"), {})
+            prog, _ = state.load_progress(puzzles)
+            out = on_pty(24, 100,
+                         lambda: dispatch(["menu"], puzzles, by_id, prog),
+                         [(0.3, b"user bob\r"), (0.7, b"0\r")])
+            assert state.current_user() == "bob", \
+                "switch didn't persist: %s" % state.current_user()
+            assert isinstance(out, dict) and out.get("current") == first, \
+                "menu returned stale prog: current=%r (want %r)" % (
+                    (out.get("current") if isinstance(out, dict) else out), first)
+        finally:
+            (cfg.USERS_DIR, cfg.SETTINGS_PATH, cfg._LEGACY_SETTINGS,
+             state.USERS_DIR) = saved
+            shutil.rmtree(sand, ignore_errors=True)
+
+    def t_shortcuts_pane_arrow():
+        # The shortcuts settings pane must be arrow-navigable like its siblings,
+        # not a raw input() prompt: on a key-capable TTY it drives keys.pick, so
+        # Esc backs out cleanly. (The old input()-only version would block on an
+        # Esc that never sends a newline -- caught here as a timeout.)
+        out = on_pty(24, 100, menu._menu_shortcuts,
+                     [(0.3, b"\x1b[B"), (0.5, b"\x1b[B"), (0.7, b"\x1b")])
+        assert out is None, "shortcuts pane DOWN,DOWN,ESC -> %r (want None)" % out
+
     def t_cockpit_nav_select():
         prog = {"active": True, "completed": [], "mode": "normal"}
         cur = {"id": "1.1", "index": 0}
@@ -213,7 +272,8 @@ def keys_selftest():
 
     for fn in (t_decode, t_supported_off_pipe, t_supported_on_pty, t_raw_restores,
                t_read_key_pty, t_navigate_returns, t_fits_by_winsize,
-               t_menu_compact_on_short, t_cockpit_nav_select, t_resize_redraws):
+               t_menu_compact_on_short, t_menu_switch_propagates,
+               t_shortcuts_pane_arrow, t_cockpit_nav_select, t_resize_redraws):
         case(fn.__name__[2:], fn)
 
     bad = 0
