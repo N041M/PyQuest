@@ -2,9 +2,13 @@ name: release
 
 # Push a semver tag (e.g. v0.1.0) to cut a GitHub Release. The audit must be
 # green first; then the Release is published with auto-generated notes. GitHub
-# attaches the source zip/tarball automatically -- that source IS the
-# distributable (PyQuest is stdlib-only and runs from its own directory, where
-# it stores progress, so there is nothing to package or install).
+# attaches its own auto-generated source zip/tarball too, but that one's inner
+# folder is named "PyQuest-<version>" (repo name + tag) -- unhelpful, since it
+# never matches the repo's own lowercase "pyquest" folder name that the docs
+# `cd` into. So we also build and attach a `pyquest.zip` whose inner folder is
+# always literally "pyquest", and link to it by its stable
+# releases/latest/download/pyquest.zip URL from the docs -- that download
+# always works regardless of the checkout's own casing.
 
 on:
   push:
@@ -25,14 +29,18 @@ jobs:
         run: |
           python tools/audit.py --sidestep
           python tools/audit.py --engine
+      - name: Build the pyquest/ zip
+        run: git archive --format=zip --prefix=pyquest/ -o pyquest.zip HEAD
       - name: Publish the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         # Idempotent: if the release was pre-created (e.g. with curated notes),
-        # leave it; otherwise publish with auto-generated notes.
+        # leave it; otherwise publish with auto-generated notes. The zip asset
+        # is uploaded either way, overwriting a same-named one if this reruns.
         run: |
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
             echo "Release ${GITHUB_REF_NAME} already exists -- leaving it."
           else
             gh release create "${GITHUB_REF_NAME}" --generate-notes --verify-tag
           fi
+          gh release upload "${GITHUB_REF_NAME}" pyquest.zip --clobber

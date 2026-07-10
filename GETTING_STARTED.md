@@ -12,13 +12,19 @@ unlock the next puzzle. Nothing to install; it uses only Python 3.
 
 ## 1. Go into the PyQuest folder
 
+If you don't have the code yet, download
+[pyquest.zip](https://github.com/N041M/PyQuest/releases/latest/download/pyquest.zip)
+and unzip it — that always extracts to a folder named `pyquest`.
+
 ```
 cd pyquest
 ```
 
 If that says "no such file or directory", you are not in the folder that
-*contains* `pyquest`. `cd` to wherever you keep it first. Tip: in your
-editor, right-click the `pyquest` folder and "Open in Integrated Terminal".
+*contains* `pyquest` — `cd` to wherever you keep it first. (If you cloned the
+repo instead of downloading the zip, the folder may be named `PyQuest`
+instead; `cd` into that one.) Tip: in your editor, right-click the folder and
+"Open in Integrated Terminal".
 
 ## 2. Open the menu
 

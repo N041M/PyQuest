@@ -47,15 +47,18 @@ you've never written code before.
 
 ## Quick start
 
-Get the code — clone the repo, or download the **Source code (zip)** from the
-[latest release](https://github.com/N041M/PyQuest/releases/latest) and unzip it.
-Then open a terminal (the text window where you type commands), go into the
-PyQuest folder, and run:
+Get the code — clone the repo, or download
+[pyquest.zip](https://github.com/N041M/PyQuest/releases/latest/download/pyquest.zip)
+(always the latest release) and unzip it. Then open a terminal (the text
+window where you type commands), go into the folder you just got, and run:
 
 ```
 cd pyquest
 python3 start.py
 ```
+
+(If you cloned instead of downloading the zip, the folder may be named
+`PyQuest` — `cd` into whichever one you actually have.)
 
 That one command checks your Python, turns on the short commands (`check`,
 `hint`, `next`, ...) for this session, and drops you into the menu. Pick a level
