@@ -238,6 +238,61 @@ def keys_selftest():
              state.USERS_DIR) = saved
             shutil.rmtree(sand, ignore_errors=True)
 
+    def t_pick_filters():
+        # filter_typing turns typed text into a live filter: Enter picks the
+        # highlighted MATCH (by its original index), arrows step through the
+        # matches without clearing the filter, and a no-match buffer falls back
+        # to returning the text so a typed id still resolves downstream.
+        opts = ["1.1 · Hello, output", "1.2 · Printing more", "2.1 · Indexing"]
+
+        def go(*actions):
+            return on_pty(24, 80,
+                          lambda: keys.pick("t", opts, allow_typing=True,
+                                            max_rows=2, filter_typing=True),
+                          list(actions))
+        out = go((0.3, b"print"), (0.6, b"\r"))
+        assert out == 1, "filter 'print' ENTER -> %r (want 1)" % out
+        out = go((0.3, b"1."), (0.6, b"\x1b[B"), (0.85, b"\r"))
+        assert out == 1, "filter '1.' DOWN ENTER -> %r (want 1)" % out
+        out = go((0.3, b"zzz"), (0.6, b"\r"))
+        assert out == "zzz", "no-match ENTER -> %r (want 'zzz')" % out
+        out = go((0.3, b"\x1b[B"), (0.55, b"\r"))
+        assert out == 1, "no filter DOWN ENTER -> %r (want 1)" % out
+
+    def t_gate_opens_cockpit():
+        # A puzzle verb with NO puzzle loaded reroutes to the menu; when the
+        # menu then draws a card (pick 'start'), the cockpit must open exactly
+        # as on the plain `menu` path -- not strand the learner on a card with
+        # no nav row at all (regression: the gate called cmd_menu directly and
+        # returned, skipping main()'s cockpit tail, while play.active had
+        # already suppressed the card's static row).
+        import json
+        import engine.config as cfg
+        import engine.state as state
+        import engine.app as app
+        saved = (cfg.USERS_DIR, cfg.SETTINGS_PATH, cfg._LEGACY_SETTINGS,
+                 state.USERS_DIR)
+        saved_argv, saved_play = sys.argv, app._play
+        sand = tempfile.mkdtemp(prefix="pyquest_keystest_")
+        cfg.USERS_DIR = os.path.join(sand, "users")
+        cfg.SETTINGS_PATH = os.path.join(cfg.USERS_DIR, "settings.json")
+        cfg._LEGACY_SETTINGS = os.path.join(sand, "nope.json")
+        state.USERS_DIR = cfg.USERS_DIR
+        opened = []
+        app._play = lambda *a, **k: opened.append(True)
+        try:
+            os.makedirs(cfg.USERS_DIR, exist_ok=True)
+            with open(cfg.SETTINGS_PATH, "w") as f:
+                json.dump({"user": "default"}, f)
+            sys.argv = ["start.py", "check"]       # puzzle verb, nothing active
+            on_pty(40, 100, app.main, [(0.5, b"\r")])   # Enter -> menu 'start'
+            assert opened, "gate path drew a card but never opened the cockpit"
+        finally:
+            sys.argv, app._play = saved_argv, saved_play
+            (cfg.USERS_DIR, cfg.SETTINGS_PATH, cfg._LEGACY_SETTINGS,
+             state.USERS_DIR) = saved
+            shutil.rmtree(sand, ignore_errors=True)
+
     def t_shortcuts_pane_arrow():
         # The shortcuts settings pane must be arrow-navigable like its siblings,
         # not a raw input() prompt: on a key-capable TTY it drives keys.pick, so
@@ -253,27 +308,58 @@ def keys_selftest():
         puz = [{"id": "1.1", "index": 0}, {"id": "1.2", "index": 1}]
         # 140 cols -> the row fits on one line; 40 cols -> it stacks the clusters.
         # The index->verb mapping (and the repaint) must survive both packings.
+        # verbs[1] is the learn cluster's first entry (brief).
         for cols in (140, 40):
             out = on_pty(24, cols, lambda: cards.nav_select(prog, cur, puz),
                          [(0.3, b"\x1b[C"), (0.55, b"\r")])   # RIGHT -> verbs[1]
-            assert out == "hint", "cockpit (%d cols) RIGHT,ENTER -> %r" % (cols, out)
+            assert out == "brief", "cockpit (%d cols) RIGHT,ENTER -> %r" % (cols, out)
 
     def t_resize_redraws():
-        # resize mid-navigation (winsize change + SIGWINCH), then finish the pick;
-        # the RESIZE token must be consumed as a redraw, not break navigation
-        def resize_then_nav(slave_holder):
-            def do_resize():
-                os.kill(os.getpid(), signal.SIGWINCH)
-            out = on_pty(24, 120, lambda: keys.navigate(row, 3),
-                         [(0.3, do_resize), (0.5, b"\x1b[B"), (0.75, b"\r")])
-            return out
-        out = resize_then_nav(None)
+        # resize mid-navigation, then finish the pick; the RESIZE token must be
+        # consumed as a redraw, not break navigation. Covered twice: a bare
+        # SIGWINCH, and a REAL winsize shrink (fd 0 is the pty slave here) --
+        # the case where the block no longer fits the screen.
+        def go(resize):
+            return on_pty(40, 120, lambda: keys.navigate(row, 3),
+                          [(0.3, resize), (0.5, b"\x1b[B"), (0.75, b"\r")])
+        out = go(lambda: os.kill(os.getpid(), signal.SIGWINCH))
         assert out == 1, "navigate survived a resize -> %r (want 1)" % out
+
+        def shrink():
+            set_winsize(0, 8, 70)
+            os.kill(os.getpid(), signal.SIGWINCH)
+        out = go(shrink)
+        assert out == 1, "navigate survived a shrink -> %r (want 1)" % out
+
+    def t_menu_degrades_on_shrink():
+        # The full-list hub must fall back to the compact selector when the
+        # terminal shrinks below the block mid-navigation (each full repaint
+        # would otherwise be taller than the screen and push-scroll a fresh
+        # copy of the whole menu on every keypress) -- and navigation must
+        # carry on seamlessly across the degrade.
+        orig = menu.current_puzzle
+        menu.current_puzzle = lambda *a, **k: {"id": "1.1",
+                                               "meta": {"title": "x"}}
+        prog = {"completed": ["1.1"], "mode": "normal"}
+        puz = [{"id": "1.1"}] * 98
+
+        def shrink():
+            set_winsize(0, 8, 100)
+            os.kill(os.getpid(), signal.SIGWINCH)
+        try:                                          # starts 40 rows: full list
+            out = on_pty(40, 100,
+                         lambda: menu._menu_input(puz, {"1.1": puz[0]}, prog),
+                         [(0.4, shrink), (0.7, b"\x1b[B"), (0.95, b"\r")])
+        finally:
+            menu.current_puzzle = orig
+        assert out == "2", "hub shrink DOWN,ENTER -> %r (want '2')" % out
 
     for fn in (t_decode, t_supported_off_pipe, t_supported_on_pty, t_raw_restores,
                t_read_key_pty, t_navigate_returns, t_fits_by_winsize,
                t_menu_compact_on_short, t_menu_switch_propagates,
-               t_shortcuts_pane_arrow, t_cockpit_nav_select, t_resize_redraws):
+               t_pick_filters, t_gate_opens_cockpit,
+               t_shortcuts_pane_arrow, t_cockpit_nav_select, t_resize_redraws,
+               t_menu_degrades_on_shrink):
         case(fn.__name__[2:], fn)
 
     bad = 0

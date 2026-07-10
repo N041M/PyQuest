@@ -201,6 +201,23 @@ def paint(text, *names):
     return "".join(ANSI[n] for n in names) + text + ANSI["reset"]
 
 
+def hyperlink(label, path):
+    """Wrap `label` in an OSC 8 file:// hyperlink to `path`. Modern terminals
+    (VS Code, iTerm2, kitty, WezTerm, Windows Terminal) render it clickable --
+    the card's read/edit paths open straight in the editor; terminals that
+    don't know OSC 8 ignore the sequence and show the label. Plain text in
+    pipes and under NO_COLOR, the same gate paint() uses."""
+    if not COLOR:
+        return label
+    from urllib.parse import urljoin
+    from urllib.request import pathname2url
+    try:
+        url = urljoin("file:", pathname2url(os.path.abspath(path)))
+    except (OSError, ValueError):
+        return label
+    return "\033]8;;%s\033\\%s\033]8;;\033\\" % (url, label)
+
+
 def paint_code(text, code, bold=True):
     if not COLOR:
         return text

@@ -71,11 +71,15 @@ def set_setting(key, value):
 
 
 def _term_width():
+    # Frames follow the terminal down to 40 columns: a hard floor above the
+    # real width (the old 56) drew every box wider than a narrow panel, so each
+    # frame line wrapped mid-border. Below 40 the content itself can't breathe,
+    # so that stays the floor and clipping/wrap is accepted there.
     try:
         cols = shutil.get_terminal_size((80, 24)).columns
     except Exception:
         cols = 80
-    return max(56, min(cols, 120))
+    return max(40, min(cols, 120))
 
 
 WIDTH = _term_width()       # frames span the terminal (capped for readability)

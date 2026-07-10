@@ -999,6 +999,14 @@ def _engine_selftest():
             pack("zz", {"pack.json": "{ not json"})
             ok, msg = i18n.set_language("zz")
             assert not ok and "JSON" in msg and i18n.current() == "en", msg
+            # plural rules: cs has few, pt counts 0 as one (CLDR), unknown
+            # codes use the safe English split
+            for code, n, want in (("cs", 1, "one"), ("cs", 3, "few"),
+                                  ("cs", 5, "other"), ("pt", 0, "one"),
+                                  ("pt", 1, "one"), ("pt", 2, "other"),
+                                  ("qq", 0, "other"), ("qq", 1, "one")):
+                got = i18n._plural_category(code, n)
+                assert got == want, "%s(%d) -> %r, want %r" % (code, n, got, want)
         finally:
             i18n.LANG_DIR = saved
             i18n.set_language("en")
@@ -1199,6 +1207,77 @@ def _engine_selftest():
             assert os.path.isdir(wdir) and not os.path.exists(single)
             after = lw._load("cs")
             assert after["name"] == "Test" and after["1.1 brief"] == "# Ahoj\n"
+        finally:
+            lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR = saved
+            shutil.rmtree(root)
+
+    def t_lang_worksheet_update():
+        """`update` refreshes a worksheet in place after the source moves on:
+        new t()/tp()/registry-help labels appear (tp as per-category entries,
+        seeded from the live pack's strings.json when it already carries a
+        hand-added form), existing translations are kept, and labels that no
+        longer name anything are dropped."""
+        import io
+        import json
+        import shutil
+        import contextlib
+        import lang_worksheet as lw
+        saved = (lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR)
+        root = tempfile.mkdtemp(prefix="pyquest_selftest_")
+        eng = os.path.join(root, "engine")
+        cmds = os.path.join(eng, "commands")
+        pz = os.path.join(root, "chapters", "01_x", "01_y")
+        lang = os.path.join(root, "lang")
+        os.makedirs(cmds)
+        os.makedirs(pz)
+        os.makedirs(lang)
+        with open(os.path.join(eng, "m.py"), "w", encoding="utf-8") as f:
+            f.write('i18n.t("menu.play", "play")\n')
+        with open(os.path.join(pz, "meta.json"), "w", encoding="utf-8") as f:
+            f.write('{"id": "1.1"}')
+        with open(os.path.join(pz, "brief.md"), "w", encoding="utf-8") as f:
+            f.write("b\n")
+        lw.ENGINE_DIR = eng
+        lw.CHAPTERS_DIR = os.path.join(root, "chapters")
+        lw.LANG_DIR = lang
+
+        def hush(fn, *a):
+            with contextlib.redirect_stdout(io.StringIO()):
+                return fn(*a)
+        try:
+            assert hush(lw.new, "xx") == 0
+            # translate a piece, then move the source on: a tp() plural and a
+            # registry verb appear, and menu.play disappears
+            fill = dict(lw._load("xx"))
+            fill["1.1 brief"] = "prelozeno\n"
+            lw._write_split("xx", list(fill.items()))
+            with open(os.path.join(eng, "m.py"), "w", encoding="utf-8") as f:
+                f.write('tp("n.items", n, one="%d item", other="%d items")\n')
+            with open(os.path.join(cmds, "registry.py"), "w",
+                      encoding="utf-8") as f:
+                f.write('VERBS = [\n    ("go", "go", (), "always", "move"),\n]\n')
+            # the live pack already carries a hand-added plural form: update
+            # must seed it into the worksheet rather than lose it on apply
+            os.makedirs(os.path.join(lang, "xx"))
+            with open(os.path.join(lang, "xx", "strings.json"), "w",
+                      encoding="utf-8") as f:
+                json.dump({"n.items.few": "%d kusy"}, f)
+            with open(os.path.join(lang, "xx", "pack.json"), "w",
+                      encoding="utf-8") as f:
+                json.dump({"name": "Xxish", "code": "xx"}, f)
+            assert hush(lw.update, "xx") == 0
+            data = lw._load("xx")
+            assert data["1.1 brief"] == "prelozeno\n", "translation lost"
+            assert "ui menu.play" not in data, "stale label kept"
+            assert data["ui n.items.one"] == "%d item"     # tp -> per-category
+            assert data["ui n.items.few"] == "%d kusy", \
+                "pack's hand-added plural not seeded"
+            assert data["ui help.desc.go"] == "move", "registry help missing"
+            assert data["name"] == "Xxish", "pack name not seeded"
+            # applying the refreshed sheet keeps the seeded plural alive
+            assert hush(lw.apply, "xx") == 0
+            strings = json.load(open(os.path.join(lang, "xx", "strings.json")))
+            assert strings.get("n.items.few") == "%d kusy", strings
         finally:
             lw.ENGINE_DIR, lw.CHAPTERS_DIR, lw.LANG_DIR = saved
             shutil.rmtree(root)
@@ -1555,6 +1634,456 @@ def _engine_selftest():
         assert os.path.exists(ppath + ".corrupt"), "no progress backup"
         assert os.path.exists(apath + ".corrupt"), "no answers backup"
 
+    def t_dispatch_adopts_import():
+        """`import` switches the active profile and returns the imported prog;
+        dispatch must ADOPT it (regression: the cockpit kept the pre-import
+        prog, checked the old puzzle against the imported workspace, and saved
+        the old profile's state over the imported one)."""
+        from engine.content import discover
+        from engine.app import dispatch
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            first, later = puzzles[0], puzzles[3]
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            dp["active"] = True
+            write_json(state.progress_path("default"), dp)
+            write_json(state.answers_path("default"), {})
+            bundle = {"format": "pyquest-progress", "format_version": 1,
+                      "user": "alice",
+                      "progress": {"mode": "normal", "current": later["id"],
+                                   "completed": [first["id"]], "stats": {},
+                                   "active": True},
+                      "answers": {}}
+            bpath = os.path.join(os.path.dirname(cfg.USERS_DIR), "bundle.json")
+            write_json(bpath, bundle)
+            prog, _ = state.load_progress(puzzles)
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                got = dispatch(["import", bpath], puzzles, by_id, prog)
+            finally:
+                sys.stdout = old
+            assert state.current_user() == "alice", state.current_user()
+            assert got is not prog and got.get("current") == later["id"], \
+                "dispatch kept the pre-import prog (current=%r)" % \
+                got.get("current")
+            assert got.get("completed") == [first["id"]], got.get("completed")
+        finally:
+            restore()
+
+    def t_wipe_returns_fresh():
+        """`wipe profile` replaces prog: dispatch must return the FRESH one
+        (regression: a cockpit that kept the old dict re-saved the erased
+        progress on its next verb, silently undoing the wipe -- and invariant
+        10 promises a true reset). Bare `wipe`, the explainer, keeps prog."""
+        from engine.content import discover
+        from engine.app import dispatch
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            dp["active"], dp["completed"] = True, [puzzles[0]["id"]]
+            write_json(state.progress_path("default"), dp)
+            write_json(state.answers_path("default"),
+                       {puzzles[0]["id"]: {"solved": True, "code": "x = 1\n"}})
+            prog, _ = state.load_progress(puzzles)
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                kept = dispatch(["wipe"], puzzles, by_id, prog)
+                fresh = dispatch(["wipe", "profile"], puzzles, by_id, prog)
+            finally:
+                sys.stdout = old
+            assert kept is prog, "bare wipe must keep the incoming prog"
+            assert fresh is not prog and not fresh.get("active") \
+                and fresh.get("completed") == [], fresh
+            # saving the ADOPTED prog must keep the wipe wiped
+            state.save_progress(fresh)
+            with open(state.progress_path("default")) as f:
+                ondisk = json.load(f)
+            assert ondisk.get("completed") == [] and not ondisk.get("active"), \
+                "the save after a wipe resurrected the erased progress"
+        finally:
+            restore()
+
+    def t_solve_raises_highest():
+        """Solving raises the goto high-water mark: a puzzle completed via an
+        easy-mode free jump stays revisitable after switching to normal/hard
+        (the same entitlement import's sanitizer recomputes from `completed`)."""
+        import shutil
+        from engine.content import discover
+        from engine.checker import cmd_check
+        from engine.commands.cards import _jump
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            target = puzzles[5]
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            dp["current"], dp["active"], dp["mode"] = target["id"], True, "easy"
+            write_json(state.progress_path("default"), dp)
+            write_json(state.answers_path("default"), {})
+            shutil.copyfile(os.path.join(target["dir"], "solution.py"),
+                            state.work_path())
+            prog, _ = state.load_progress(puzzles)
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                cmd_check(puzzles, by_id, prog)
+            finally:
+                sys.stdout = old
+            assert target["id"] in prog["completed"], "solution did not pass"
+            assert prog["highest"] >= target["index"], \
+                "solving did not raise highest (%r < %r)" % (
+                    prog["highest"], target["index"])
+            prog["mode"], prog["current"] = "normal", puzzles[0]["id"]
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                ok = _jump(target, puzzles, by_id, prog)
+            finally:
+                sys.stdout = old
+            assert ok, "goto back to an own-solved puzzle stayed locked"
+        finally:
+            restore()
+
+    def t_wipe_everything():
+        """`wipe everything` is the factory reset: it deletes EVERY profile and
+        the settings with them -- but only after the learner types ERASE at a
+        real prompt. A pipe (no TTY) is refused outright, a wrong phrase
+        cancels, and both leave every file in place; the real thing removes
+        users/ wholesale and returns a fresh, inactive prog."""
+        from engine.content import discover
+        from engine.commands.profiles import cmd_wipe
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        saved_stdin = sys.stdin
+        try:
+            puzzles = discover()
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            for name in ("default", "alice"):
+                state.ensure_user(name)
+                dp = state.default_progress(puzzles)
+                dp["active"], dp["completed"] = True, [puzzles[0]["id"]]
+                write_json(state.progress_path(name), dp)
+            prog, _ = state.load_progress(puzzles)
+
+            class _Tty(io.StringIO):
+                def isatty(self):
+                    return True
+
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                sys.stdin = io.StringIO()            # a pipe: refused outright
+                kept = cmd_wipe(puzzles, prog, "everything")
+                assert kept is prog and "alice" in state.list_users(), \
+                    "wipe everything must refuse without a TTY"
+                sys.stdin = _Tty("nope\n")           # wrong phrase: cancelled
+                kept = cmd_wipe(puzzles, prog, "everything")
+                assert kept is prog and "alice" in state.list_users(), \
+                    "a wrong phrase must cancel"
+                sys.stdin = _Tty("ERASE\n")          # the real thing ('all' alias)
+                fresh = cmd_wipe(puzzles, prog, "all")
+            finally:
+                sys.stdout = old
+            assert not os.path.isdir(cfg.USERS_DIR), \
+                "users/ survived the factory reset"
+            assert fresh is not prog and not fresh.get("active") \
+                and fresh.get("completed") == [], fresh
+        finally:
+            sys.stdin = saved_stdin
+            restore()
+
+    def t_check_unchanged_notice():
+        """A failing check whose work.py is byte-for-byte the SAME as the last
+        attempt names the real problem (an unsaved editor buffer) instead of
+        guessing; the notice vanishes as soon as the file actually changes."""
+        from engine.content import discover
+        from engine.checker import cmd_check
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            dp["active"] = True
+            write_json(state.progress_path("default"), dp)
+            write_json(state.answers_path("default"), {})
+            state.write_work("print('not the answer')\n")
+            prog, _ = state.load_progress(puzzles)
+
+            def check_out():
+                old = sys.stdout
+                sys.stdout = io.StringIO()
+                try:
+                    cmd_check(puzzles, by_id, prog)
+                    return sys.stdout.getvalue()
+                finally:
+                    sys.stdout = old
+            first = check_out()
+            assert "byte-for-byte" not in first, "notice on the FIRST attempt"
+            second = check_out()
+            assert "byte-for-byte" in second, "unchanged retry not detected"
+            state.write_work("print('not the answer, edited')\n")
+            third = check_out()
+            assert "byte-for-byte" not in third, "notice survived a real edit"
+        finally:
+            restore()
+
+    def t_first_diff():
+        """The wrong-result screen points at the first differing line: the
+        helper finds it (or stays quiet for one-liners / non-strings), and
+        quote_block draws the marker -- including on a row one side is missing."""
+        from engine.checker import _first_diff
+        from engine.render import quote_block
+        assert _first_diff("a\nb\nc", "a\nX\nc") == 1
+        assert _first_diff("a\nb\nc", "a\nb") == 2      # got ended early
+        assert _first_diff("a\nb", "a\nb") is None       # identical
+        assert _first_diff("one", "two") is None         # single lines: noise
+        assert _first_diff(5, "x") is None               # not string output
+        marked = quote_block("a\nb", mark=1).split("\n")
+        assert marked[0] == "    | a" and marked[1].endswith(" | b") \
+            and not marked[1].startswith("    |"), marked
+        missing = quote_block("a", mark=1).split("\n")   # mark past the end
+        assert len(missing) == 2 and missing[1].rstrip().endswith("|"), missing
+
+    def t_map_folds():
+        """`map` folds a fully-solved chapter to one line (the tree must stay
+        scannable as the course grows); the current puzzle's chapter never
+        folds, and `map all` expands everything."""
+        from engine.content import discover
+        from engine.commands.views import cmd_map
+        puzzles = [p for p in discover() if p["ch_num"] <= 2]
+        by_id = {p["id"]: p for p in puzzles}
+        ch1 = [p["id"] for p in puzzles if p["ch_num"] == 1]
+        cur = next(p for p in puzzles if p["ch_num"] == 2)
+        prog = {"mode": "normal", "completed": list(ch1), "current": cur["id"],
+                "highest": 99, "stats": {}, "active": True}
+
+        def map_out(arg=None):
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                cmd_map(puzzles, by_id, prog, arg)
+                return sys.stdout.getvalue()
+            finally:
+                sys.stdout = old
+        folded = map_out()
+        assert "1.1" not in folded, "solved chapter did not fold"
+        assert "all %d solved" % len(ch1) in folded, folded[-300:]
+        assert cur["id"] in folded, "current chapter must stay expanded"
+        expanded = map_out("all")
+        assert "1.1" in expanded, "map all did not expand"
+        prog["current"] = ch1[0]                 # current inside the solved ch.
+        assert "1.1" in map_out(), "chapter holding the current puzzle folded"
+
+    def t_brief_prints():
+        """`brief` prints the current puzzle's brief.md in the terminal -- the
+        pane names the puzzle and the body is the file's own text."""
+        from engine.content import discover, brief_path
+        from engine.commands.views import cmd_brief
+        puzzles = discover()
+        by_id = {p["id"]: p for p in puzzles}
+        cur = puzzles[0]
+        prog = {"mode": "normal", "completed": [], "current": cur["id"],
+                "highest": 0, "stats": {}, "active": True}
+        with open(brief_path(cur["dir"]), encoding="utf-8") as f:
+            first_line = next(ln.strip() for ln in f if ln.strip())
+        old = sys.stdout
+        sys.stdout = io.StringIO()
+        try:
+            cmd_brief(puzzles, by_id, prog)
+            out = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old
+        assert cur["id"] in out, "pane does not name the puzzle"
+        assert first_line.lstrip("#").strip() in out, \
+            "brief body missing from the output"
+
+    def t_doctor_smoke():
+        """`doctor` prints the environment report (versions, terminal, profile,
+        content counts) without touching any state."""
+        import platform
+        from engine.content import discover
+        from engine.commands.views import cmd_doctor
+        puzzles = discover()
+        old = sys.stdout
+        sys.stdout = io.StringIO()
+        try:
+            cmd_doctor(puzzles)
+            out = sys.stdout.getvalue()
+        finally:
+            sys.stdout = old
+        assert platform.python_version() in out, "python version missing"
+        assert ("%d puzzles" % len(puzzles)) in out, "content count missing"
+
+    def t_crash_glossary():
+        """A crash screen adds a one-line beginner explanation for the common
+        exception names -- under the raw error, never instead of it -- and
+        stays quiet for names it doesn't know."""
+        from engine.checker import _crash_tip
+        from engine.content import discover
+        from engine.checker import cmd_check
+        from engine.config import write_json
+        assert "isn't defined yet" in _crash_tip("NameError: name 'x' ...")
+        assert "dictionary" in _crash_tip("KeyError: 'speed'")
+        assert "positions start at 0" in _crash_tip("IndexError: list index")
+        assert _crash_tip("SomeCustomError: whatever") is None
+        assert _crash_tip(None) is None
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            dp["active"] = True
+            write_json(state.progress_path("default"), dp)
+            write_json(state.answers_path("default"), {})
+            state.write_work("print(undefined_name)\n")
+            prog, _ = state.load_progress(puzzles)
+            old = sys.stdout
+            sys.stdout = io.StringIO()
+            try:
+                cmd_check(puzzles, by_id, prog)
+                out = sys.stdout.getvalue()
+            finally:
+                sys.stdout = old
+            assert "isn't defined yet" in out, "glossary tip missing on screen"
+        finally:
+            restore()
+
+    def t_locale_pack():
+        """The first-run language nudge matches the shell locale against the
+        installed packs -- and stays silent for English, unknown codes, or no
+        locale at all."""
+        from engine import app
+        saved = {k: os.environ.get(k) for k in ("LC_ALL", "LC_MESSAGES", "LANG")}
+        try:
+            for k in saved:
+                os.environ.pop(k, None)
+            assert app._locale_pack() is None
+            os.environ["LANG"] = "en_US.UTF-8"
+            assert app._locale_pack() is None
+            os.environ["LANG"] = "xx_XX.UTF-8"
+            assert app._locale_pack() is None
+            os.environ["LANG"] = "cs_CZ.UTF-8"
+            got = app._locale_pack()
+            assert got and got[0] == "cs", got
+            os.environ["LC_ALL"] = "pt_PT.UTF-8"      # LC_ALL outranks LANG
+            got = app._locale_pack()
+            assert got and got[0] == "pt", got
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+    def t_chapter_intro():
+        """`next` crossing into a new chapter prints the arrival banner (name,
+        category, topic list); advancing within a chapter does not."""
+        from engine.content import discover
+        from engine.commands.navigate import cmd_next
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            ch1 = [p for p in puzzles if p["ch_num"] == 1]
+            ch2_title = next(p for p in puzzles if p["ch_num"] == 2)["ch_title"]
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            dp["completed"] = [p["id"] for p in ch1]
+            dp["current"], dp["active"] = ch1[-1]["id"], True
+            dp["highest"] = ch1[-1]["index"]
+            write_json(state.progress_path("default"), dp)
+            write_json(state.answers_path("default"), {})
+            prog, _ = state.load_progress(puzzles)
+
+            def next_out():
+                old = sys.stdout
+                sys.stdout = io.StringIO()
+                try:
+                    cmd_next(puzzles, by_id, prog)
+                    return sys.stdout.getvalue()
+                finally:
+                    sys.stdout = old
+            out = next_out()
+            assert ("chapter 2 · %s" % ch2_title) in out, \
+                "no arrival banner crossing into chapter 2"
+            assert "2 ·" in out
+            prog["completed"].append(prog["current"])    # solve 2.1, stay in ch2
+            out = next_out()
+            assert ("chapter 2 · %s" % ch2_title) not in out.split("\n")[1], \
+                "banner repeated inside the same chapter"
+        finally:
+            restore()
+
+    def t_textbook_topic():
+        """`textbook <chapter|word>` writes just that slice: a chapter number
+        scopes to the chapter, a word matches titles/syntax, and a miss says so
+        without touching the file."""
+        from engine.content import discover
+        from engine.commands.views import cmd_textbook
+        from engine.config import write_json
+        cfg, state, restore = _sandbox_users()
+        try:
+            puzzles = discover()
+            by_id = {p["id"]: p for p in puzzles}
+            write_json(cfg.SETTINGS_PATH, {"user": "default"})
+            state.ensure_user("default")
+            dp = state.default_progress(puzzles)
+            write_json(state.progress_path("default"), dp)
+            prog, _ = state.load_progress(puzzles)
+
+            def run(arg):
+                old = sys.stdout
+                sys.stdout = io.StringIO()
+                try:
+                    cmd_textbook(puzzles, by_id, prog, arg)
+                    return sys.stdout.getvalue()
+                finally:
+                    sys.stdout = old
+            run("2")
+            with open(state.textbook_path(), encoding="utf-8") as f:
+                md = f.read()
+            assert "Chapter 2" in md and "Chapter 3" not in md, \
+                "chapter scope leaked other chapters"
+            out = run("zzznotopic")
+            assert "no chapter or topic matches" in out
+            with open(state.textbook_path(), encoding="utf-8") as f:
+                assert "Chapter 3" not in f.read(), "a miss rewrote the file"
+        finally:
+            restore()
+
+    def t_sparkline():
+        """The stats sparkline: zeros render as dim dots, values scale to the
+        series max (the max is always the tallest block), length is preserved."""
+        from engine.render import sparkline
+        assert len(sparkline([0, 0, 0])) >= 3          # dots (maybe painted)
+        flat = sparkline([0, 0, 0])
+        assert "█" not in flat and "·" in flat
+        line = sparkline([1, 0, 4])
+        assert "█" in line and "·" in line
+        assert sparkline([]) == ""
+
     for fn in (t_exit, t_hang_call, t_hang_unswallowable, t_stdin_in_raises,
                t_print_captured, t_sandbox_files, t_file_missing_translated,
                t_classes, t_uses_class_named,
@@ -1572,12 +2101,18 @@ def _engine_selftest():
                t_textbook_fresh_shows_current,
                t_command_registry, t_transfer_sanitize, t_meta_audit,
                t_key_decode, t_i18n, t_i18n_content, t_check_pack,
-               t_lang_worksheet, t_new_puzzle, t_seed_reproducible,
+               t_lang_worksheet, t_lang_worksheet_update, t_new_puzzle,
+               t_seed_reproducible,
                t_project_checks,
                t_syntax_translated, t_any_of_unordered, t_prints_computed,
                t_perf_helpers, t_object_tape_inputs, t_liveness_raise_chaff,
                t_paint_role_names, t_save_tip_translates,
-               t_progress_shape_guard):
+               t_progress_shape_guard, t_dispatch_adopts_import,
+               t_wipe_returns_fresh, t_solve_raises_highest,
+               t_wipe_everything, t_check_unchanged_notice, t_first_diff,
+               t_map_folds, t_brief_prints, t_doctor_smoke,
+               t_crash_glossary, t_locale_pack, t_chapter_intro,
+               t_textbook_topic, t_sparkline):
         case(fn.__name__[2:], fn)
 
     bad = 0

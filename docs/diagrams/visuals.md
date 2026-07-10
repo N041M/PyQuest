@@ -60,8 +60,8 @@ classDiagram
         +bigbox(art_lines, border, ramp) / wordmark(color)
         +id_banner(pid, color) / header(title, color)
         +wrap(text, width) / field(label, value, lblcolor)
-        +bar(done, total, width) / indent(text, prefix)
-        +quote_block(value)
+        +bar(done, total, width) / sparkline(values) / indent(text, prefix)
+        +quote_block(value, mark)
         +pane_open(title, mode, done, total)  "shared sub-pane opener"
         +nav_row(primary, clusters)  "the nav-strip formatter"
         +legend()  "the status-marker key"

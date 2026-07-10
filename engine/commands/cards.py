@@ -7,8 +7,9 @@ from ..config import WIDTH, rel, term_size
 from ..content import load_hints, brief_path, category
 from ..state import current_puzzle, load_answers, switch_to, work_path
 from ..render import (paint, id_banner, header, section, field, wrap, cli,
-                      nav_row, pane_open, PAD, OK, NO, CUR, DOT, ARROW, STAR)
-from ..i18n import t
+                      nav_row, pane_open, hyperlink,
+                      PAD, OK, NO, CUR, DOT, ARROW, STAR)
+from ..i18n import t, tp
 from .registry import NAV_CLUSTERS, NEEDS_PUZZLE
 from .. import keys
 
@@ -37,10 +38,13 @@ def status_marker(prog, pid, current_id):
     return paint(DOT, "gray")
 
 
-def chapter_tree(puzzles, prog, pickable=False):
+def chapter_tree(puzzles, prog, pickable=False, fold_solved=False):
     """The chapter/puzzle list both `map` and the goto picker draw -- one
     renderer so they can never drift. `pickable` adds the `locked` tags the
-    picker needs; the marks/colours/layout are identical either way."""
+    picker needs; the marks/colours/layout are identical either way.
+    `fold_solved` (the map's default) collapses a fully-solved chapter to one
+    line so the tree stays scannable as the course grows -- except the chapter
+    holding the current puzzle, which always shows its rows."""
     cur_id = prog.get("current")
     chapters = {}
     for p in puzzles:
@@ -55,6 +59,13 @@ def chapter_tree(puzzles, prog, pickable=False):
             prev_cat = cat
         print("")
         print(header("%d · %s" % (ch, items[0]["ch_title"])))
+        if (fold_solved
+                and all(p["id"] in prog["completed"] for p in items)
+                and not any(p["id"] == cur_id for p in items)):
+            print("%s  %s  %s" % (PAD, paint(OK, "green", "bold"),
+                  paint(t("map.folded", "all %d solved -- expand with  %s")
+                        % (len(items), cli("map all")), "gray")))
+            continue
         for p in items:
             mark = status_marker(prog, p["id"], cur_id)
             title = p["meta"].get("title", "")
@@ -178,16 +189,18 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
     for line in wrap(meta.get("concept", "")):
         print(PAD + line)
     print("")
-    print(field(t("card.f_read", "read"), paint(rel(brief_path(cur["dir"])),
-                "blue")))
-    print(field(t("card.f_edit", "edit"), paint(rel(work_path()), "blue", "bold")
+    bp = brief_path(cur["dir"])
+    print(field(t("card.f_read", "read"),
+                paint(hyperlink(rel(bp), bp), "blue")))
+    print(field(t("card.f_edit", "edit"),
+                paint(hyperlink(rel(work_path()), work_path()), "blue", "bold")
                 + paint("   " + t("card.save_before", "(save before checking)"),
                         "gray")))
     note = load_answers().get(cur["id"], {}).get("note")
     if note:
         print("")
         for i, line in enumerate(wrap(note, WIDTH - len(PAD) - 8)):
-            lead = paint(t("card.note_lead", "note  "), "magenta", "bold") \
+            lead = paint((t("card.note_lead", "note") + "  "), "magenta", "bold") \
                 if i == 0 else " " * 6
             print(PAD + lead + line)
     if show_pointer:
@@ -195,7 +208,7 @@ def print_current_card(prog, cur, arriving=False, puzzles=None):
         if hints:
             print("")
             for i, line in enumerate(wrap(hints[0], WIDTH - len(PAD) - 8)):
-                lead = paint(t("card.hint_lead", "hint  "), "yellow", "bold") \
+                lead = paint((t("card.hint_lead", "hint") + "  "), "yellow", "bold") \
                     if i == 0 else " " * 6
                 print(PAD + lead + line)
     print("")
@@ -302,4 +315,24 @@ def _advance_one(puzzles, by_id, prog, force):
             else t("nav.skipped", "Skipped (not solved)"))
     print(paint("  %s %s %s" % (ARROW, word, cur["id"]),
                 "cyan" if solved else "yellow", "bold"))
+    if nxt["ch_num"] != cur["ch_num"]:      # earned progression into new ground
+        _chapter_intro(nxt, puzzles)
     print_current_card(prog, nxt, arriving=True, puzzles=puzzles)
+
+
+def _chapter_intro(first, puzzles):
+    """A small welcome banner when `next`/`skip` crosses into a new chapter --
+    the entering mirror of the chapter-complete line on the way out: the
+    chapter's name, its category, and the topics ahead. Only on earned
+    progression; a `goto` jump is navigation, not an arrival."""
+    items = [p for p in puzzles if p["ch_num"] == first["ch_num"]]
+    topics = " · ".join(p["meta"].get("title", "") for p in items)
+    print("")
+    print(header(t("chapter.intro", "chapter %d · %s")
+                 % (first["ch_num"], first["ch_title"]), "magenta"))
+    print(PAD + paint("%s · %s" % (category(first),
+                      tp("chapter.puzzles", len(items),
+                         one="%d puzzle", other="%d puzzles") % len(items)),
+                      "gray"))
+    for line in wrap(topics):
+        print(PAD + paint(line, "gray"))

@@ -273,7 +273,7 @@ the data and visual layers live in [commands.md](commands.md); the tester in
 flowchart TB
     app["app.py"] --> creg["registry «verb table»"]
     app --> cinit["commands/__init__ «facade»"]
-    cinit --> cviews["views «status/map/hint/solution»"]
+    cinit --> cviews["views «status/map/brief/hint/solution/doctor»"]
     cinit --> cnav["navigate «goto/next/skip/retry/restart»"]
     cinit --> cmenu["menu «menu»"]
     cinit --> cprof["profiles «theme/mode/user/wipe»"]

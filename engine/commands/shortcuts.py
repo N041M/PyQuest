@@ -74,7 +74,7 @@ def _uninstall_persistent():
 
 
 def _disclaimer():
-    print(PAD + paint(t("shortcuts.disc_pre", "Shortcuts let you type  "), "gray")
+    print(PAD + paint((t("shortcuts.disc_pre", "Shortcuts let you type") + "  "), "gray")
           + paint("check", "green", "bold")
           + paint(t("shortcuts.disc_post",
                   "  instead of  python3 start.py check."), "gray"))
@@ -109,10 +109,10 @@ def cmd_setup():
     print(header(t("setup.enable_title", "enable the short commands"), "magenta"))
     print("")
     print(PAD + paint(t("setup.opt_a", "A) this terminal only"), "white", "bold")
-          + paint("   " + t("setup.run", "run:  "), "gray")
+          + paint("   " + (t("setup.run", "run:") + "  "), "gray")
           + paint(_local_source_cmd(), "yellow", "bold"))
     print(PAD + paint(t("setup.opt_b", "B) every terminal"), "white", "bold")
-          + paint("      " + t("setup.run", "run:  "), "gray")
+          + paint("      " + (t("setup.run", "run:") + "  "), "gray")
           + paint("python3 start.py setup persist", "yellow", "bold"))
     print("")
     print(PAD + paint(t("setup.remove_later",

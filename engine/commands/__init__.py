@@ -5,7 +5,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
                 (always / needs a puzzle), and help. app.py + help read it.
   cards.py      shared composition: the puzzle card, status marker, goto helpers
   views.py      read verbs (show, don't change position): status, map, stats,
-                hint, solution, textbook
+                brief, hint, solution, textbook, doctor
   navigate.py   navigation + workspace reset: goto, next, skip, retry, restart
   profiles.py   settings: theme, mode, user, wipe
   transfer.py   export, import (portable profile bundles)
@@ -17,7 +17,7 @@ the dispatcher (app.py) imports from `engine.commands` exactly as before.
 """
 
 from .views import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
-                    cmd_solution, cmd_textbook)
+                    cmd_solution, cmd_textbook, cmd_brief, cmd_doctor)
 from .navigate import (cmd_goto, cmd_next, cmd_skip, cmd_resume, cmd_note,
                        cmd_retry, cmd_restart)
 from .profiles import cmd_theme, cmd_mode, cmd_user, cmd_wipe
@@ -28,7 +28,7 @@ from .help import cmd_help
 
 __all__ = [
     "cmd_status", "cmd_map", "cmd_search", "cmd_stats", "cmd_hint",
-    "cmd_solution", "cmd_textbook", "cmd_goto",
+    "cmd_solution", "cmd_textbook", "cmd_brief", "cmd_doctor", "cmd_goto",
     "cmd_next", "cmd_skip", "cmd_resume", "cmd_note", "cmd_retry",
     "cmd_restart", "cmd_mode",
     "cmd_theme", "cmd_user", "cmd_wipe", "cmd_export", "cmd_import",

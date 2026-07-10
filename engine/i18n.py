@@ -45,6 +45,9 @@ _PLURAL_RULES = {
     "en": lambda n: "one" if n == 1 else "other",
     # Czech: 1 -> one; 2-4 -> few; 0 and 5+ -> other.
     "cs": lambda n: "one" if n == 1 else "few" if 2 <= n <= 4 else "other",
+    # Portuguese (CLDR "pt"): 0 and 1 -> one. European Portuguese keeps "one"
+    # for exactly 1 only; the generic pt pack follows the CLDR pt rule.
+    "pt": lambda n: "one" if n in (0, 1) else "other",
 }
 
 
@@ -164,5 +167,12 @@ def set_language(code):
         return False, ("language '%s' couldn't load: %s. Using English."
                        % (code, info))
     strings = _load_json(os.path.join(_pack_dir(code), "strings.json"))
+    if not isinstance(strings, dict):
+        # validate() read it fine an instant ago, so the file changed under us;
+        # never install a non-dict as the active strings (every t() would crash)
+        _active.update(code="en", strings={})
+        return False, ("language '%s' couldn't load: %s. Using English."
+                       % (code, strings if isinstance(strings, str)
+                          else "strings.json is not a JSON object"))
     _active.update(code=code, strings=strings)
     return True, None

@@ -84,8 +84,13 @@ those two files.
    plain print + the typed commands when stdin is not a terminal, so they never
    block pipes or tests. The destructive `wipe profile` needs no prompt at all
    -- its required second word is the confirmation, so it stays a one-shot.
+   The lone deliberate exception is `wipe everything` (the factory reset:
+   every profile plus settings): that one demands typing ERASE at a real
+   prompt and refuses to run without a TTY, so no script, pipe, or mistyped
+   one-shot can erase every learner on the machine.
 9. **Stdlib only.**
-10. **Progress is recoverable.** `wipe profile` is a true reset; saving never silently
+10. **Progress is recoverable.** `wipe profile` and `wipe everything` are true
+    resets (the wiped state must never resurrect); saving never silently
     destroys the learner's code without it living in `answers.json`. All JSON
     saves are atomic (temp file + rename), and an unreadable progress/answers
     file is moved aside as `<name>.corrupt`, never overwritten.
@@ -135,8 +140,9 @@ toolkit/      the T object handed to each tests.py. "The tester." A package
 checker.py    orchestrates one check: load tests, build T, run check()/bonus(),
               translate failures into their categories (a missed construct
               check renders its own "so close" screen), render pass/fail.
-commands/     the verbs (status, map, stats, goto, next, skip, retry, hint,
-              solution, mode, wipe, help), compose state + content + render + checker.
+commands/     the verbs (status, map, stats, goto, next, skip, retry, brief,
+              hint, solution, mode, wipe, doctor, help), compose state +
+              content + render + checker.
               A package split by concern, like toolkit/; internal dependencies
               point down and `__init__.py` re-exports every cmd_* as a facade so
               the import path `engine.commands` and the dispatcher stay frozen:

@@ -6,7 +6,7 @@ import os
 import textwrap
 
 from .config import WIDTH
-from .theme import (paint, paint_code,
+from .theme import (paint, paint_code, hyperlink,
                     OK, NO, CUR, DOT, ARROW, STAR, BOLT, RETRY,
                     LOGO, LOGO_RAMP, id_art)
 from .i18n import t
@@ -137,14 +137,42 @@ def bar(done, total, width=26):
     return "%s  %s" % (meter, paint("%d / %d" % (done, total), "bold"))
 
 
+def sparkline(values):
+    """One row of block glyphs scaled to the series' own max; a zero renders
+    as a dim dot so quiet days read as gaps, not noise. Empty-safe."""
+    ramp = "▁▂▃▄▅▆▇█"
+    top = max(values) if values else 0
+    if top <= 0:
+        return paint(DOT * len(values), "gray")
+    out = []
+    for v in values:
+        if v <= 0:
+            out.append(paint(DOT, "gray"))
+        else:
+            i = max(0, min(len(ramp) - 1, (v * len(ramp) - 1) // top))
+            out.append(paint(ramp[i], "bcyan"))
+    return "".join(out)
+
+
 def indent(text, prefix="  "):
     return "\n".join(prefix + ln for ln in text.split("\n"))
 
 
-def quote_block(value):
+def quote_block(value, mark=None):
+    """An indented `| `-quoted block. `mark` points an arrow at one line (the
+    checker's first-differing-line) -- past-the-end marks a row the block is
+    MISSING, drawn as an empty marked line so the gap itself is visible."""
     text = value if isinstance(value, str) else repr(value)
     lines = text.split("\n") if text != "" else [""]
-    return "\n".join("    | " + ln for ln in lines)
+    if mark is not None and mark >= len(lines):
+        lines = lines + [""]
+        mark = len(lines) - 1
+    out = []
+    for i, ln in enumerate(lines):
+        lead = "  %s | " % paint(CUR, "byellow", "bold") if i == mark \
+            else "    | "
+        out.append(lead + ln)
+    return "\n".join(out)
 
 
 def pane_open(title, mode, done, total, color="cyan"):

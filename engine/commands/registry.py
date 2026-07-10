@@ -21,7 +21,7 @@ VERBS = [
     ("status",    "status",       ("current", "progress"), "always",
      "show progress and the current puzzle"),
     ("map",       "map",          (),                "always",
-     "show the chapter/puzzle tree"),
+     "show the chapter/puzzle tree (map all expands solved chapters)"),
     ("search",    "search <word>", ("find",),        "always",
      "find a puzzle by a word in its title or concept"),
     ("resume",    "resume",       (),                "always",
@@ -29,7 +29,10 @@ VERBS = [
     ("stats",     "stats",        ("score",),        "always",
      "your numbers: attempts, hints, per-chapter completion"),
     ("textbook",   "textbook",      ("ref",),          "always",
-     "syntax & tips you've reached (textbook all for the full reference)"),
+     "syntax & tips you've reached (textbook all: everything · "
+     "textbook <chapter|word>: one slice)"),
+    ("brief",     "brief",        ("read",),         "puzzle",
+     "read the current puzzle's brief here in the terminal"),
     ("check",     "check",        (),                "puzzle",
      "validate your work.py"),
     ("hint",      "hint",         (),                "puzzle",
@@ -58,12 +61,15 @@ VERBS = [
      "save this profile's progress to a portable file"),
     ("import",    "import <file>", (),               "always",
      "load a profile from an exported file"),
-    ("wipe",      "wipe profile", (),                "always",
-     "erase this whole profile: progress, saved code, and workspace"),
+    ("wipe",      "wipe <what>",  (),                "always",
+     "erase progress: this profile (wipe profile), or every profile + settings "
+     "(wipe everything, asks you to type ERASE)"),
     ("setup",     "setup",        (),                "always",
      "set up the short commands (offers local or persistent)"),
     ("uninstall", "uninstall",    (),                "always",
      "remove the persistent shortcuts"),
+    ("doctor",    "doctor",       (),                "always",
+     "environment report: versions, terminal, profile -- paste into bug reports"),
     ("help",      "help",         ("-h", "--help"),  "always",
      "show this command list"),
 ]
@@ -79,7 +85,7 @@ NEEDS_PUZZLE = {row[0] for row in VERBS if row[3] == "puzzle"}
 # the strip. This keeps the strip the single source of truth for navigation
 # while staying terse. Puzzle-only verbs are filtered out when no puzzle loaded.
 NAV_CLUSTERS = [
-    ("learn", ("hint", "solution")),
+    ("learn", ("brief", "hint", "solution")),
     ("move",  ("map", "goto", "next", "skip")),
     ("do",    ("note", "retry", "restart")),
     ("set",   ("mode", "theme", "user")),

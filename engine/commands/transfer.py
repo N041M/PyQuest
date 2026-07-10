@@ -141,7 +141,7 @@ def cmd_import(puzzles, by_id, prog, path=None, opt1=None, opt2=None):
       force  overwrite an existing profile (otherwise import refuses)
     """
     if not path:
-        print(PAD + paint(t("ui.usage", "usage:  ")
+        print(PAD + paint((t("ui.usage", "usage:") + "  ")
                           + cli("import <file> [name] [force]"), "yellow"))
         print(PAD + t("transfer.import_usage_hint",
               "Imports a profile exported with  %s.") % cli("export"))

@@ -1,5 +1,6 @@
 """Argv dispatch and entry point. Wires the command verbs together."""
 
+import os
 import sys
 
 from .config import CHAPTERS_DIR, rel, load_settings
@@ -7,10 +8,11 @@ from .content import discover
 from .state import (load_progress, current_puzzle, ensure_workspace,
                     load_answers, migrate_legacy)
 from .render import paint, cli, STAR, NO, PAD
-from .i18n import t
+from .i18n import t, tp
 from .checker import cmd_check
 from .commands import (cmd_status, cmd_map, cmd_search, cmd_stats, cmd_hint,
-                       cmd_solution, cmd_textbook, cmd_next, cmd_resume,
+                       cmd_solution, cmd_textbook, cmd_brief, cmd_doctor,
+                       cmd_next, cmd_resume,
                        cmd_note, cmd_goto, cmd_skip, cmd_retry, cmd_restart,
                        cmd_mode,
                        cmd_theme, cmd_user, cmd_wipe, cmd_export, cmd_import,
@@ -20,6 +22,33 @@ from .commands import cards
 from .commands.registry import canonical, NEEDS_PUZZLE, suggest, _all_names
 from . import keys
 from . import i18n
+
+
+def _locale_pack():
+    """(code, display name) of an installed language pack matching the shell's
+    locale, or None. Read from the POSIX locale env vars only -- where they
+    don't exist (Windows), the nudge simply never shows. Used once, on a fresh
+    profile that has never chosen a language."""
+    raw = (os.environ.get("LC_ALL") or os.environ.get("LC_MESSAGES")
+           or os.environ.get("LANG") or "")
+    code = raw.split(".")[0].split("_")[0].lower()
+    if not code or code == "en":
+        return None
+    for c, name in i18n.available():
+        if c == code:
+            return c, name
+    return None
+
+
+def _days_away(last_seen):
+    """Whole days since the stored last_seen ISO stamp, or None when it was
+    never set / doesn't parse (an old or hand-edited progress.json)."""
+    import datetime
+    try:
+        dt = datetime.datetime.fromisoformat(last_seen)
+    except (TypeError, ValueError):
+        return None
+    return (datetime.datetime.now() - dt).days
 
 
 def _emit_completions(what, puzzles):
@@ -42,8 +71,9 @@ def _emit_completions(what, puzzles):
 
 def dispatch(args, puzzles, by_id, prog):
     """Run one verb from `args` (a [verb, *rest] list) and return prog (only
-    `user`/`import` can replace it). Shared by the one-shot CLI in main() and the
-    interactive play cockpit (_play), so both route through exactly one mapping."""
+    `user`/`import`/`wipe`/`menu` can replace it). Shared by the one-shot CLI in
+    main() and the interactive play cockpit (_play), so both route through
+    exactly one mapping."""
     raw = args[0].lower() if args else "menu"
     cmd = canonical(raw)                 # fold aliases (load->goto, replay->retry)
     arg = args[1] if len(args) > 1 else None
@@ -57,8 +87,12 @@ def dispatch(args, puzzles, by_id, prog):
         cmd_hint(puzzles, by_id, prog)
     elif cmd == "solution":
         cmd_solution(puzzles, by_id, prog)
+    elif cmd == "brief":
+        cmd_brief(puzzles, by_id, prog)
+    elif cmd == "doctor":
+        cmd_doctor(puzzles)
     elif cmd == "map":
-        cmd_map(puzzles, by_id, prog)
+        cmd_map(puzzles, by_id, prog, arg)
     elif cmd == "search":
         cmd_search(puzzles, by_id, prog, arg)
     elif cmd == "resume":
@@ -89,11 +123,16 @@ def dispatch(args, puzzles, by_id, prog):
         # <name>` reach the subcommand parser, not just the first token
         prog = cmd_user(" ".join(args[1:]), puzzles, by_id, prog)
     elif cmd == "wipe":
-        cmd_wipe(puzzles, prog, arg)
+        # capture prog: a real wipe replaces it with the fresh (inactive) one,
+        # so a cockpit session can't keep saving the erased progress back.
+        prog = cmd_wipe(puzzles, prog, arg)
     elif cmd == "export":
         cmd_export(puzzles, by_id, prog, arg)
     elif cmd == "import":
-        cmd_import(puzzles, by_id, prog, arg, arg2, arg3)
+        # capture prog: import switches the active profile, and running on with
+        # the pre-import prog would check the old puzzle against the imported
+        # workspace and save the old profile's state over the imported one.
+        prog = cmd_import(puzzles, by_id, prog, arg, arg2, arg3)
     elif cmd == "menu":
         # capture prog: the menu can switch profile (a new prog), and _play must
         # run against that, not the pre-menu one -- else the card and the checker
@@ -190,6 +229,13 @@ def main():
     if fresh and cmd in ("status", "menu"):
         print(paint("  %s  " % STAR + t("app.welcome", "Welcome to PyQuest!"),
                     "cyan", "bold"))
+        # A first run whose shell locale matches an installed pack gets one
+        # gray pointer at it -- only while no language was ever chosen.
+        pack = _locale_pack() if load_settings().get("lang") is None else None
+        if pack:
+            print("  " + paint(t("app.lang_nudge",
+                  "PyQuest also speaks %s -- type  language %s  in the menu.")
+                  % (pack[1], pack[0]), "gray"))
         if cmd == "status":
             print("  " + t("app.open_menu_status",
                   "Open the menu to set up and pick a level:  %s\n")
@@ -197,15 +243,35 @@ def main():
         else:
             print("  " + t("app.setup_below",
                   "Set up and pick a level from the menu below.\n"))
+    elif cmd in ("status", "menu"):
+        # Returning after a break: say so, and point back at where they were.
+        # last_seen is stamped when a puzzle is loaded, so days-away is real
+        # absence, not just "hasn't checked today".
+        days = _days_away(prog.get("last_seen"))
+        if days is not None and days >= 2:
+            cur0 = current_puzzle(prog, by_id, puzzles)
+            where = ("   " + t("app.wb_where", "You were on %s · %s.")
+                     % (cur0["id"], cur0["meta"].get("title", ""))
+                     if prog.get("active") and cur0 else "")
+            print(paint("  %s  " % STAR
+                        + tp("app.welcome_back", days,
+                             one="Welcome back -- it's been %d day.",
+                             other="Welcome back -- it's been %d days.") % days,
+                        "cyan", "bold") + paint(where, "gray"))
+            print("")
 
     # Context gate: the puzzle-logic verbs only mean something with a puzzle
     # loaded. Without one the learner is between the two command sets, so route
     # them to the menu (the home base) rather than dead-ending on a message.
     if cmd in NEEDS_PUZZLE and not prog.get("active"):
+        # Reroute as `menu` through the shared dispatch tail below, never a
+        # direct cmd_menu call: only that tail adopts the prog the menu returns
+        # and opens the cockpit on a card the menu drew -- a direct call would
+        # strand the learner on a card with no nav row at all (play.active has
+        # already suppressed the static row).
         print(paint("  %s  " % NO + t("app.no_loaded_menu",
                     "No puzzle loaded yet -- here's the menu."), "yellow"))
-        cmd_menu(puzzles, by_id, prog)
-        return
+        args = ["menu"]
 
     cards.play.card_drawn = False
     prog = dispatch(args, puzzles, by_id, prog)

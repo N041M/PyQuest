@@ -11,6 +11,7 @@ import re
 import sys
 import json
 import shutil
+import datetime
 
 from .config import (USERS_DIR, ROOT, WORK_FILENAME, TEXTBOOK_FILENAME,
                      load_settings, write_json, now)
@@ -50,6 +51,15 @@ def current_user():
     # invalid stored user falls back to "default" rather than escaping users/.
     user = load_settings().get("user", "default") or "default"
     return user if valid_username(user) else "default"
+
+
+def users_root():
+    """The users/ directory as currently wired. A function, not a re-exported
+    constant: a caller reads the LIVE module global, so the self-tests'
+    sandboxing (repointing state.USERS_DIR) reaches it -- a `from` import of
+    the constant would freeze the real path at import time, and a destructive
+    caller would then hit the real users/ no matter what the test patched."""
+    return USERS_DIR
 
 
 def user_dir(user=None):
@@ -161,6 +171,36 @@ def save_progress(prog):
 
 def stat(prog, pid):
     return prog["stats"].setdefault(pid, {"attempts": 0, "hints_used": 0})
+
+
+def solve_dates(prog):
+    """The set of distinct calendar dates on which puzzles were first solved,
+    read from each stat's `solved_on`. Owned here (progress data, no visuals)
+    and shared by the stats pane and the solved banner."""
+    out = set()
+    for s in prog.get("stats", {}).values():
+        d = s.get("solved_on")
+        if isinstance(d, str):
+            try:
+                out.add(datetime.date.fromisoformat(d))
+            except ValueError:
+                pass
+    return out
+
+
+def streak(dates):
+    """Consecutive days solved, counting back from today -- or from yesterday,
+    so the streak isn't 'broken' merely because today's puzzle isn't done yet."""
+    if not dates:
+        return 0
+    day = datetime.date.today()
+    if day not in dates:
+        day -= datetime.timedelta(days=1)
+    n = 0
+    while day in dates:
+        n += 1
+        day -= datetime.timedelta(days=1)
+    return n
 
 
 def current_puzzle(prog, by_id, puzzles):

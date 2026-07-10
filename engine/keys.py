@@ -241,7 +241,8 @@ def _restore_winch(previous):
         pass
 
 
-def navigate(render, n, index=0, allow_typing=True, esc_cancels=True):
+def navigate(render, n, index=0, allow_typing=True, esc_cancels=True,
+             submit=None, keep_buf_on_move=False):
     """The shared arrow/typing loop behind every menu picker.
 
     `render(index, buf)` returns the lines to draw (highlight item `index`, show
@@ -253,9 +254,13 @@ def navigate(render, n, index=0, allow_typing=True, esc_cancels=True):
         int   -- Enter on a highlighted item (its index)
         str   -- Enter while typing (the typed text), when allow_typing
         None  -- Esc (if esc_cancels) / EOF, or raw input unsupported
-    Ctrl-C propagates as KeyboardInterrupt (the terminal is restored first); the
-    caller decides whether that means "back" or "quit". `esc_cancels=False` lets
-    a top-level pane ignore Esc (the hub, where 0/quit is the explicit exit).
+    `submit(index, buf)`, when given, decides the Enter value instead (the
+    type-to-filter picker returns the highlighted MATCH rather than the text);
+    `keep_buf_on_move` keeps the typed buffer while arrowing (moving through
+    filtered matches must not clear the filter). Ctrl-C propagates as
+    KeyboardInterrupt (the terminal is restored first); the caller decides
+    whether that means "back" or "quit". `esc_cancels=False` lets a top-level
+    pane ignore Esc (the hub, where 0/quit is the explicit exit).
     """
     if not supported() or n <= 0:
         return None
@@ -272,11 +277,17 @@ def navigate(render, n, index=0, allow_typing=True, esc_cancels=True):
                 if key == _RESIZE:                # terminal resized -> just redraw
                     continue
                 if key in (UP, LEFT):             # LEFT/RIGHT too, for a row
-                    buf, index = "", (index - 1) % n
+                    if not keep_buf_on_move:
+                        buf = ""
+                    index = (index - 1) % n
                 elif key in (DOWN, RIGHT):
-                    buf, index = "", (index + 1) % n
+                    if not keep_buf_on_move:
+                        buf = ""
+                    index = (index + 1) % n
                 elif key == ENTER:
                     sys.stdout.write("\n")
+                    if submit is not None:
+                        return submit(index, buf)
                     return buf if (allow_typing and buf) else index
                 elif key == INTERRUPT or (key == ESC and esc_cancels):
                     sys.stdout.write("\n")
@@ -294,7 +305,8 @@ def navigate(render, n, index=0, allow_typing=True, esc_cancels=True):
         _restore_winch(winch)
 
 
-def pick(title, options, index=0, allow_typing=False, max_rows=None):
+def pick(title, options, index=0, allow_typing=False, max_rows=None,
+         filter_typing=False):
     """Flat-list selection over `options` (display strings), built on navigate.
     Returns the chosen index, the typed string (when allow_typing), or None
     (cancelled / unsupported) -- so callers keep a typed prompt as the fallback:
@@ -303,45 +315,91 @@ def pick(title, options, index=0, allow_typing=False, max_rows=None):
         if choice is None:
             ...typed input() prompt...
 
-    max_rows windows a long list (e.g. the 98-puzzle level picker) around the
-    selection. Output goes through theme/render; no alternate screen.
+    max_rows windows a long list (e.g. the 142-puzzle level picker) around the
+    selection. `filter_typing` turns typed text into a live filter instead:
+    the list narrows as you type, arrows move through the matches, and Enter
+    picks the highlighted match -- falling back to returning the text when
+    nothing matches, so a typed id (`2.4`) still resolves downstream. Output
+    goes through theme/render; no alternate screen.
     """
     from .theme import paint, CUR
     from .render import PAD
     from .i18n import t
+    from .config import term_size
     if not (supported() and options):
         return None
     n = len(options)
     view = min(max_rows or n, n)
-    state = {"top": 0}
+    state = {"top": 0, "buf": "", "anchor": 0}
+
+    def matches(buf):
+        if not (filter_typing and buf):
+            return range(n)
+        return [i for i, o in enumerate(options) if buf.lower() in o.lower()]
+
+    def pos_for(idx, buf, live):
+        """The highlighted position within the filtered list. A CHANGED filter
+        re-anchors at the current index so the selection starts on the first
+        match (deterministic), and arrows then step through the matches."""
+        if state["buf"] != buf:
+            state["buf"], state["anchor"] = buf, idx
+            state["top"] = 0
+        return (idx - state["anchor"]) % len(live)
 
     def render(idx, buf):
+        live = list(matches(buf))
+        filtering = filter_typing and buf
+        if filtering and not live:
+            state["buf"], state["anchor"] = buf, idx
+            return [PAD + paint("> ", "cyan", "bold") + buf,
+                    PAD + paint(t("keys.no_filter_match",
+                                  "no match -- Backspace edits, Enter submits "
+                                  "the text, Esc backs out"), "gray")]
+        pos = pos_for(idx, buf, live) if filtering else idx
+        # clamp the window to the LIVE height, not just max_rows: a terminal
+        # shrunk mid-pick must not make each repaint taller than the screen
+        # (which would push-scroll a fresh copy of the list on every key)
+        v = max(1, min(view, term_size()[1] - 1, len(live)))
         top = state["top"]
-        if idx < top:
-            top = idx
-        elif idx >= top + view:
-            top = idx - view + 1
-        state["top"] = top = max(0, min(top, n - view))
+        if pos < top:
+            top = pos
+        elif pos >= top + v:
+            top = pos - v + 1
+        state["top"] = top = max(0, min(top, len(live) - v))
         lines = []
-        for r in range(top, top + view):
-            on = r == idx
+        for r in range(top, top + v):
+            on = r == pos
             mark = paint(CUR, "bcyan", "bold") if on else " "
             lines.append("%s%s %s" % (PAD, mark, paint(
-                options[r], "byellow" if on else "white", "bold")))
-        if allow_typing and buf:
+                options[live[r]], "byellow" if on else "white", "bold")))
+        if filtering:
+            lines.append(PAD + paint("> ", "cyan", "bold") + buf
+                         + paint("   " + t("keys.filter_matches",
+                                           "%d of %d match · Enter picks")
+                                 % (len(live), n), "gray"))
+        elif allow_typing and buf:
             lines.append(PAD + paint("> ", "cyan", "bold") + buf)
         else:
             tail = [t("keys.arrows", "arrows move"),
                     t("keys.enter", "Enter select")]
             if allow_typing:
-                tail.append(t("keys.type", "type to enter one"))
+                tail.append(t("keys.filter", "type to filter") if filter_typing
+                            else t("keys.type", "type to enter one"))
             tail.append(t("keys.esc", "Esc back"))
             more = "   " + t("keys.position", "%d of %d") % (idx + 1, n) \
-                if n > view else ""
+                if n > v else ""
             lines.append(PAD + paint(" · ".join(tail) + more, "gray"))
         return lines
 
+    def submit(idx, buf):
+        if filter_typing and buf:
+            live = list(matches(buf))
+            return live[pos_for(idx, buf, live)] if live else buf
+        return buf if (allow_typing and buf) else idx
+
     try:
-        return navigate(render, n, index=index, allow_typing=allow_typing)
+        return navigate(render, n, index=index, allow_typing=allow_typing,
+                        submit=submit if filter_typing else None,
+                        keep_buf_on_move=filter_typing)
     except KeyboardInterrupt:
         return None

@@ -116,8 +116,8 @@ def cmd_menu(puzzles, by_id, prog):
             _, prog = _settings_action(head, arg, puzzles, by_id, prog)
         # -- leave (the rule: 0 always backs out / quits) --
         elif head in _BACK or head == "q":
-            print(PAD + paint(i18n.t("menu.see_you",
-                              "see you in the terminal -- solve with  ")
+            print(PAD + paint((i18n.t("menu.see_you",
+                              "see you in the terminal -- solve with") + "  ")
                               + cli("check"), "gray"))
             return prog
         elif canonical(head) in _INLINE:
@@ -238,6 +238,22 @@ def _hub_navigate(render):
         return None
 
 
+def _compact_selector(index, buf):
+    """The two-line, size-independent hub selector. Chosen up front on a short
+    panel, and the full-list renderer degrades to it mid-navigation when the
+    terminal shrinks below the block (each full repaint would otherwise
+    push-scroll a fresh copy of the whole menu)."""
+    if buf:
+        line = PAD + paint("> ", "cyan", "bold") + buf
+    else:
+        line = (PAD + paint("> ", "cyan", "bold")
+                + paint("%s %s" % (CUR, _nav_label(_NAV_LABELS[index])),
+                        "byellow", "bold"))
+    return [line, PAD + paint(i18n.t("menu.footer_compact",
+                              "arrows select · Enter runs it · "
+                              "type a verb"), "gray")]
+
+
 def _menu_input(puzzles, by_id, prog):
     """Read one hub command. Arrow-navigate the items wherever the terminal
     supports raw input -- in-list highlight when the whole menu fits, else a
@@ -249,23 +265,15 @@ def _menu_input(puzzles, by_id, prog):
     if keys.supported() and _fits(len(body) + 1):
         def render(index, buf):                 # full in-list highlight
             sel = None if buf else _NAV[index]
-            return (_menu_lines(puzzles, by_id, prog, sel=sel)
-                    + [PAD + paint("> ", "cyan", "bold") + buf])
+            lines = (_menu_lines(puzzles, by_id, prog, sel=sel)
+                     + [PAD + paint("> ", "cyan", "bold") + buf])
+            if not _fits(len(lines)):           # shrunk mid-nav -> degrade
+                return _compact_selector(index, buf)
+            return lines
         res = _hub_navigate(render)
     elif keys.supported():
         print("\n".join(body))                  # menu scrolls; selector is 2 lines
-
-        def render(index, buf):                 # size-independent compact selector
-            if buf:
-                line = PAD + paint("> ", "cyan", "bold") + buf
-            else:
-                line = (PAD + paint("> ", "cyan", "bold")
-                        + paint("%s %s" % (CUR, _nav_label(_NAV_LABELS[index])),
-                                "byellow", "bold"))
-            return [line, PAD + paint(i18n.t("menu.footer_compact",
-                                      "arrows select · Enter runs it · "
-                                      "type a verb"), "gray")]
-        res = _hub_navigate(render)
+        res = _hub_navigate(_compact_selector)
     else:
         print("\n".join(body))
         try:
@@ -383,8 +391,8 @@ def _menu_mode(prog):
                      paint(m.ljust(7), "byellow" if on else "white", "bold")))
         print("")
         try:
-            c = input(PAD + paint(i18n.t("mode.prompt",
-                                  "easy / normal / hard  (0 = back) > "),
+            c = input(PAD + paint((i18n.t("mode.prompt",
+                                  "easy / normal / hard  (0 = back) >") + " "),
                                   "cyan", "bold")).strip().lower()
         except (EOFError, KeyboardInterrupt):
             return
@@ -408,7 +416,7 @@ def _menu_level(puzzles, by_id, prog):
         print("")
         print(header(i18n.t("menu.level_title", "select level"), "cyan"))
         res = keys.pick("level", labels, index=start, allow_typing=True,
-                        max_rows=12)
+                        max_rows=12, filter_typing=True)
         if res is None:
             return
         if isinstance(res, int):
@@ -423,7 +431,7 @@ def _menu_level(puzzles, by_id, prog):
         return
     _goto_list(puzzles, by_id, prog, footer=False)
     try:
-        pid = input(PAD + paint(i18n.t("menu.level_prompt", "id  (0 = back) > "),
+        pid = input(PAD + paint((i18n.t("menu.level_prompt", "id  (0 = back) >") + " "),
                                 "cyan", "bold")).strip()
     except (EOFError, KeyboardInterrupt):
         return
@@ -456,8 +464,8 @@ def _menu_theme():
     while True:
         cmd_theme("")                               # show the picker
         try:
-            c = input(PAD + paint(i18n.t("theme.prompt",
-                                  "theme name  (0 = back) > "), "cyan",
+            c = input(PAD + paint((i18n.t("theme.prompt",
+                                  "theme name  (0 = back) >") + " "), "cyan",
                                   "bold")).strip().lower()
         except (EOFError, KeyboardInterrupt):
             return
@@ -507,8 +515,8 @@ def _menu_language():
                  paint("(%s)" % c, "gray")))
     print("")
     try:
-        c = input(PAD + paint(i18n.t("lang.prompt",
-                              "language code  (0 = back) > "), "cyan",
+        c = input(PAD + paint((i18n.t("lang.prompt",
+                              "language code  (0 = back) >") + " "), "cyan",
                               "bold")).strip()
     except (EOFError, KeyboardInterrupt):
         return
@@ -532,8 +540,8 @@ def _prompt_new_profile(puzzles, by_id, prog, name=""):
     name = (name or "").strip()
     if not name:
         try:
-            name = input(PAD + paint(i18n.t("profiles.new_prompt",
-                                     "new profile name  (blank = cancel) > "),
+            name = input(PAD + paint((i18n.t("profiles.new_prompt",
+                                     "new profile name  (blank = cancel) >") + " "),
                                      "cyan", "bold")).strip()
         except (EOFError, KeyboardInterrupt):
             return prog, False
@@ -589,9 +597,9 @@ def _menu_users(puzzles, by_id, prog):
             continue
         cmd_user("", puzzles, by_id, prog)          # list users + management help
         try:
-            c = input(PAD + paint(i18n.t("profiles.prompt",
+            c = input(PAD + paint((i18n.t("profiles.prompt",
                                   "name to switch/create · 'rename a b' · "
-                                  "'delete a'  (0 = back) > "), "cyan",
+                                  "'delete a'  (0 = back) >") + " "), "cyan",
                                   "bold")).strip()
         except (EOFError, KeyboardInterrupt):
             return prog

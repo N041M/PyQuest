@@ -35,7 +35,7 @@ def cmd_goto(puzzles, by_id, prog, arg):
     if not interactive:
         return
     try:
-        picked = input(PAD + paint(t("goto.prompt", "id (blank = cancel) > "),
+        picked = input(PAD + paint((t("goto.prompt", "id (blank = cancel) >") + " "),
                                    "cyan", "bold")).strip()
     except (EOFError, KeyboardInterrupt):
         print("")
@@ -83,7 +83,7 @@ def cmd_note(puzzles, by_id, prog, arg=None):
         else:
             print(PAD + paint(t("note.none_yet", "no note on %s yet.")
                               % cur["id"], "gray"))
-            print(PAD + paint(t("note.add_one", "add one with  ")
+            print(PAD + paint((t("note.add_one", "add one with") + "  ")
                               + cli("note <text>"), "gray"))
         return
     if text.lower() in _NOTE_CLEAR:
@@ -112,7 +112,7 @@ def cmd_resume(puzzles, by_id, prog):
         print(paint("  %s  " % STAR + t("resume.all_solved",
                     "Every puzzle is solved -- nothing to resume."),
                     "green", "bold"))
-        print(PAD + paint(t("resume.revisit", "revisit any with  ")
+        print(PAD + paint((t("resume.revisit", "revisit any with") + "  ")
                           + cli("goto <id>"), "gray"))
         return
     switch_to(target, prog, by_id, puzzles, load_answers())

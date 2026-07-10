@@ -9,7 +9,7 @@ they go through [render/theme](visuals.md). ← [overview](README.md)
 flowchart TB
     app["app.py «dispatch»"] --> registry["registry «verb table»"]
     app --> init["commands/__init__ «facade»"]
-    init --> views["views «status/map/stats/hint/solution/textbook»"]
+    init --> views["views «status/map/stats/brief/hint/solution/textbook/doctor»"]
     init --> nav["navigate «goto/next/skip/retry/restart»"]
     init --> profiles["profiles «theme/mode/user/wipe»"]
     init --> transfer["transfer «export/import»"]
@@ -67,7 +67,8 @@ classDiagram
     class views {
         <<module>>
         +cmd_status / cmd_map / cmd_stats / cmd_search
-        +cmd_hint / cmd_solution
+        +cmd_brief / cmd_hint / cmd_solution
+        +cmd_doctor(puzzles)  "environment report"
         +cmd_textbook(...,arg)  "writes textbook.md: reached vs full"
     }
     class navigate {
@@ -79,9 +80,9 @@ classDiagram
         <<module>>
         +cmd_theme(arg) / cmd_mode(prog, arg)
         +cmd_user(arg,...)  "switch/create · delete · rename"
-        +cmd_wipe(puzzles, prog, arg)  "needs `wipe profile` to fire"
+        +cmd_wipe(puzzles, prog, arg)  "needs `wipe profile` / typed ERASE (`wipe everything`)"
         -_swatch() / _user_count(...)
-        -_user_delete(...) / _user_rename(...)
+        -_user_delete(...) / _user_rename(...) / _wipe_everything(...)
     }
     class transfer {
         <<module>>

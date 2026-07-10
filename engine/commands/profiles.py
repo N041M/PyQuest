@@ -6,7 +6,9 @@ Profile portability (export/import) is a separate concern -- see transfer.py.
 """
 
 import os
+import sys
 import json
+import shutil
 
 from ..config import load_settings, set_setting, MODES
 from ..theme import apply_theme, THEME_NAMES
@@ -14,7 +16,8 @@ from ..state import (current_puzzle, load_answers, archive_current,
                      save_progress, load_progress, default_progress,
                      reseed_workspace, answers_path, progress_path,
                      list_users, current_user, ensure_user, valid_username,
-                     delete_user, rename_user, write_work, WELCOME_WORK)
+                     delete_user, rename_user, write_work, WELCOME_WORK,
+                     users_root)
 from ..render import paint, header, cli, PAD, OK, NO, ARROW
 from ..i18n import t
 
@@ -39,7 +42,7 @@ def cmd_theme(arg):
                      paint(name.ljust(width), "byellow", "bold"), _swatch()))
         apply_theme(current)                        # restore
         print("")
-        print(PAD + paint(t("theme.set_with", "set with  ") + cli("theme <name>"),
+        print(PAD + paint((t("theme.set_with", "set with") + "  ") + cli("theme <name>"),
                           "gray"))
         print(PAD + paint(t("theme.add_own",
                           "add your own: drop a JSON file in themes/ "
@@ -79,7 +82,7 @@ def cmd_user(arg, puzzles, by_id, prog):
                            "bold"),
                      paint(_user_count(u, puzzles), "gray")))
         print("")
-        print(PAD + paint(t("user.switch_create", "switch or create with  ")
+        print(PAD + paint((t("user.switch_create", "switch or create with") + "  ")
                           + cli("user <name>"), "gray"))
         print(PAD + paint(t("user.manage", "rename  %s      delete  %s")
                           % (cli("user rename <old> <new>"),
@@ -123,6 +126,10 @@ def cmd_user(arg, puzzles, by_id, prog):
     for k, v in (("mode", "normal"), ("completed", []), ("stats", {}),
                  ("highest", 0)):
         newprog.setdefault(k, v)
+    # same default app.main() applies on load: a legacy progress.json without
+    # the flag must still count a mid-course profile as active, or the reseed
+    # below would blank its work.py to the welcome placeholder.
+    newprog.setdefault("active", len(newprog["completed"]) > 0)
     # Reseed (not merely ensure) work.py so the workspace shows THIS profile's
     # current puzzle -- otherwise a stale file left in the target user's folder
     # would keep the wrong puzzle on screen and get archived under the new id.
@@ -139,7 +146,7 @@ def _user_delete(name, prog):
     away first) so the engine is never left pointing at a folder that's gone."""
     cur = current_user()
     if not name:
-        print(PAD + paint(t("ui.usage", "usage:  ") + cli("user delete <name>"),
+        print(PAD + paint((t("ui.usage", "usage:") + "  ") + cli("user delete <name>"),
                           "yellow"))
         return prog
     if not valid_username(name) or name not in list_users():
@@ -163,7 +170,7 @@ def _user_rename(old, new, prog):
     """Rename a profile, keeping its progress/answers. If it's the active one,
     repoint settings.json so the learner stays put under the new name."""
     if not old or not new:
-        print(PAD + paint(t("ui.usage", "usage:  ")
+        print(PAD + paint((t("ui.usage", "usage:") + "  ")
                           + cli("user rename <old> <new>"), "yellow"))
         return prog
     if not valid_username(old) or old not in list_users():
@@ -193,14 +200,28 @@ def _user_rename(old, new, prog):
     return prog
 
 
-_WIPE_OK = ("profile", "all", "yes", "confirm")
+_WIPE_OK = ("profile", "yes", "confirm")
+_WIPE_ALL = ("everything", "all", "global")
+_WIPE_PHRASE = "ERASE"                 # typed exactly, so it can't be an accident
 
 
 def cmd_wipe(puzzles, prog, arg=None):
-    """Erase the whole active profile. Irreversible, so it requires the explicit
-    second word -- `wipe profile` -- to fire; bare `wipe` only explains. That
-    confirmation gesture is pipe-safe (no prompt to hang a script)."""
-    if (arg or "").strip().lower() not in _WIPE_OK:
+    """Erase progress, in two tiers. `wipe profile` resets the ACTIVE profile
+    to zero -- irreversible, so it requires that explicit second word; the
+    gesture is pipe-safe (no prompt to hang a script). `wipe everything` is the
+    factory reset: it deletes EVERY profile plus the settings, and being that
+    much bigger a blast it additionally demands the learner TYPE the
+    confirmation phrase at a real prompt (see _wipe_everything). Bare `wipe`
+    only explains.
+
+    Returns prog: the FRESH progress after a real wipe (the caller must adopt
+    it -- a cockpit session that kept the old dict would re-save the erased
+    state on its next verb, silently undoing the wipe), the incoming one
+    otherwise."""
+    word = (arg or "").strip().lower()
+    if word in _WIPE_ALL:
+        return _wipe_everything(puzzles, prog)
+    if word not in _WIPE_OK:
         user = current_user()
         print(paint("  %s " % NO + t("wipe.warn",
                     "This erases EVERYTHING in profile '%s' --") % user,
@@ -212,7 +233,10 @@ def cmd_wipe(puzzles, prog, arg=None):
         print(PAD + paint(t("wipe.restart_hint",
                           "(to clear just the current puzzle instead, use  %s)")
                           % cli("restart"), "gray"))
-        return
+        print(PAD + paint(t("wipe.all_hint",
+                          "(to delete every profile and start factory-fresh:  %s)")
+                          % cli("wipe everything"), "gray"))
+        return prog
     keep_mode = prog.get("mode", "normal")
     # wipe this user's saved answers and workspace file
     if os.path.exists(answers_path()):
@@ -226,6 +250,54 @@ def cmd_wipe(puzzles, prog, arg=None):
           "Cleared this profile's progress, saved code, and workspace."))
     print("  " + t("wipe.open_menu", "Open the menu to start again:  %s")
           % cli("menu"))
+    return fresh
+
+
+def _wipe_everything(puzzles, prog):
+    """The factory reset: delete every profile -- and users/settings.json with
+    them, so theme/language/active-user go back to defaults too. The next
+    launch starts as a fresh install.
+
+    Bulletproofing, deliberately stricter than `wipe profile`: the learner must
+    TYPE the confirmation phrase at a real prompt, and without a TTY it refuses
+    outright -- there is no argv form, so no script, pipe, or mistyped one-shot
+    can ever erase every learner on the machine. Returns the fresh prog on a
+    wipe (the caller adopts it; it is inactive, so a cockpit session ends), the
+    incoming one on a cancel/refusal."""
+    users = list_users()
+    print(paint("  %s " % NO + t("wipe.all_warn",
+                "This deletes EVERY profile on this install --"), "red", "bold"))
+    for u in users:
+        print(PAD + " %s  %s" % (paint(u.ljust(14), "byellow", "bold"),
+                                 paint(_user_count(u, puzzles), "gray")))
+    print("  " + t("wipe.all_warn_2",
+          "all progress, saved code, notes, and settings (theme, language)."))
+    if not sys.stdin.isatty():
+        print(PAD + paint(t("wipe.all_tty_only",
+                          "Run this in a terminal -- it needs a typed "
+                          "confirmation."), "yellow"))
+        return prog
+    print(PAD + t("wipe.all_how",
+                  "Type %s (exactly) to go ahead; anything else cancels.")
+          % paint(_WIPE_PHRASE, "red", "bold"))
+    try:
+        answer = input(PAD + paint("> ", "red", "bold")).strip()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+        answer = ""
+    if answer != _WIPE_PHRASE:
+        print(PAD + paint(t("wipe.all_cancelled",
+                          "Cancelled -- nothing was deleted."), "gray"))
+        return prog
+    shutil.rmtree(users_root(), ignore_errors=True)
+    fresh = default_progress(puzzles)            # active = False; mode default
+    print(paint("  %s " % OK + t("wipe.all_done",
+                "Everything wiped -- every profile deleted."), "green", "bold"))
+    print("  " + t("wipe.all_fresh",
+          "PyQuest is factory-fresh; the next launch starts from scratch."))
+    print("  " + t("wipe.open_menu", "Open the menu to start again:  %s")
+          % cli("menu"))
+    return fresh
 
 
 # ---- mode (difficulty) ----------------------------------------------------
