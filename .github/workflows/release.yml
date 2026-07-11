@@ -9,10 +9,17 @@ name: release
 # always literally "pyquest", and link to it by its stable
 # releases/latest/download/pyquest.zip URL from the docs -- that download
 # always works regardless of the checkout's own casing.
+#
+# Also runs when a Release is published by hand in the GitHub UI (which is how
+# V1.0.2 shipped without the zip: its capital-V tag missed the case-sensitive
+# "v*" glob, no run fired, and the stable download URL 404'd until the asset
+# was attached manually). Either path ends with the zip on the release.
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["v*", "V*"]
+  release:
+    types: [published]
 
 permissions:
   contents: write          # required to create the Release
