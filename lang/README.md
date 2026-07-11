@@ -61,15 +61,17 @@ TRANSLATIONS = {
 `apply` merges all the files and writes only the values you changed, so a partial
 translation stays partial — every unchanged value, **and any chapter file you
 leave out**, falls back to English (so you can translate and ship one chapter at a
-time). Keep each value's markdown and ``` code blocks exactly; only the prose is
+time). A translation that comes out **identical to the English** (a loanword like
+Portuguese "%d puzzles") needs no entry at all: the fallback already serves that
+exact text, the pack just reports it as untranslated coverage. Keep each value's markdown and ``` code blocks exactly; only the prose is
 localized (literals the grader checks stay as-is). The files are **pure data** —
 read with `ast.literal_eval`, never executed — and live as a loose
 `lang/<code>.translations/` folder (not a pack folder), so a half-finished one is
 invisible to the engine and the checker.
 
-See [`example.translations/`](example.translations/) — a complete worksheet (every
-piece present, with the name, the UI strings, and `1.1 hints` translated to Czech)
-to show the format.
+See [`_template/example.translations/`](_template/example.translations/) — a
+complete worksheet (every piece present, with the name, three menu strings, and
+`1.1 hints` translated to Czech) to show the format.
 
 (`apply` produces the pack files below; you can also hand-build them. An older
 single-file `lang/<code>.translations.py` still works with `apply`; run
@@ -88,6 +90,12 @@ lang/<code>/
 
 `<code>` is a short language code (e.g. `cs`, `de`, `fr`) and must match the
 folder name. Save every file as **UTF-8**.
+
+To hand-build a pack instead of using the worksheet, copy
+[`_template/pack/`](_template/pack/) — the same layout with empty files, next
+to a README explaining each one and the example worksheet above. The `_`
+prefix marks [`_template/`](_template/) as scaffolding: the engine and the
+checker both ignore `_`-prefixed folders.
 
 ## How it loads
 

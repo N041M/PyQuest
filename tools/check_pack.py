@@ -58,14 +58,25 @@ def _content_total():
     return total
 
 
-def _ui_total():
-    """How many UI strings the engine exposes for translation (the worksheet
-    scanner's count), or None when the scanner isn't importable."""
+def _ui_total(code):
+    """How many UI strings language `code` can actually serve (the worksheet
+    scanner's count, minus plural categories the language's number rule never
+    produces -- Portuguese has no `.few`, so counting Czech's `.few` keys
+    against it would understate its coverage), or None when the scanner isn't
+    importable."""
     try:
         import lang_worksheet
-        return sum(1 for _label, _en in lang_worksheet._ui_strings())
     except Exception:
         return None
+    rule = i18n._PLURAL_RULES.get(code, i18n._PLURAL_RULES["en"])
+    reachable = {rule(n) for n in range(200)}
+    total = 0
+    for label, _en in lang_worksheet._ui_strings():
+        cat = label.rsplit(".", 1)[-1]
+        if cat in ("one", "few", "other") and cat not in reachable:
+            continue
+        total += 1
+    return total
 
 
 def check(code):
@@ -79,7 +90,7 @@ def check(code):
 
     strings = i18n._load_json(os.path.join(LANG_DIR, code, "strings.json"))
     if isinstance(strings, dict):
-        ui_total = _ui_total()
+        ui_total = _ui_total(code)
         tail = " of %d (%d%%)" % (ui_total, round(100 * len(strings) / ui_total)) \
             if ui_total else ""
         print("  ui strings: %d translated%s" % (len(strings), tail))
@@ -103,13 +114,15 @@ def check(code):
 
 def _pack_codes():
     """Every pack directory under lang/. A `<code>.translations/` folder is a
-    lang_worksheet.py WORKSHEET, not a pack -- the engine never loads it, so
-    the checker must not fail it either."""
+    lang_worksheet.py WORKSHEET, and a `_`-prefixed folder (`_template/`) is
+    scaffolding to copy from -- the engine never loads either, so the checker
+    must not fail them either."""
     if not os.path.isdir(LANG_DIR):
         return []
     return sorted(c for c in os.listdir(LANG_DIR)
                   if os.path.isdir(os.path.join(LANG_DIR, c))
-                  and not c.endswith(".translations"))
+                  and not c.endswith(".translations")
+                  and not c.startswith("_"))
 
 
 def main(argv):

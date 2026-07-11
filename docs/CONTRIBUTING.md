@@ -361,8 +361,8 @@ A new **command** follows the same shape: a `commands/` module + a
   `python3 tools/lang_worksheet.py new <code>` writes `lang/<code>.translations/`,
   one file per chapter (plus `00_meta.py` for the pack name + UI strings), each
   piece prefilled with its English; edit a chapter file, then `... apply <code>`
-  merges the folder into the pack (`lang/example.translations/` shows the format,
-  and `lang/cs/` is a complete Czech pack). Untranslated values — and whole
+  merges the folder into the pack (`lang/_template/` holds an example worksheet
+  and an empty pack layout, and `lang/cs/` is a complete Czech pack). Untranslated values — and whole
   chapter files you leave out — fall back to English, so you can ship one chapter
   at a time. More languages welcome.
 
