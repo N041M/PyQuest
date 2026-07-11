@@ -17,6 +17,7 @@ flowchart TB
     checker --> render["render · theme"]
     content --> config["config.py"]
     content --> i18n
+    render --> i18n
     i18n --> config
     state --> config
     toolkit --> config

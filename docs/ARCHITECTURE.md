@@ -108,14 +108,15 @@ config.py     constants & paths; terminal width; users/settings.json (current
               user + theme). Depends on nothing.
 theme.py      selectable palettes (THEMES), glyphs, paint(), the logo. The
               visual identity; apply_theme() switches in place.
-render.py     drawing primitives: box, banner, bar, header, wordmark, rule,
-              field, wrap, indent, cli(). Pure look; depends on theme + config.
-content.py    Puzzle/Chapter model + discovery + loaders (brief, hints, starter,
-              meta, tests, reference) + category(). "The structured question."
 i18n.py       human-language piping: English default + fallback, validated
               community packs under lang/<code>/. t() localizes a UI string,
-              localized() a content file (brief/hints/reference). content + the
-              read verbs route through it; depends only on config.
+              localized() a content file (brief/hints/reference). content, render
+              and the read verbs route through it; depends only on config.
+render.py     drawing primitives: box, banner, bar, header, wordmark, rule,
+              field, wrap, indent, cli(). Pure look; depends on theme + config,
+              plus i18n.t for its two learner-facing labels.
+content.py    Puzzle/Chapter model + discovery + loaders (brief, hints, starter,
+              meta, tests, reference) + category(). "The structured question."
 inputs.py     input providers: random_word/int + the Case seam. Hands the same
               data to the runner and the checker. "The input automizer."
 state.py      per-user progress + answers (users/<name>/...) + workspace
