@@ -177,6 +177,24 @@ local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 On any platform, `python start.py <command>` (or `py -3 start.py <command>`)
 always works without any of this.
 
+### Updating
+
+`doctor` tells you which version you're running. If you cloned the repo, a
+`git pull` inside the folder is the whole update — your progress lives in
+`users/` and is untouched.
+
+If you downloaded the zip, your progress lives **inside that folder**, so
+don't just delete it. Carry it over in three steps:
+
+1. In your current PyQuest, run `export` — it writes a single
+   `pyquest-<name>-<date>.json` file with everything you've solved.
+2. Download and unzip the new [pyquest.zip](https://github.com/N041M/PyQuest/releases/latest/download/pyquest.zip).
+3. In the new folder, run `python3 start.py import <path to that file>` — it
+   restores your progress, and anything the new version renamed or removed is
+   dropped safely rather than breaking.
+
+Then delete the old folder whenever you like.
+
 ### Uninstalling
 
 Run `uninstall` (or `python3 start.py uninstall`). It removes the line from
