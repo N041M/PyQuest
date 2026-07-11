@@ -2,13 +2,15 @@
 
 The isolated presentation layer. **All** colour codes, glyphs and box‑drawing
 characters live here and nowhere else, a restyle touches only these two files.
-`render` consumes `theme`; the rest of the engine consumes `render` (and
+`render` consumes `theme` (and `i18n.t` for its two learner-facing labels, the
+mode meter and the map legend); the rest of the engine consumes `render` (and
 `theme.paint`). ← [overview](README.md)
 
 ```mermaid
 flowchart TB
     cmds["commands/* · checker.py"] --> render
     render["render.py, primitives"] --> theme
+    render --> i18n["i18n.t()"]
     theme["theme.py, palette · glyphs · paint()"] --> config["config.WIDTH"]
     theme --> themesdir[("themes/*.json presets")]
 ```
@@ -61,6 +63,7 @@ classDiagram
         +id_banner(pid, color) / header(title, color)
         +wrap(text, width) / field(label, value, lblcolor)
         +bar(done, total, width) / sparkline(values) / indent(text, prefix)
+        +swatch()  "six-block palette strip (theme list)"
         +quote_block(value, mark)
         +pane_open(title, mode, done, total)  "shared sub-pane opener"
         +nav_row(primary, clusters)  "the nav-strip formatter"

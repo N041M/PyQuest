@@ -18,16 +18,11 @@ from ..state import (current_puzzle, load_answers, archive_current,
                      list_users, current_user, ensure_user, valid_username,
                      delete_user, rename_user, write_work, WELCOME_WORK,
                      users_root)
-from ..render import paint, header, cli, PAD, OK, NO, ARROW
+from ..render import paint, header, cli, swatch, PAD, OK, NO, ARROW
 from ..i18n import t
 
 
 # ---- themes ---------------------------------------------------------------
-def _swatch():
-    return "".join(paint("██", r) for r in
-                   ("cyan", "byellow", "green", "yellow", "red", "magenta"))
-
-
 def cmd_theme(arg):
     current = load_settings().get("theme", "neon")
     if not arg:
@@ -39,7 +34,7 @@ def cmd_theme(arg):
             mark = OK if name == current else "·"
             print(PAD + " %s  %s   %s"
                   % (paint(mark, "green" if name == current else "gray"),
-                     paint(name.ljust(width), "byellow", "bold"), _swatch()))
+                     paint(name.ljust(width), "byellow", "bold"), swatch()))
         apply_theme(current)                        # restore
         print("")
         print(PAD + paint((t("theme.set_with", "set with") + "  ") + cli("theme <name>"),

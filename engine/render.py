@@ -128,6 +128,12 @@ def field(label_text, value, lblcolor="cyan"):
     return "%s%s  %s" % (PAD, paint(label_text.ljust(6), lblcolor, "bold"), value)
 
 
+def swatch():
+    """A six-block color strip -- the active palette at a glance."""
+    return "".join(paint("██", r) for r in
+                   ("cyan", "byellow", "green", "yellow", "red", "magenta"))
+
+
 def bar(done, total, width=26):
     if total <= 0:
         return paint("░" * width, "gray")
