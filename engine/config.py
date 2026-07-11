@@ -7,6 +7,11 @@ import shutil
 import tempfile
 import datetime
 
+# The released version, shown by `doctor` so a learner (or a bug report) can
+# say which build they run. Bump alongside the release tag (tag v1.0.3 <->
+# VERSION "1.0.3"); the release workflow's zip carries whatever this says.
+VERSION = "1.0.3"
+
 # Project root is the folder that contains this package (and start.py, chapters/).
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHAPTERS_DIR = os.path.join(ROOT, "chapters")

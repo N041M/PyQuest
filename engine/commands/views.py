@@ -407,7 +407,7 @@ def cmd_doctor(puzzles):
     pack / theme, content counts -- for setup checks and pasteable bug reports.
     Read-only: it inspects and prints, changing nothing."""
     import platform
-    from ..config import PY, WIDTH, term_size, load_settings
+    from ..config import PY, VERSION, WIDTH, term_size, load_settings
     from ..state import list_users
     from ..theme import COLOR
     from .. import keys, i18n
@@ -417,6 +417,7 @@ def cmd_doctor(puzzles):
                      "tty" if sys.stdout.isatty() else "pipe")
     print(header(t("doctor.title", "doctor"), "cyan"))
     print("")
+    print(field("pyquest", "v%s" % VERSION))
     print(field("python", "%s   %s" % (platform.python_version(), PY)))
     print(field("system", platform.platform(terse=True)))
     print(field("term",
